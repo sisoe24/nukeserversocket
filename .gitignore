@@ -1,0 +1,7 @@
+.vscode
+other
+.DS_Store
+*.pyc
+*.log
+app.py
+**/config/
