@@ -1,7 +1,11 @@
 .vscode
 other
+tasks
+dist
+
 .DS_Store
 *.pyc
 *.log
-app.py
+*.env
+
 **/config/

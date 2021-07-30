@@ -23,7 +23,7 @@ A Nuke that plugin that will allow code execution inside Nuke from the local net
 - If used locally (same machine) no configuration required, just start the server.
 - Connect from another computer by specify a custom address.
 - Multiple computer can connect to the same Nuke instance.
-- Potentially expandable with any method of your choice (read more [Extendibility](#16-extendibility))
+- Easy expandable with any method of your choice (read more [Extendibility](#16-extendibility))
 
 ## 1.2. Installation
 
@@ -119,7 +119,6 @@ s.on('data', function (data) {
     s.destroy();
 });
 ```
-
 
 ### 1.6.2. Port & Host address
 
