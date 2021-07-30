@@ -1,6 +1,6 @@
 # 1. NukeServerSocket README
 
-A Nuke that plugin that will allow you to execute code inside Nuke over the local network.
+A Nuke that plugin that will allow code execution inside Nuke from the local network.
 
 > This is a companion plugin for: www.placeholder.com.
 
