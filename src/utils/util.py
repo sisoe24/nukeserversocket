@@ -7,9 +7,9 @@ import logging
 from PySide2.QtCore import QByteArray, QTime
 from PySide2.QtNetwork import QNetworkInterface
 
-from VscodeServerSocket.src import nuke
+from NukeServerSocket.src import nuke
 
-LOGGER = logging.getLogger('VscodeServerSocket.util')
+LOGGER = logging.getLogger('NukeServerSocket.util')
 
 
 def insert_time(text):

@@ -1,4 +1,4 @@
-from VscodeServerSocket.src import logger
+from NukeServerSocket.src import logger
 
 try:
 

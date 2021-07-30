@@ -13,9 +13,9 @@ from PySide2.QtWidgets import (
     QSizePolicy
 )
 
-from VscodeServerSocket.src.utils import Settings
+from NukeServerSocket.src.utils import Settings
 
-LOGGER = logging.getLogger('VscodeServerSocket.server_status')
+LOGGER = logging.getLogger('NukeServerSocket.server_status')
 
 
 class QHLine(QFrame):
@@ -32,7 +32,7 @@ class QHLine(QFrame):
 class OptionsDialog(QDialog):
     def __init__(self, parent):
         QDialog.__init__(self, parent)
-        self.setWindowTitle('VSS Settings')
+        self.setWindowTitle('NukeServerSocket Settings')
         self.setObjectName('OptionsDialog')
 
         self.settings = Settings()

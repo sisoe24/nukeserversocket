@@ -1,15 +1,16 @@
 # coding: utf-8
 from __future__ import print_function, with_statement
 
+import json
 import random
 import logging
 
 from PySide2.QtNetwork import QTcpSocket
 
-from VscodeServerSocket.src.utils import Settings, validate_output
+from NukeServerSocket.src.utils import Settings, validate_output
 
 
-LOGGER = logging.getLogger('VscodeServerSocket.client')
+LOGGER = logging.getLogger('NukeServerSocket.client')
 
 
 class ClientTest:
@@ -40,9 +41,12 @@ class ClientTest:
     def on_connected(self):
         LOGGER.debug('Connected to host')
         r = random.randint(1, 50)
-        output_text = (
-            "{\"text\":\"from __future__ import print_function; print('Hello from Test Client', %s)\", \"file\": \"path/to/tmp_file.py\" }" % r
-        )
+
+        output_text = {
+            "text": "from __future__ import print_function; print('Hello from Test Client', %s)" % r,
+            "file": "path/to/tmp_file.py"
+        }
+        output_text = json.dumps(output_text)
 
         self.socket.write(validate_output(output_text))
         LOGGER.debug('message sent: %s', output_text)

@@ -6,13 +6,13 @@ import logging
 
 from PySide2.QtCore import QSettings
 
-LOGGER = logging.getLogger('VscodeServerSocket.settings')
+LOGGER = logging.getLogger('NukeServerSocket.settings')
 
 
 def config_file():
     """Get configuration file in home/.nuke"""
     return os.path.join(
-        os.path.expanduser('~'), '.nuke/VscodeServerSocket.ini'
+        os.path.expanduser('~'), '.nuke/NukeServerSocket.ini'
     )
 
 

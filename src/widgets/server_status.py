@@ -15,9 +15,9 @@ from PySide2.QtWidgets import (
     QLineEdit
 )
 
-from VscodeServerSocket.src.utils import Settings, get_ip
+from NukeServerSocket.src.utils import Settings, get_ip
 
-LOGGER = logging.getLogger('VscodeServerSocket.server_status')
+LOGGER = logging.getLogger('NukeServerSocket.server_status')
 
 
 class ServerStatus(QWidget):

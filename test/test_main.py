@@ -11,9 +11,9 @@ from PySide2.QtWidgets import (
 
 from PySide2 import QtTest
 
-from VscodeServerSocket import main
-from VscodeServerSocket.test import ScriptEditor
-from VscodeServerSocket.src.main import MainWindowWidget
+from NukeServerSocket import main
+from NukeServerSocket.test import ScriptEditor
+from NukeServerSocket.src.main import MainWindowWidget
 
 screen_loc = {
     'hp': {

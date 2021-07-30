@@ -10,13 +10,13 @@ import subprocess
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
-from VscodeServerSocket.src import nuke
+from NukeServerSocket.src import nuke
 
 
-LOGGER = logging.getLogger('VscodeServerSocket.error_dialog')
+LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
 
 __about__ = {
-    'VscodeServerPackage': '0.0.1',
+    'NukeServerSocket': '0.0.1',
     'PySide2': __version__,
     'Nuke': nuke.NUKE_VERSION_STRING,
     'machine': QSysInfo().prettyProductName()
@@ -59,7 +59,7 @@ class ErrorDialog(QMessageBox):
     def __init__(self, parent, msg):
         QMessageBox.__init__(self, parent)
 
-        self.setWindowTitle('Vscode Server Socket')
+        self.setWindowTitle('NukeServerSocket')
         self.setIcon(QMessageBox.Warning)
 
         self.setStandardButtons(QMessageBox.Help | QMessageBox.Ok)
@@ -68,7 +68,7 @@ class ErrorDialog(QMessageBox):
 
         self.buttonClicked.connect(self.click_event)
 
-        self.setText('Vscode Server Socket error...')
+        self.setText('NukeServerSocket error...')
         self.setInformativeText(str(msg))
 
         self.traceback_msg = traceback.format_exc()

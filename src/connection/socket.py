@@ -6,9 +6,9 @@ import logging
 
 from PySide2.QtCore import QObject
 
-from VscodeServerSocket.src.utils import ScriptEditor, validate_output
+from NukeServerSocket.src.utils import ScriptEditor, validate_output
 
-LOGGER = logging.getLogger('VscodeServerSocket.socket')
+LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
 class Socket(QObject):
@@ -34,12 +34,16 @@ class Socket(QObject):
 
         msg = self.socket.readAll()
 
-        msg_data = json.loads(msg.data())
+        try:
+            msg_data = json.loads(msg.data())
+        except Exception as err:
+            LOGGER.critical("Invalid Json Deserialization: %s", err, exc_info=True)
+            return
 
         msg_to_string = msg_data['text']
         LOGGER.debug('msg data type: %s', type(msg))
 
-        script_editor = ScriptEditor(file=msg_data['file'])
+        script_editor = ScriptEditor(file=msg_data.get('file', ''))
         script_editor.set_text(msg_to_string)
         script_editor.execute()
 

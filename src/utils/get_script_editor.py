@@ -17,12 +17,12 @@ from PySide2.QtWidgets import (
 )
 
 from .util import insert_time
-from VscodeServerSocket.src.utils import Settings
+from NukeServerSocket.src.utils import Settings
 
 # HACK: really dont like this way of executing code. is too hacky
 # TODO: can the script editor don't exists? if yes then what?
 
-LOGGER = logging.getLogger('VscodeServerSocket.get_script_editor')
+LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
 
 
 def _clean_output(text):

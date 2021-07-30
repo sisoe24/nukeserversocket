@@ -12,12 +12,12 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from VscodeServerSocket.src.connection import Server, ClientTest
-from VscodeServerSocket.src.widgets import (
+from NukeServerSocket.src.connection import Server, ClientTest
+from NukeServerSocket.src.widgets import (
     TextWidgets, ServerStatus, ErrorDialog, ToolBar
 )
 
-LOGGER = logging.getLogger('VscodeServerSocket.main')
+LOGGER = logging.getLogger('NukeServerSocket.main')
 LOGGER.debug('\nSTART APPLICATION')
 
 
@@ -60,7 +60,7 @@ class MainWindowWidget(QWidget):
     def _show_port_error():
         """Error message when port is not in the correct range."""
         err_msg = QErrorMessage()
-        err_msg.setWindowTitle('VscodeServerSocket')
+        err_msg.setWindowTitle('NukeServerSocket')
         err_msg.showMessage('Port should be between 49152 and 65535')
         err_msg.exec_()
 
@@ -128,7 +128,7 @@ class MainWindowWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
-        self.setWindowTitle("TCP/Server")
+        self.setWindowTitle("NukeServerSocket")
 
         toolbar = ToolBar()
         self.addToolBar(toolbar)
@@ -151,5 +151,5 @@ except ImportError as error:
     pass
 else:
     nukescripts.panels.registerWidgetAsPanel(
-        'VscodeServerSocket.src.main.MainWindow', 'Vscode Server Socket',
-        'VscodeServerSocket.MainWindow')
+        'NukeServerSocket.src.main.MainWindow', 'NukeServerSocket',
+        'NukeServerSocket.MainWindow')

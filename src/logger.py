@@ -10,7 +10,7 @@ LOG_PATH = os.path.join(os.path.dirname(__file__), 'log')
 if not os.path.exists(LOG_PATH):
     os.mkdir(LOG_PATH)
 
-LOGGER = logging.getLogger('VscodeServerSocket')
+LOGGER = logging.getLogger('NukeServerSocket')
 LOGGER.propagate = False
 LOGGER.setLevel(logging.DEBUG)
 

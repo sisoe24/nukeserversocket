@@ -7,9 +7,9 @@ from PySide2.QtCore import QObject
 from PySide2.QtNetwork import QTcpServer, QHostAddress
 
 from .socket import Socket
-from VscodeServerSocket.src.utils import Settings
+from NukeServerSocket.src.utils import Settings
 
-LOGGER = logging.getLogger('VscodeServerSocket.server')
+LOGGER = logging.getLogger('NukeServerSocket.server')
 
 
 class Server(QObject):
