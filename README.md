@@ -152,16 +152,10 @@ While it should work the same on all platforms, it has been currently only teste
 
 ## 1.9. Overview
 
-Execute code
+<img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true" width="100%"/>
 
-![execute_code](/images/execute_code.gif)
+<img title="Main Window" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/main_window.png?raw=true" width="80%"/>
 
-Main Window
+<img title="Settings" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/settings.png?raw=trueg" width="30%"/>
 
-![main_window](/images/main_window.png)
-
-Internal settings
-
-![settings](/images/settings.png)
-
-<img title="Settings" src="https://raw.githubusercontent.com/sisoe24/ProfileInspector/main/src/resources/images/dock_window.png" width="90%"/>
+<img title="Vscode Manual" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/vscode_manual.png?raw=trueg" width="90%"/>
