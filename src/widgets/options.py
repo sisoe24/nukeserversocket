@@ -13,7 +13,7 @@ from PySide2.QtWidgets import (
     QSizePolicy
 )
 
-from NukeServerSocket.src.utils import Settings
+from src.utils import Settings
 
 LOGGER = logging.getLogger('NukeServerSocket.server_status')
 

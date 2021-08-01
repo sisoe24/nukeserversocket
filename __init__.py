@@ -1,1 +1,1 @@
-from NukeServerSocket.src import main
+from src import main

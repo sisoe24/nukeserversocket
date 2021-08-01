@@ -1,19 +1,19 @@
 # coding: utf-8
 from __future__ import print_function
+
 import sys
 
+from PySide2 import QtTest
+
 from PySide2.QtWidgets import (
-    QMainWindow,
     QApplication,
     QVBoxLayout,
     QWidget
 )
 
-from PySide2 import QtTest
+from src.widgets import FakeScriptEditor
+from src.main import MainWindowWidget, MainWindow
 
-from NukeServerSocket import main
-from NukeServerSocket.test import ScriptEditor
-from NukeServerSocket.src.main import MainWindowWidget
 
 screen_loc = {
     'hp': {
@@ -23,12 +23,12 @@ screen_loc = {
 }
 
 
-class TestScriptEditor(QWidget):
+class TestMainwindowWidgets(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self)
 
         self.main_app = MainWindowWidget(parent)
-        self.script_editor = ScriptEditor()
+        self.script_editor = FakeScriptEditor()
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.main_app)
@@ -40,16 +40,16 @@ class TestScriptEditor(QWidget):
         self.main_app.test_btn.click()
 
 
-class TestMainWindow(main.MainWindow):
+class TestMainWindow(MainWindow):
     def __init__(self, *args, **kwargs):
-        main.MainWindow.__init__(self)
-        self.setWindowTitle('Test')
+        MainWindow.__init__(self)
+        self.setWindowTitle('Manual Test')
         self.setGeometry(screen_loc['hp']['x'],
                          screen_loc['hp']['y'],
                          1080, 1980)
 
         try:
-            main_window = TestScriptEditor(self)
+            main_window = TestMainwindowWidgets(self)
         except Exception as err:
             pass
         else:

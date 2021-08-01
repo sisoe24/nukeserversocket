@@ -1,4 +1,4 @@
-from NukeServerSocket.src import logger
+from src import logger
 
 try:
 

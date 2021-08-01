@@ -5,7 +5,7 @@ from PySide2.QtCore import QSize, Qt
 from PySide2.QtGui import QIcon
 from PySide2.QtWidgets import QAction, QToolBar, QWhatsThis
 
-from NukeServerSocket.src.utils import Settings
+from src.utils import Settings
 from .options import OptionsDialog
 
 

@@ -10,7 +10,7 @@ import subprocess
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
-from NukeServerSocket.src import nuke
+from src import nuke
 
 
 LOGGER = logging.getLogger('NukeServerSocket.error_dialog')

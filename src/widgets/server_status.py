@@ -15,7 +15,7 @@ from PySide2.QtWidgets import (
     QLineEdit
 )
 
-from NukeServerSocket.src.utils import Settings, get_ip
+from src.utils import Settings, get_ip
 
 LOGGER = logging.getLogger('NukeServerSocket.server_status')
 

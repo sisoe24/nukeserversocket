@@ -6,7 +6,7 @@ import logging
 
 from PySide2.QtCore import QObject
 
-from NukeServerSocket.src.utils import ScriptEditor, validate_output
+from src.utils import ScriptEditor, validate_output
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
@@ -37,7 +37,8 @@ class Socket(QObject):
         try:
             msg_data = json.loads(msg.data())
         except Exception as err:
-            LOGGER.critical("Invalid Json Deserialization: %s", err, exc_info=True)
+            LOGGER.critical("Invalid Json Deserialization: %s",
+                            err, exc_info=True)
             return
 
         msg_to_string = msg_data['text']
