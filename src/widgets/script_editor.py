@@ -1,3 +1,4 @@
+"""Fake class imitating the internal Nuke Script Editor needed for testing."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -32,7 +33,7 @@ class InputEditor(QPlainTextEdit):
             "import json; data=json.loads('{\"text\":\"Hello from Test Client\", \"num\": %s }'); print data['text'], data['num']" % r)
 
 
-class ScriptEditor(QWidget):
+class FakeScriptEditor(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.setObjectName('uk.co.thefoundry.scripteditor.1')
@@ -65,7 +66,7 @@ class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
-        self.script_editor = ScriptEditor()
+        self.script_editor = FakeScriptEditor()
         self.setCentralWidget(self.script_editor)
 
 
