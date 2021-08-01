@@ -1,26 +1,16 @@
 # coding: utf-8
 from __future__ import print_function, with_statement
-from PySide2.QtCore import QSysInfo, __version__
 
 import os
 import logging
 import traceback
-import subprocess
 
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
-from src import nuke
-
+import project
 
 LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
-
-__about__ = {
-    'NukeServerSocket': '0.0.1',
-    'PySide2': __version__,
-    'Nuke': nuke.NUKE_VERSION_STRING,
-    'machine': QSysInfo().prettyProductName()
-}
 
 
 def append_machine_info(machine):
@@ -36,7 +26,7 @@ def append_machine_info(machine):
 
 def machine_info_string():
     machine = ''
-    for k, v in __about__.items():
+    for k, v in project.details.items():
         machine += '%s: %s\n' % (k, v)
     append_machine_info(machine)
     return machine
@@ -89,16 +79,7 @@ class ErrorDialog(QMessageBox):
             clipboard = QClipboard()
             clipboard.setText(generate_report(self.traceback_msg))
 
-            try:
-                issue_url = subprocess.check_output(
-                    ['git', 'config', '--get', 'remote.origin.url']
-                )
-            except subprocess.CalledProcessError as err:
-                print('no remote yet', err)
-            else:
-                issue_url = issue_url.replace('.git', 'issues')
-
-                QDesktopServices.openUrl(issue_url)
+            QDesktopServices.openUrl(project.github + '/issues')
 
         elif button.text() == 'Help':
             pass
