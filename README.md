@@ -2,7 +2,7 @@
 
 A Nuke that plugin that will allow code execution inside Nuke from the local network.
 
-> This is a companion plugin for: www.placeholder.com.
+> This is a companion plugin for: [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools).
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
   - [1.1. Features](#11-features)
