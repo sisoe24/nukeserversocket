@@ -1,0 +1,26 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "RunMain",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath} -m test.test_main"
+        },
+        {
+            "label": "Clean .pyc",
+            "type": "shell",
+            "command": "find ${workspaceFolder} -type f \\( -name '._*' -o -name '*.pyc' \\) -exec rm {} \\;",
+            "problemMatcher": []
+        },
+        {
+            "label": "Zip Project",
+            "type": "shell",
+            "command": "bash ${workspaceFolder}/tasks/build.sh",
+            "dependsOn": [
+                "Clean .pyc"
+            ]
+        }
+    ]
+}

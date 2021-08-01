@@ -1,7 +1,6 @@
-.vscode
 other
-tasks
 dist
+tmp
 
 .DS_Store
 *.pyc
