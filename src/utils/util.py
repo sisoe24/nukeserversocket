@@ -7,7 +7,7 @@ import logging
 from PySide2.QtCore import QByteArray, QTime
 from PySide2.QtNetwork import QNetworkInterface
 
-from src import nuke
+from NukeServerSocket.src import nuke
 
 LOGGER = logging.getLogger('NukeServerSocket.util')
 

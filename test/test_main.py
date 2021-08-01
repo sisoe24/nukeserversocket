@@ -11,8 +11,8 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from src.widgets import FakeScriptEditor
-from src.main import MainWindowWidget, MainWindow
+from NukeServerSocket.src.widgets import FakeScriptEditor
+from NukeServerSocket.src.main import MainWindowWidget, MainWindow
 
 
 screen_loc = {

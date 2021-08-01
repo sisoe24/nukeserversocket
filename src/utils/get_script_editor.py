@@ -16,7 +16,7 @@ from PySide2.QtWidgets import (
     QApplication
 )
 
-from src.utils import Settings, insert_time
+from NukeServerSocket.src.utils import Settings, insert_time
 
 # HACK: really dont like this way of executing code. is too hacky
 # TODO: can the script editor don't exists? if yes then what?

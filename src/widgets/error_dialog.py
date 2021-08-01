@@ -8,7 +8,7 @@ import traceback
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
-import project
+from NukeServerSocket import project
 
 LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
 

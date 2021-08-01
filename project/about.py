@@ -9,7 +9,7 @@ from PySide2.QtCore import __version__ as qtcore_version
 from PySide2.QtCore import QSysInfo
 
 from .env import get_env
-from src import nuke
+from NukeServerSocket.src import nuke
 
 
 def get_git_branch():
