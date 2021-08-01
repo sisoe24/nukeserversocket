@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
-
-# Internal script.
+#
+# Internal script that should be launched from vscode task ZipProject.
 #
 # Build zip project with only essential files. needs git to append the build version
+#
 
-PROJECT="NukeServerSocket"
+PROJECT=$(basename "$(pwd)")
+
 (
     cd ..
     zip -r "$PROJECT/dist/$PROJECT.zip" \
-        $PROJECT/src \
-        $PROJECT/__init__.py \
-        $PROJECT/CHANGELOG.md \
-        $PROJECT/README.md \
-        $PROJECT/LICENSE
+        "$PROJECT"/src \
+        "$PROJECT"/__init__.py \
+        "$PROJECT"/CHANGELOG.md \
+        "$PROJECT"/README.md \
+        "$PROJECT"/LICENSE
 )
 
 # only works for git > 2.22
@@ -26,4 +28,4 @@ if [[ -f $zip_file ]]; then
 fi
 
 # rename file so when unzipped has only the name with no build
-mv dist/$PROJECT.zip "$zip_file"
+mv dist/"$PROJECT".zip "$zip_file"
