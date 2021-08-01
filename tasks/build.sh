@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# Internal script.
+#
+# Build zip project with only essential files. needs git to append the build version
+
 PROJECT="NukeServerSocket"
 (
     cd ..
@@ -11,7 +15,10 @@ PROJECT="NukeServerSocket"
         $PROJECT/LICENSE
 )
 
-build=$(git branch --show-current)
+# only works for git > 2.22
+# build=$(git branch --show-current)
+
+build=$(git rev-parse --abbrev-ref HEAD)
 zip_file="dist/${PROJECT}_$build.zip"
 
 if [[ -f $zip_file ]]; then

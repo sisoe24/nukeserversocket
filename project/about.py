@@ -12,14 +12,24 @@ from .env import get_env
 from src import nuke
 
 
+def get_git_branch():
+    branch = ""
+    try:
+        # git > 2.22 could do 'git branch --show-current'
+        branch = subprocess.check_output(
+            ['git', 'rev-parse', '--abbrev-ref', 'HEAD'])
+
+    # No git installed or project downloaded as a .zip
+    except Exception:
+        pass
+
+    return branch
+
+
 project_name = 'NukeServerSocket'
 project_version = '0.0.1'
 github = 'https://github.com/sisoe24/NukeServerSocket'
 
-try:
-    branch = subprocess.check_output(['git', 'branch', '--show-current'])
-except Exception:
-    branch = ""
 
 details = {
     project_name: project_version,
@@ -27,5 +37,5 @@ details = {
     'PySide2.QtCore': qtcore_version,
     'Nuke': nuke.NUKE_VERSION_STRING,
     'Machine': QSysInfo().prettyProductName(),
-    "Branch": branch
+    "Branch": get_git_branch()
 }
