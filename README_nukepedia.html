@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>README.md</title>
+  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+  <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+        ? 'dark'
+        : 'default'
+    });
+  </script>
+  <h1 id="1-nukeserversocket-readme">1. NukeServerSocket README</h1>
+  <p>A Nuke that plugin that will allow code execution inside Nuke from the local network.</p>
+  <blockquote>
+    <p>This is a companion plugin for: <a
+        href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a>.</p>
+  </blockquote>
+  <ul>
+    <li><a href="#1-nukeserversocket-readme">1. NukeServerSocket README</a>
+      <ul>
+        <li><a href="#11-features">1.1. Features</a></li>
+        <li><a href="#12-installation">1.2. Installation</a></li>
+        <li><a href="#13-usage">1.3. Usage</a></li>
+        <li><a href="#14-connection">1.4. Connection</a></li>
+        <li><a href="#15-settings">1.5. Settings</a></li>
+        <li><a href="#16-extendibility">1.6. Extendibility</a>
+          <ul>
+            <li><a href="#161-code-sample">1.6.1. Code Sample</a></li>
+            <li><a href="#162-port--host-address">1.6.2. Port &amp; Host address</a></li>
+          </ul>
+        </li>
+        <li><a href="#17-known-issues">1.7. Known Issues</a></li>
+        <li><a href="#18-compatibility">1.8. Compatibility</a></li>
+        <li><a href="#19-overview">1.9. Overview</a></li>
+      </ul>
+    </li>
+  </ul>
+  <h2 id="11-features">1.1. Features</h2>
+  <ul>
+    <li>Execute code from your local network by using Visual Studio Code.</li>
+    <li>If used locally (same machine) no configuration required, just start the server.</li>
+    <li>Connect from another computer by specify a custom address.</li>
+    <li>Multiple computer can connect to the same Nuke instance.</li>
+    <li>Easy expandable with any method of your choice (read more <a href="#16-extendibility">Extendibility</a>)</li>
+  </ul>
+  <h2 id="12-installation">1.2. Installation</h2>
+  <p>Save the plugin in your <em>.nuke</em> directory or in a custom directory and then
+    <code>import NukeServerSocket</code> in your <em>menu.py</em>.<br>
+    <strong>Remember</strong>: If you use a custom plugin path, add the path in your init.py:
+    <code>nuke.pluginAddPath('custom/path')</code>.
+  </p>
+  <blockquote>
+    <p>N.B. if your downloaded zip folder has a different name (NukeServerSocket-master, NukeServerSocket-0.0.2 etc._),
+      then you <strong>need to rename it to just NukeServerSocket</strong>.</p>
+  </blockquote>
+  <h2 id="13-usage">1.3. Usage</h2>
+  <ol>
+    <li>Open the <em>NukeServerSocket</em> panel and start the server by clicking on <strong>Connect</strong>.
+      <ol>
+        <li>If you receive a message: &quot;<em>Server did not initiate. Error: The bound address is already in
+            use</em>&quot;, just change the <strong>port</strong> entry to a different one and try again. It means that
+          probably you have a connection listening on that port already.</li>
+      </ol>
+    </li>
+    <li>When connected you could test the receiver with the <strong>Test Server Receiver</strong> otherwise you are
+      done.</li>
+    <li>Send code from Visual Studio Code by using the companion extension.</li>
+  </ol>
+  <blockquote>
+    <p>The plugin doesn't have to stay visible after the server has been initialized.</p>
+  </blockquote>
+  <h2 id="14-connection">1.4. Connection</h2>
+  <p>When used locally (same machine), no configuration is required as the server will listen on the <strong>Local Host
+      Address</strong>. If the server <strong>port</strong> is already busy, just change it by typing a random number
+    between <code>49152</code> and <code>65535</code> and try again. Visual Studio Code will pick Nuke's settings
+    automatically.</p>
+  <p>When connecting from/to another computer, manual configuration will be required inside Visual Studio Code.
+    You will need the <strong>Local IP address</strong> and the <strong>port</strong> information from NukeServerSocket.
+  </p>
+  <p>The information inside Visual Studio Code must match the information inside NukeServerSocket.</p>
+  <blockquote>
+    <p>VMs: Sending from your local machine to a VM machine will likely require some configuration on your side like
+      enabling some network settings etc.</p>
+  </blockquote>
+  <p>If you still have some problems, please feel free to reach out for any questions.</p>
+  <h2 id="15-settings">1.5. Settings</h2>
+  <p>The plugin offers some minor settings for the internal script editor, like send output, format text and so on but
+    they are pretty self explanatory.</p>
+  <h2 id="16-extendibility">1.6. Extendibility</h2>
+  <p>At its core, the plugin is just a server socket that waits for an incoming request, performs the operations inside
+    Nuke and returns the result. Nothing ties it to Visual Studio Code per se.</p>
+  <p>The only requirement is to send a <em>stringified Associative Array</em> with the key <strong>text</strong>
+    containing the code to be executed as a string. An optional key <strong>file</strong> could be added to show the
+    name of the file that is being executed (this will only show if settings <strong>Output to Script Editor</strong>
+    and <strong>Clean &amp; Format Text</strong> are enabled)</p>
+  <p>On the plugin side, the data is converted with <code>json.loads()</code> into a valid <code>dictionary</code>
+    python type.</p>
+
+  <h3 id="161-code-sample">1.6.1. Code Sample</h3>
+   <p>Please see <a href="https://github.com/sisoe24/NukeServerSocket#161-code-sample">Github Readme #Code Samples</a> section for more information.</p> 
+  <h3 id="162-port--host-address">1.6.2. Port &amp; Host address</h3>
+  <p>NukeServerSocket by default will listen on the local address so you just need to specify the local host address
+    (eg.<code>127.0.0.1</code>) in your socket client code.
+    The port information is written automatically to <em>.nuke/NukeServerSocket.ini</em> file each time the user changes
+    it. This is used from the Visual Studio Code extension to pick automatically to which port connect. Otherwise it
+    will required to be specified manually.</p>
+  <p>This is pretty much all you need to start your own extension for your favorite text editor or any other method you
+    prefer.</p>
+  <p>If you still have some problems, please feel free to reach out for any questions.</p>
+  <h2 id="17-known-issues">1.7. Known Issues</h2>
+  <ul>
+    <li>Settings window doesn't display the tooltip text. This seems to be a Nuke bug as outside it works correctly.
+    </li>
+    <li>Plugin has been tested only on small amount of scripts so if you encounter problems/bugs will be great to
+      receive a testable sample code.</li>
+  </ul>
+  <h2 id="18-compatibility">1.8. Compatibility</h2>
+  <p>Nuke version: 11,12, 13.</p>
+  <blockquote>
+    <p>Because Nuke 11 uses an early version of PySide2, future compatibility is not a guarantee.</p>
+  </blockquote>
+  <p>While it should work the same on all platforms, it has been currently only tested on:</p>
+  <ul>
+    <li>Linux:
+      <ul>
+        <li>CentOS 8</li>
+      </ul>
+    </li>
+    <li>MacOS:
+      <ul>
+        <li>Mojave 10.14.06</li>
+        <li>Catalina 10.15.06</li>
+      </ul>
+    </li>
+    <li>Windows 10</li>
+  </ul>
+  <h2 id="19-overview">1.9. Overview</h2>
+  <img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true"
+    width="100%" />
+  <img title="Main Window" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/main_window.png?raw=true"
+    width="80%" />
+  <img title="Settings" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/settings.png?raw=trueg"
+    width="30%" />
+  <img title="Vscode Manual"
+    src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/vscode_manual2.png?raw=trueg" width="90%" />
+
+</body>
+
+</html>
