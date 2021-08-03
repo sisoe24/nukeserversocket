@@ -12,8 +12,8 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from NukeServerSocket.src.connection import Server, ClientTest
-from NukeServerSocket.src.widgets import (
+from .connection import Server, ClientTest
+from .widgets import (
     TextWidgets, ServerStatus, ErrorDialog, ToolBar
 )
 

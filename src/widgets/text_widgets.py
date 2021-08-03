@@ -11,7 +11,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from NukeServerSocket.src.utils import insert_time
+from ..utils import insert_time
 
 
 class TextBox(QGroupBox):

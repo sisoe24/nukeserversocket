@@ -18,7 +18,8 @@ import os
 import sys
 
 # HACK: The only way I found to safely test the app in isolate environment
-sys.path.insert(0, os.path.dirname(os.getcwd()))
+# sys.path.insert(0, os.path.dirname(os.getcwd()))
 
 # Don't write pyc files when testing, they just create problems
+# XXX: doesn't seem to work?
 sys.dont_write_bytecode = True

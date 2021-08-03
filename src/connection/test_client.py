@@ -7,7 +7,7 @@ import logging
 
 from PySide2.QtNetwork import QTcpSocket
 
-from NukeServerSocket.src.utils import Settings, validate_output
+from ..utils import Settings, validate_output
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')

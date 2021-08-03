@@ -11,8 +11,8 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from NukeServerSocket.src.widgets import FakeScriptEditor
-from NukeServerSocket.src.main import MainWindowWidget, MainWindow
+from src.widgets import FakeScriptEditor
+from src.main import MainWindowWidget, MainWindow
 
 # personal monitor loc screen for rapid testing
 screen_loc = {

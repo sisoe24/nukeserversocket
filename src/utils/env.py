@@ -3,6 +3,8 @@ import os
 import re
 import json
 
+from .paths import get_root
+
 
 def get_env():
     """Get the env in path."""
@@ -23,8 +25,10 @@ def get_env():
 
         return _parse_env(env)
 
-    if os.path.exists('.env'):
-        with open('.env') as file:
+    env_file = os.path.join(get_root(), '.env')
+    if os.path.exists(env_file):
+
+        with open(env_file) as file:
             env = _convert_env(file.read())
             return env
 

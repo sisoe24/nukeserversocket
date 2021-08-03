@@ -1,3 +1,6 @@
+"""Testing module for nuke various way to execute code. currently non using it"""
+
+
 def _pyscript_knob(msg):
     # This seems to work fine but does not return anything
     cmd = nuke.PyScript_Knob('exec', 'Execute', msg.data().decode('utf-8'))
