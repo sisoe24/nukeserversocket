@@ -18,7 +18,7 @@ REQUIRED = [
 ]
 
 EXTRAS = {
-    "test": ['pytest']
+    "test": ['pytest==4.6.11']
 }
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -34,7 +34,7 @@ except FileNotFoundError:
 
 setup(
     name=NAME,
-    version=about['__version__'],
+    version=VERSION,
     description=DESCRIPTION,
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -42,11 +42,12 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    packages=find_packages(
-        exclude=["tests", "*.tests", "*.tests.*", "tests.*"]),
+    # packages=find_packages(
+    #     include=['src']
+    # ),
 
     # If your package is a single module, use this instead of 'packages':
-    # py_modules=['mypackage'],
+    py_modules=['src'],
 
     install_requires=REQUIRED,
     extras_require=EXTRAS,
