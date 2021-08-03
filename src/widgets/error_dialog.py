@@ -5,43 +5,57 @@ import os
 import logging
 import traceback
 
+from collections import OrderedDict
+
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
-from NukeServerSocket import project
+from NukeServerSocket.src import about
 
 LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
 
 
-def append_machine_info(machine):
+def prepare_report(trace):
+    """Prepare report when user wants to report bug to github.  """
 
-    for i in LOGGER.parent.handlers:
-        if i.name == 'Critical':
+    def _insert_about_info(about_str):
+        """Insert about information to log critical file.
 
-            with open(i.baseFilename, 'r+') as f:
-                content = f.read()
-                f.seek(0, 0)
-                f.write(machine + '\n' + content)
+        Args:
+            about (str): package/machine information from package.src.about
+        """
+        for i in LOGGER.parent.handlers:
+            if i.name == 'Critical':
 
+                with open(i.baseFilename, 'r+') as f:
+                    content = f.read()
+                    f.seek(0, 0)
+                    f.write(about_str + '\n' + content)
 
-def machine_info_string():
-    machine = ''
-    for k, v in project.details.items():
-        machine += '%s: %s\n' % (k, v)
-    append_machine_info(machine)
-    return machine
+    def _about_to_string():
+        """Get about dict from package.src.about and convert it into a string."""
+        about_str = ''
+        for key, value in OrderedDict(sorted(about.items())).items():
+            if key == 'Github':
+                continue
+            about_str += '%s: %s\n' % (key, value)
 
+        _insert_about_info(about_str)
+        return about_str
 
-def generate_report(trace):
-    report = machine_info_string() + trace
+    report = _about_to_string() + trace
     return report
 
 
 def file_path():
-    current_path = os.path.dirname(__file__)
+    """Get file path of package.src directory where the log folder is located.
+
+    Returns:
+        (str): full path of the errors.log file.
+    """
+    current_path = os.path.dirname(os.path.abspath(__file__))
     src_path = os.path.dirname(current_path)
-    abs_path = os.path.abspath(src_path)
-    full_path = os.path.join(abs_path, 'log', 'errors.log')
+    full_path = os.path.join(src_path, 'log', 'errors.log')
     return full_path
 
 
@@ -77,9 +91,9 @@ class ErrorDialog(QMessageBox):
             q.exec_()
 
             clipboard = QClipboard()
-            clipboard.setText(generate_report(self.traceback_msg))
+            clipboard.setText(prepare_report(self.traceback_msg))
 
-            QDesktopServices.openUrl(project.github + '/issues')
+            QDesktopServices.openUrl(about['Github'] + '/issues')
 
         elif button.text() == 'Help':
             pass
