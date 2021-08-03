@@ -6,7 +6,7 @@
         {
             "label": "RunMain",
             "type": "shell",
-            "command": "${config:python.defaultInterpreterPath} -m tests.test_app"
+            "command": "${config:python.defaultInterpreterPath} -m tests.run_app"
         },
         {
             "label": "Clean .pyc",

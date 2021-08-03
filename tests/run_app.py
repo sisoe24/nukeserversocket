@@ -14,7 +14,7 @@ from PySide2.QtWidgets import (
 from NukeServerSocket.src.widgets import FakeScriptEditor
 from NukeServerSocket.src.main import MainWindowWidget, MainWindow
 
-
+# personal monitor loc screen for rapid testing
 screen_loc = {
     'hp': {
         'x': -1077.296875,
