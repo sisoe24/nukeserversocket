@@ -11,7 +11,6 @@ URL = 'https://github.com/sisoe24/NukeServerSocket'
 EMAIL = 'virgilsisoe@gmail.com'
 AUTHOR = 'Virgil Sisoe'
 REQUIRES_PYTHON = '>=2.7.16'
-VERSION = '0.0.1'
 
 REQUIRED = [
     'pyside2==5.12.2'
@@ -31,6 +30,11 @@ try:
 except FileNotFoundError:
     long_description = DESCRIPTION
 
+try:
+    with io.open(os.path.join(here, 'VERSION')) as f:
+        VERSION = f.read()
+except FileNotFoundError:
+    VERSION = ''
 
 setup(
     name=NAME,
@@ -42,12 +46,10 @@ setup(
     author_email=EMAIL,
     python_requires=REQUIRES_PYTHON,
     url=URL,
-    # packages=find_packages(
-    #     include=['src']
-    # ),
+    packages=find_packages(include=['src']),
 
-    # If your package is a single module, use this instead of 'packages':
-    py_modules=['src'],
+    # # If your package is a single module, use this instead of 'packages':
+    # py_modules=['src'],
 
     install_requires=REQUIRED,
     extras_require=EXTRAS,
