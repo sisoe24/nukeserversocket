@@ -4,7 +4,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "RunMain",
+            "label": "RunApp",
             "type": "shell",
             "command": "${config:python.defaultInterpreterPath} -m tests.run_app",
             "dependsOn": [

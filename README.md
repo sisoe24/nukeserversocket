@@ -15,7 +15,8 @@ A Nuke that plugin that will allow code execution inside Nuke from the local net
     - [1.6.2. Port & Host address](#162-port--host-address)
   - [1.7. Known Issues](#17-known-issues)
   - [1.8. Compatibility](#18-compatibility)
-  - [1.9. Overview](#19-overview)
+  - [1.9. Test plugin locally](#19-test-plugin-locally)
+  - [1.10. Overview](#110-overview)
 
 ## 1.1. Features
 
@@ -149,7 +150,19 @@ While it should work the same on all platforms, it has been currently only teste
   - Catalina 10.15.06
 - Windows 10
 
-## 1.9. Overview
+## 1.9. Test plugin locally
+
+While limited in some regards, the plugin can be tested outside Nuke environment.
+
+1. Clone the github repo into your machine.
+2. `pipenv install` for normal installation or `pipenv install --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing.)
+3. Launch the app via terminal `python -m tests.run_app` or vscode task: `RunApp`
+
+The local plugin offers a simple emulation of the Nuke's internal Script Editor layout. It just basic enough to test some simple code. It serves as an indicator for when the output will be sent to it otherwise you shouldn't needed that much.
+
+When the application start will automatically: connect, send test message and display the received message.
+
+## 1.10. Overview
 
 <img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true" width="100%"/>
 
