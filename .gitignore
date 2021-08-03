@@ -8,3 +8,5 @@ tmp
 *.env
 
 **/config/
+*.egg-info
+.pytest_cache
