@@ -14,7 +14,8 @@ PROJECT=$(basename "$(pwd)")
         "$PROJECT"/__init__.py \
         "$PROJECT"/CHANGELOG.md \
         "$PROJECT"/README.md \
-        "$PROJECT"/LICENSE
+        "$PROJECT"/LICENSE \
+        "$PROJECT"/VERSION
 )
 
 # only works for git > 2.22
