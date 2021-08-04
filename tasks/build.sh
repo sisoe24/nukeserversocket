@@ -22,7 +22,9 @@ PROJECT=$(basename "$(pwd)")
 # build=$(git branch --show-current)
 
 build=$(git rev-parse --abbrev-ref HEAD)
-zip_file="dist/${PROJECT}_$build.zip"
+version=$(cat VERSION)
+
+zip_file="dist/${PROJECT}_${build}_${version}.zip"
 
 if [[ -f $zip_file ]]; then
     rm "$zip_file"
