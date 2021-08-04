@@ -9,7 +9,12 @@
             "command": "${config:python.defaultInterpreterPath} -m tests.run_app",
             "dependsOn": [
                 "Clean .pyc"
-            ]
+            ],
+            "options": {
+                "env": {
+                    "PYTHONDONTWRITEBYTECODE": "1"
+                }
+            }
         },
         {
             "label": "Clean .pyc",
