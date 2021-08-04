@@ -169,7 +169,7 @@ When the application starts it will:
 3. Display the received message or error if any.
 4. Override input/output widgets if settings allowed it.
 
-It is a very basic and simple test but because the PySide2 and Python version are pretty much identical to Nuke's one will likely function the same way inside Nuke.
+It is a very basic and simple test but because the PySide2 and Python version are pretty much identical to Nuke's one will likely function the same way inside Nuke. (Real tests will come in future updates).
 
 ## 1.10. Overview
 
