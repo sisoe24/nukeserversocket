@@ -152,15 +152,24 @@ While it should work the same on all platforms, it has been currently only teste
 
 ## 1.9. Test plugin locally
 
+> This works only on Linux and Mac. Probably Windows WSL but haven't tested it yet.
+
 While limited in some regards, the plugin can be tested outside Nuke environment.
 
 1. Clone the github repo into your machine.
-2. `pipenv install` for normal installation or `pipenv install --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing.)
+2. `pipenv install` for normal installation or `pipenv install --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing. 🤭)
 3. Launch the app via terminal `python -m tests.run_app` or vscode task: `RunApp`
 
-The local plugin offers a simple emulation of the Nuke's internal Script Editor layout. It just basic enough to test some simple code. It serves as an indicator for when the output will be sent to it otherwise you shouldn't needed that much.
+The local plugin offers a simple emulation of the Nuke's internal Script Editor layout. It just basic enough to test some simple code.
 
-When the application start will automatically: connect, send test message and display the received message.
+When the application starts it will:
+
+1. Click the connect button
+2. Send a test message
+3. Display the received message or error if any.
+4. Override input/output widgets if settings allowed it.
+
+It is a very basic and simple test but because the PySide2 and Python version are pretty much identical to Nuke's one will likely function the same way inside Nuke.
 
 ## 1.10. Overview
 
