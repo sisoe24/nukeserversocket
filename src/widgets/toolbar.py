@@ -26,6 +26,7 @@ class FloatingDialog(QDialog):
 
 
 class ToolBar(QToolBar):
+    # TODO: should create a toolbar controller class?
     def __init__(self):
         QToolBar.__init__(self)
         self.setIconSize(QSize(15, 15))
@@ -39,9 +40,9 @@ class ToolBar(QToolBar):
         self._open_settings.triggered.connect(self._show_settings)
         self.addAction(self._open_settings)
 
-        self._about = QAction('About', self)
-        self._about.triggered.connect(self._show_about)
-        self.addAction(self._about)
+        self._open_about = QAction('About', self)
+        self._open_about.triggered.connect(self._show_about)
+        self.addAction(self._open_about)
 
     def _dialog_exists(self, object_name):
         """Check if the widget is already present. If yes then raise the window set focus
