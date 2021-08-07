@@ -9,75 +9,77 @@ import traceback
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
-from ..about import about, about_to_string
-from ..utils import get_src
+from ..about import get_about_key, about_to_string
+
 
 LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
 
 
-def prepare_report(about_str):
-    """Prepare report when user wants to report bug to github and
-    insert about information to log critical file.
+def _get_critical_logger():
+    """Search for logger named Critical if any and return it."""
 
-    Args:
-        about (str): package/machine information from package.src.about
-    """
     for logger in LOGGER.parent.handlers:
         if logger.name == 'Critical':
+            return logger
 
-            with open(logger.baseFilename, 'r+') as file:
-                content = file.read()
-                file.seek(0, 0)
-                file.write(about_str + '\n' + content)
-
-    report = about_to_string(exclude='Github')
-    return report
+    return None
 
 
-def log_file():
-    """Get file path of package.src directory where the log folder is located.
-
-    Returns:
-        (str): full path of the errors.log file.
+def _prepare_report():
+    """Prepare report when user wants to report bug to github and
+    insert 'about' information to log critical file.
     """
-    return os.path.join(get_src(), 'log', 'errors.log')
+
+    critical_logger = _get_critical_logger()
+
+    if not critical_logger:
+        return None
+
+    with open(critical_logger.baseFilename, 'r+') as file:
+        content = file.read()
+        file.seek(0, 0)
+
+        about_traceback = about_to_string() + '\n' + content
+        file.write(about_traceback)
+
+    return about_traceback
 
 
 class ErrorDialog(QMessageBox):
     def __init__(self, parent, msg):
         QMessageBox.__init__(self, parent)
-
         self.setWindowTitle('NukeServerSocket')
         self.setIcon(QMessageBox.Warning)
-
-        self.setStandardButtons(QMessageBox.Help | QMessageBox.Ok)
-
-        self.addButton('Report bug', QMessageBox.ActionRole)
-
-        self.buttonClicked.connect(self.click_event)
 
         self.setText('NukeServerSocket error...')
         self.setInformativeText(str(msg))
 
-        self.traceback_msg = traceback.format_exc()
-        self.setDetailedText(self.traceback_msg)
+        self.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
+        self.addButton('Report bug', QMessageBox.ActionRole)
+        self.addButton('Open logs', QMessageBox.ActionRole)
+
+        self.buttonClicked.connect(self.click_event)
+
+        _info = (
+            'Traceback will be copied into your clipboard when clicking Report Bug.\n---\n'
+        )
+
+        self._traceback = traceback.format_exc()
+        self.setDetailedText(_info + self._traceback)
 
     def click_event(self, button):
         if button.text() == 'Report bug':
-            q = QMessageBox()
-            q.setIcon(QMessageBox.Information)
-            q.setText('Report Bug')
-            q.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
-            q.setInformativeText('Report bug via github')
-            q.setDetailedText(
-                'The machine info and traceback will be copied into your clipboard when you press Ok. '
-                'Alternatively it can be found inside the %s' % log_file())
-            q.exec_()
+
+            report = _prepare_report()
+            if not report:
+                report = self._traceback
 
             clipboard = QClipboard()
-            clipboard.setText(prepare_report(self.traceback_msg))
+            clipboard.setText(report)
 
-            QDesktopServices.openUrl(about['Github'] + '/issues')
+            to_open = get_about_key('Issues')
 
-        elif button.text() == 'Help':
-            pass
+        elif button.text() == 'Open logs':
+            to_open = get_about_key('Logs')
+
+        QDesktopServices.openUrl(to_open)
