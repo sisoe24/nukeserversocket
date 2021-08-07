@@ -157,7 +157,7 @@ While it should work the same on all platforms, it has been currently only teste
 While limited in some regards, the plugin can be tested outside Nuke environment.
 
 1. Clone the github repo into your machine.
-2. `pipenv install` for normal installation or `pipenv install --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing. 🤭)
+2. `pipenv install --ignore-pipfile` for normal installation or `pipenv install --ignore-pipfile --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing. 🤭)
 3. Launch the app via terminal `python -m tests.run_app` or vscode task: `RunApp`
 
 The local plugin offers a simple emulation of the Nuke's internal Script Editor layout. It just basic enough to test some simple code.
