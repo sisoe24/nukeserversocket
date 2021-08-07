@@ -56,7 +56,6 @@ class OptionsDialog(QDialog):
         self._override_input = self._create_checkbox(
             state=False, obj_name='override_input',
             toolTip='Override internal input text editor',
-            statusBarTip="bo",
         )
 
         self._include_path = self._create_checkbox(
