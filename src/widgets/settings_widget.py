@@ -5,12 +5,12 @@ import logging
 
 from PySide2.QtWidgets import (
     QCheckBox,
-    QDialog,
     QFormLayout,
     QFrame,
     QSizePolicy,
     QLabel,
-    QSizePolicy
+    QSizePolicy,
+    QWidget
 )
 
 from ..utils import Settings
@@ -29,12 +29,9 @@ class QHLine(QFrame):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
 
 
-class OptionsDialog(QDialog):
-    def __init__(self, parent):
-        QDialog.__init__(self, parent)
-        self.setWindowTitle('NukeServerSocket Settings')
-        self.setObjectName('OptionsDialog')
-
+class SettingsWidget(QWidget):
+    def __init__(self):
+        QWidget.__init__(self)
         self.settings = Settings()
 
         # setup checkboxes
@@ -101,10 +98,6 @@ class OptionsDialog(QDialog):
                 default_value=checkbox.isChecked(),
                 config=checkbox.objectName()
             )
-
-    def closeEvent(self, event):
-        """When close event triggers destroy the widget."""
-        self.deleteLater()
 
     @staticmethod
     def _create_checkbox(*args, **kwargs):
