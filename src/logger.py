@@ -5,8 +5,8 @@ import os
 import sys
 import logging
 
+LOG_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'log')
 
-LOG_PATH = os.path.join(os.path.dirname(__file__), 'log')
 if not os.path.exists(LOG_PATH):
     os.mkdir(LOG_PATH)
 
