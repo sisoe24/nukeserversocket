@@ -16,7 +16,7 @@ from PySide2.QtWidgets import (
     QApplication
 )
 
-from . import Settings, insert_time
+from . import SettingsState, insert_time
 
 # HACK: really dont like this way of executing code. is too hacky
 # TODO: can the script editor don't exists? if yes then what?
@@ -62,7 +62,7 @@ class ScriptEditor:
 
     def __init__(self, file):
 
-        self.settings = Settings()
+        self.settings = SettingsState()
 
         self.input_widget = _get_input()
         self.output_widget = _get_output()

@@ -7,7 +7,7 @@ import logging
 
 from PySide2.QtNetwork import QTcpSocket
 
-from ..utils import Settings, validate_output
+from ..utils import SettingsState, validate_output
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
@@ -15,7 +15,7 @@ LOGGER = logging.getLogger('NukeServerSocket.client')
 
 class ClientTest:
     def __init__(self):
-        self.settings = Settings()
+        self.settings = SettingsState()
 
         self.tcp_host = "127.0.0.1"
         LOGGER.debug('client host: %s', self.tcp_host)

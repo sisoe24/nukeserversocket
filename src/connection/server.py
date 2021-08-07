@@ -7,7 +7,7 @@ from PySide2.QtCore import QObject
 from PySide2.QtNetwork import QTcpServer, QHostAddress
 
 from .socket import Socket
-from ..utils import Settings
+from ..utils import SettingsState
 
 LOGGER = logging.getLogger('NukeServerSocket.server')
 
@@ -15,7 +15,7 @@ LOGGER = logging.getLogger('NukeServerSocket.server')
 class Server(QObject):
     def __init__(self, status_widget):
         QObject.__init__(self)
-        self.settings = Settings()
+        self.settings = SettingsState()
 
         self.status_widget = status_widget
 
