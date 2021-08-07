@@ -56,13 +56,12 @@ class MainWindowWidget(QWidget):
         self.tcp_test = ClientTest()
         self.tcp_test.send_message()
 
-    @staticmethod
-    def _show_port_error():
+    def _show_port_error(self):
         """Error message when port is not in the correct range."""
-        err_msg = QErrorMessage()
+        err_msg = QErrorMessage(self)
         err_msg.setWindowTitle('NukeServerSocket')
         err_msg.showMessage('Port should be between 49152 and 65535')
-        err_msg.exec_()
+        err_msg.show()
 
     def _validate_connection(self, state):
 
