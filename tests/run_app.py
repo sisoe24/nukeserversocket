@@ -51,7 +51,7 @@ class TestMainWindow(MainWindow):
         try:
             main_window = TestMainwindowWidgets(self)
         except Exception as err:
-            pass
+            print("err :", err)
         else:
             self.setCentralWidget(main_window)
 
