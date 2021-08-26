@@ -1,4 +1,3 @@
-"""Fake class imitating the internal Nuke Script Editor needed for testing."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -29,8 +28,7 @@ class InputEditor(QPlainTextEdit):
     def __init__(self):
         QPlainTextEdit.__init__(self)
         r = random.randint(1, 50)
-        self.setPlainText(
-            "import json; data=json.loads('{\"text\":\"Hello from Test Client\", \"num\": %s }'); print data['text'], data['num']" % r)
+        self.setPlainText("print('Hello From Internal SE %s')" % r)
 
 
 class FakeScriptEditor(QWidget):
