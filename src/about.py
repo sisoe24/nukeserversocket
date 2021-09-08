@@ -2,6 +2,7 @@
 from __future__ import print_function, with_statement
 
 import os
+import platform
 from os.path import (
     basename, join, exists, dirname, abspath
 )
@@ -26,8 +27,7 @@ def _get_git_branch():
 
 def _get_root():
     """Get root (package) absolute path."""
-    path = dirname(dirname(abspath(__file__)))
-    return path
+    return dirname(dirname(abspath(__file__)))
 
 
 def _get_package_name():
@@ -61,6 +61,7 @@ def about():
         ('PySide2.QtCore', QtCore_version),
         ('Machine', QSysInfo().prettyProductName()),
         ('Branch', _get_git_branch()),
+        ('Python', platform.python_version()),
         ('Other', '')
     )
 
