@@ -7,18 +7,19 @@ import logging
 
 from sys import getsizeof
 
+from PySide2.QtTest import QTest
+from PySide2.QtCore import QObject, Qt
+
 from PySide2.QtWidgets import (
     QSplitter,
     QTextEdit,
     QPlainTextEdit,
     QTextEdit,
-    QPushButton,
     QApplication
 )
 
 from . import SettingsState, insert_time
 
-# HACK: really dont like this way of executing code. is too hacky
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
 
@@ -55,16 +56,52 @@ def _format_output(text, file, use_unicode=True):
     return output
 
 
-class ScriptEditor:
+class NSE(QObject):
+    """Nuke Internal Script Editor widget.
+
+    Although a class is not necessary, Qt will complain in some instances that
+    internal C++ widget XXX is already deleted. This happens because of how python
+    handles the garbage collection. Saving a reference into a instance variable keeps it "alive".
+
+    This could break anytime if Foundry decides to change something.
+    """
+
+    def __init__(self, parent=None):
+        QObject.__init__(self, parent)
+
+        # HACK: really dont like this way of executing code. is too hacky
+        self.script_editor = self.get_script_editor()
+        self.console = self.script_editor.findChild(QSplitter)
+        self.output_widget = self.console.findChild(QTextEdit)
+        self.input_widget = self.console.findChild(QPlainTextEdit)
+
+    @staticmethod
+    def get_script_editor():
+        """Get script editor widget."""
+        # .topLevelWidgets() is a smaller list but SE is not always there
+        for widget in QApplication.allWidgets():
+            if 'scripteditor' in widget.objectName():
+                return widget
+
+        # XXX: can the script editor not exists?
+        raise BaseException(
+            'Script Editor panel does not exist! Please create one.'
+        )
+
+    def run_code(self):
+        """Simulate shortcut CTRL + Return for running script."""
+        QTest.keyPress(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
+        QTest.keyRelease(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
+
+
+class ScriptEditor(NSE):
     """Manipulate Nuke internal script editor."""
     lines = []
 
-    def __init__(self):
+    def __init__(self, parent=None):
+        NSE.__init__(self, parent)
 
         self.settings = SettingsState()
-
-        self.input_widget = _get_input()
-        self.output_widget = _get_output()
 
         self.initial_input = ""
         self.initial_output = ""
@@ -105,11 +142,9 @@ class ScriptEditor:
         """Get output from the nuke internal script editor."""
         return self.output_widget.document().toPlainText()
 
-    @staticmethod
-    def execute():
-        """Execute the run script editor button."""
-        btn = _get_run_button()
-        btn.click()
+    def execute(self):
+        """Abstract method for executing code inside NSE."""
+        self.run_code()
 
     def _restore_input(self):
         """Override input editor if setting is True."""
@@ -171,49 +206,3 @@ class ScriptEditor:
         """Restore the initial state of the editor."""
         self._restore_input()
         self._restore_output()
-
-
-def _get_script_editor():
-    """Get script editor widget."""
-    # TODO: can the script editor don't exists? if yes then what?
-    for widget in QApplication.allWidgets():
-        if widget.objectName() == 'uk.co.thefoundry.scripteditor.1':
-            return widget
-    return None
-
-
-def _get_console():
-    """Get sub widget QSplitter of script editor."""
-    script_editor = _get_script_editor()
-    for widget in script_editor.children():
-        if isinstance(widget, QSplitter):
-            return widget
-    return None
-
-
-def _get_output():
-    """Get the QTextEdit output widget (upper part)."""
-    console_widgets = _get_console().children()
-    for widget in console_widgets:
-        if isinstance(widget, QTextEdit):
-            return widget
-    return None
-
-
-def _get_input():
-    """Get the QPlainTextEdit output widget (lower part)."""
-    console_widgets = _get_console().children()
-    for widget in console_widgets:
-        if isinstance(widget, QPlainTextEdit):
-            return widget
-    return None
-
-
-def _get_run_button():
-    """Get the execute script button from the script editor"""
-    script_editor = _get_script_editor()
-    for widget in script_editor.children():
-        if isinstance(widget, QPushButton):
-            if widget.toolTip().startswith('Run the current'):
-                return widget
-    return None
