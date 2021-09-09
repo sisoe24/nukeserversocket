@@ -62,9 +62,9 @@ The plugin offers some minor settings for the internal script editor, like send 
 
 At its core, the plugin is just a server socket that waits for an incoming request, performs the operations inside Nuke and returns the result. Nothing ties it to Visual Studio Code per se.
 
-The only requirement is to send a _stringified Associative Array_ with the key **text** containing the code to be executed as a string. An optional key **file** could be added to show the name of the file that is being executed (this will only show if settings **Output to Script Editor** and **Clean & Format Text** are enabled)
+The only requirement is to send the code to be executed as a string.
 
-On the plugin side, the data is converted with `json.loads()` into a valid `dictionary` python type.
+Additionally the plugin accepts a _stringified Associative Array_ with the key **text** containing the code to be executed as a string, and an optional key **file** to show the name of the file that is being executed (this will only show if settings **Output to Script Editor** and **Clean & Format Text** are enabled). On the plugin side, the data is converted with `json.loads()` into a valid `dictionary` python type.
 
 ### 1.6.1. Code Sample
 
@@ -81,9 +81,14 @@ s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 # 127.0.0.1 == localhost
 s.connect(('127.0.0.1', 54321))
 
-data = {"text": "print('Hello World from py')"}
+data = "print('Hello World from py')"
+# or
+data = {
+    "text": "print('Hello World from py')",
+    "file" : "path/to/file.py" # optional
+}
 
-# stringify the dictionary with json.dumps
+# if data is a simple string json.dumps is not required
 data = json.dumps(data)
 
 s.sendall(bytearray(data))
@@ -106,7 +111,6 @@ s.connect(54321, '127.0.0.1', function () {
 
     const data = {
         'text': 'print("Hello World from node.js")',
-        'file': 'path/to/file.py'
     };
 
     // stringify the object before sending
