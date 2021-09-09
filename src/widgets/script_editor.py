@@ -6,8 +6,10 @@ import random
 import subprocess
 
 from PySide2.QtCore import Qt
+from PySide2.QtGui import QKeySequence
 
 from PySide2.QtWidgets import (
+    QShortcut,
     QVBoxLayout,
     QWidget,
     QPlainTextEdit,
@@ -41,6 +43,12 @@ class FakeScriptEditor(QWidget):
         self.run_btn.clicked.connect(self.run_code)
 
         self.input_console = InputEditor()
+
+        # Simulate shortcut for running code
+        self.run = QShortcut(self.input_console)
+        self.run.setKey(QKeySequence(Qt.CTRL + Qt.Key_Return))
+        self.run.activated.connect(self.run_code)
+
         self.output_console = OutputEditor()
 
         self.splitter = QSplitter()
@@ -57,7 +65,6 @@ class FakeScriptEditor(QWidget):
         code = self.input_console.toPlainText()
         call = subprocess.check_output(['python', '-c', code])
         self.output_console.setPlainText(call)
-        # self.output_console.insertPlainText(call)
 
 
 class MainWindow(QMainWindow):
