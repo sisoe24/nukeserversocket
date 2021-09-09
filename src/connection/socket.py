@@ -72,7 +72,8 @@ class Socket(QObject):
             LOGGER.warning("no text data to execute")
             return
 
-        script_editor = ScriptEditor(file=msg_data.get('file', ''))
+        script_editor = ScriptEditor()
+        script_editor.set_file(msg_data.get('file', ''))
         script_editor.set_text(msg_text)
         script_editor.execute()
 

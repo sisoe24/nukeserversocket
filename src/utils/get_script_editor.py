@@ -19,7 +19,6 @@ from PySide2.QtWidgets import (
 from . import SettingsState, insert_time
 
 # HACK: really dont like this way of executing code. is too hacky
-# TODO: can the script editor don't exists? if yes then what?
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
 
@@ -60,7 +59,7 @@ class ScriptEditor:
     """Manipulate Nuke internal script editor."""
     lines = []
 
-    def __init__(self, file):
+    def __init__(self):
 
         self.settings = SettingsState()
 
@@ -70,9 +69,7 @@ class ScriptEditor:
         self.initial_input = ""
         self.initial_output = ""
 
-        self._file = file
-        if not self.settings.get_bool('options/include_path'):
-            self._file = os.path.basename(file)
+        self._file = ''
 
         self._save_state()
 
@@ -89,14 +86,24 @@ class ScriptEditor:
         """
         self.input_widget.setPlainText(text)
 
+    def set_file(self, file):
+        """Set the file that is being executed.
+
+        File could be empty string, in that case will do nothing
+
+        Args:
+            (str) file - file path of the file that is being executed from NukeTools
+        """
+        self._file = file if self.settings.get_bool(
+            'options/include_path') else os.path.basename(file)
+
     def set_status_output(self):
         """Get a clean version of the output editor for status widget."""
         return _clean_output(self._get_output())
 
     def _get_output(self):
         """Get output from the nuke internal script editor."""
-        output_text = self.output_widget.document().toPlainText()
-        return output_text
+        return self.output_widget.document().toPlainText()
 
     @staticmethod
     def execute():
@@ -168,6 +175,7 @@ class ScriptEditor:
 
 def _get_script_editor():
     """Get script editor widget."""
+    # TODO: can the script editor don't exists? if yes then what?
     for widget in QApplication.allWidgets():
         if widget.objectName() == 'uk.co.thefoundry.scripteditor.1':
             return widget
