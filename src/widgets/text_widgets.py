@@ -47,10 +47,13 @@ class TextWidgets(QWidget):
 
     def set_status_text(self, text):
         self.status_text.text_box.insertPlainText(insert_time(text))
+        self.status_text.text_box.ensureCursorVisible()
 
     def set_input_text(self, text):
         self.input_text.text_box.insertPlainText(insert_time(text))
+        self.input_text.text_box.ensureCursorVisible()
 
     def set_output_text(self, text):
         text = str(text).strip()
         self.output_text.text_box.insertPlainText(insert_time(text))
+        self.output_text.text_box.ensureCursorVisible()
