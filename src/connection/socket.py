@@ -26,7 +26,7 @@ class Socket(QObject):
         self.status_widget.set_status_text("Client Connected Event")
 
     def on_disconnected(self):
-        LOGGER.debug('Client disconnect event')
+        LOGGER.debug('-*- Client disconnect event -*-')
         self.status_widget.set_status_text("Client socket closed.")
 
     def _get_message(self):
@@ -57,6 +57,7 @@ class Socket(QObject):
                             err, exc_info=True)
             raise ValueError('Json Deserialization error')
         else:
+            LOGGER.debug('msg_data: %s', msg_data)
             return msg_data
 
     def on_readyRead(self):
