@@ -11,6 +11,7 @@ from PySide2.QtTest import QTest
 from PySide2.QtCore import QObject, Qt
 
 from PySide2.QtWidgets import (
+    QPushButton,
     QSplitter,
     QTextEdit,
     QPlainTextEdit,
@@ -69,8 +70,9 @@ class NSE(QObject):
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
 
-        # HACK: really dont like this way of executing code. is too hacky
+        # HACK: really don't like this way of executing code. is too hacky
         self.script_editor = self.get_script_editor()
+        self.run_button = self.get_run_button()
         self.console = self.script_editor.findChild(QSplitter)
         self.output_widget = self.console.findChild(QTextEdit)
         self.input_widget = self.console.findChild(QPlainTextEdit)
@@ -88,8 +90,25 @@ class NSE(QObject):
             'Script Editor panel does not exist! Please create one.'
         )
 
-    def run_code(self):
-        """Simulate shortcut CTRL + Return for running script."""
+    def get_run_button(self):
+        """Get the run button from the script editor."""
+        for button in self.script_editor.findChildren(QPushButton):
+            # The only apparent identifier of the button is a tooltip. Risky
+            if 'Run' in button.toolTip():
+                return button
+
+        # XXX: can the button not be found?
+        return None
+
+    def _execute_shortcut(self):
+        """Simulate shortcut CTRL + Return for running script.
+
+        This method is currently used as a fallback in case the execute button
+        couldn't be found.
+
+        Note: Although this method brings more problems than is solves, it could come
+        useful. Also I am not sure if shortcut could be changed by user somehow.
+        """
         QTest.keyPress(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
         QTest.keyRelease(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
 
@@ -143,8 +162,14 @@ class ScriptEditor(NSE):
         return self.output_widget.document().toPlainText()
 
     def execute(self):
-        """Abstract method for executing code inside NSE."""
-        self.run_code()
+        """Abstract method for executing code inside NSE.
+
+        Check if run_button exists otherwise simulate shortcut press.
+        """
+        if self.run_button:
+            self.run_button.click()
+        else:
+            self._execute_shortcut()
 
     def _restore_input(self):
         """Override input editor if setting is True."""
