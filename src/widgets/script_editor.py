@@ -5,8 +5,9 @@ import sys
 import random
 import subprocess
 
-from PySide2.QtCore import Qt
-from PySide2.QtGui import QKeySequence
+
+from PySide2.QtCore import Qt, QEvent
+from PySide2.QtGui import QKeySequence, QKeyEvent
 
 from PySide2.QtWidgets import (
     QShortcut,
@@ -40,14 +41,10 @@ class FakeScriptEditor(QWidget):
 
         self.run_btn = QPushButton('Run')
         self.run_btn.setToolTip('Run the current')
+        self.run_btn.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Return))
         self.run_btn.clicked.connect(self.run_code)
 
         self.input_console = InputEditor()
-
-        # Simulate shortcut for running code
-        self.run = QShortcut(self.input_console)
-        self.run.setKey(QKeySequence(Qt.CTRL + Qt.Key_Return))
-        self.run.activated.connect(self.run_code)
 
         self.output_console = OutputEditor()
 
@@ -60,6 +57,17 @@ class FakeScriptEditor(QWidget):
         _layout.addWidget(self.run_btn)
         _layout.addWidget(self.splitter)
         self.setLayout(_layout)
+
+        self.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        if isinstance(event, QKeyEvent):
+            if event.modifiers() == Qt.CTRL and event.key() == Qt.Key_Return:
+                print('shortcut pressed')
+                self.run_code()
+                event.accept()
+                return True
+        return super(FakeScriptEditor, self).eventFilter(obj, event)
 
     def run_code(self):
         code = self.input_console.toPlainText()
