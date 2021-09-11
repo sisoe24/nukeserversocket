@@ -46,7 +46,7 @@ def _prepare_report():
 
 
 class ErrorDialog(QMessageBox):
-    def __init__(self, parent, msg):
+    def __init__(self, msg, parent=None):
         QMessageBox.__init__(self, parent)
         self.setWindowTitle('NukeServerSocket')
         self.setIcon(QMessageBox.Warning)
