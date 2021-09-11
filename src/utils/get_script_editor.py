@@ -16,16 +16,18 @@ from PySide2.QtWidgets import (
     QTextEdit,
     QPlainTextEdit,
     QTextEdit,
-    QApplication
+    QApplication,
+    QWidget
 )
 
 from . import SettingsState, insert_time
+from ..widgets import ErrorDialog
 
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
 
 
-def _clean_output(text):
+def _clean_output(text):  # type: (str) -> str
     """Return last section (after #Result:) of the output.
 
     Arguments:
@@ -41,7 +43,7 @@ def _clean_output(text):
     return text
 
 
-def _format_output(text, file, use_unicode=True):
+def _format_output(text, file, use_unicode=True):  # type: (str, str, bool) -> str
     """Format output to send to nuke internal console."""
     text = _clean_output(text)
 
@@ -64,35 +66,51 @@ class NSE(QObject):
     internal C++ widget XXX is already deleted. This happens because of how python
     handles the garbage collection. Saving a reference into a instance variable keeps it "alive".
 
-    This could break anytime if Foundry decides to change something.
+    Don't like this method of executing code, this could break anytime if
+    Foundry changes something and it feels too hacky. Should invest some time to
+    find a better way.
     """
+    script_editor = QWidget
+    run_button = QPushButton
+    console = QSplitter
+    input_widget = QWidget
+    output_widget = QWidget
 
     def __init__(self, parent=None):
         QObject.__init__(self, parent)
+        LOGGER.debug('init')
+        self.init_editor()
 
-        # HACK: really don't like this way of executing code. is too hacky
-        self.script_editor = self.get_script_editor()
-        self.run_button = self.get_run_button()
-        self.console = self.script_editor.findChild(QSplitter)
-        self.output_widget = self.console.findChild(QTextEdit)
-        self.input_widget = self.console.findChild(QPlainTextEdit)
+    @classmethod
+    def init_editor(cls):
+        """Initialize NSE properties"""
+        cls.script_editor = cls.get_script_editor()
+        cls.run_button = cls.get_run_button()
+        cls.console = cls.script_editor.findChild(QSplitter)
+        cls.output_widget = cls.console.findChild(QTextEdit)
+        cls.input_widget = cls.console.findChild(QPlainTextEdit)
 
-    @staticmethod
-    def get_script_editor():
+    @classmethod
+    def get_script_editor(cls):  # type: () -> QWidget
         """Get script editor widget."""
         # .topLevelWidgets() is a smaller list but SE is not always there
         for widget in QApplication.allWidgets():
+
+            # TODO: user should be able to decide which SE to use
             if 'scripteditor' in widget.objectName():
                 return widget
 
         # XXX: can the script editor not exists?
+        # TODO: don't like the traceback
         raise BaseException(
-            'Script Editor panel does not exist! Please create one.'
+            'NukeServerSocket: Script Editor panel not found!'
+            'Please create one and reload the panel.'
         )
 
-    def get_run_button(self):
+    @classmethod
+    def get_run_button(cls):  # type: () -> QPushButton | None
         """Get the run button from the script editor."""
-        for button in self.script_editor.findChildren(QPushButton):
+        for button in cls.script_editor.findChildren(QPushButton):
             # The only apparent identifier of the button is a tooltip. Risky
             if 'Run' in button.toolTip():
                 return button
@@ -100,25 +118,23 @@ class NSE(QObject):
         # XXX: can the button not be found?
         return None
 
-    def _execute_shortcut(self):
+    @classmethod
+    def _execute_shortcut(cls):
         """Simulate shortcut CTRL + Return for running script.
 
         This method is currently used as a fallback in case the execute button
         couldn't be found.
-
-        Note: Although this method brings more problems than is solves, it could come
-        useful. Also I am not sure if shortcut could be changed by user somehow.
         """
-        QTest.keyPress(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
-        QTest.keyRelease(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
+        # XXX: could the user change the shortcut? if yes then what?
+        QTest.keyPress(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
+        QTest.keyRelease(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
 
 
 class ScriptEditor(NSE):
     """Manipulate Nuke internal script editor."""
-    lines = []
+    history = []
 
     def __init__(self, parent=None):
-        NSE.__init__(self, parent)
 
         self.settings = SettingsState()
 
@@ -129,12 +145,16 @@ class ScriptEditor(NSE):
 
         self._save_state()
 
+    def refresh_parent(self):
+        """Call super for parent class."""
+        NSE.__init__(self)
+
     def _save_state(self):
         """Save initial state of the editor before any modification."""
         self.initial_input = self.input_widget.toPlainText()
         self.initial_output = self.output_widget.toPlainText()
 
-    def set_text(self, text):
+    def set_text(self, text):  # type: (str) -> None
         """Set text to the input editor.
 
         Arguments
@@ -142,7 +162,7 @@ class ScriptEditor(NSE):
         """
         self.input_widget.setPlainText(text)
 
-    def set_file(self, file):
+    def set_file(self, file):  # type: (str) -> None
         """Set the file that is being executed.
 
         File could be empty string, in that case will do nothing
@@ -153,11 +173,11 @@ class ScriptEditor(NSE):
         self._file = file if self.settings.get_bool(
             'options/include_path') else os.path.basename(file)
 
-    def set_status_output(self):
+    def set_status_output(self):  # type: () -> str
         """Get a clean version of the output editor for status widget."""
         return _clean_output(self._get_output())
 
-    def _get_output(self):
+    def _get_output(self):  # type: () -> str
         """Get output from the nuke internal script editor."""
         return self.output_widget.document().toPlainText()
 
@@ -166,9 +186,9 @@ class ScriptEditor(NSE):
 
         Check if run_button exists otherwise simulate shortcut press.
         """
-        if self.run_button:
+        try:
             self.run_button.click()
-        else:
+        except AttributeError:
             self._execute_shortcut()
 
     def _restore_input(self):
@@ -177,7 +197,7 @@ class ScriptEditor(NSE):
             self.input_widget.setPlainText(self.initial_input)
 
     @classmethod
-    def _append_output(cls, output_text):
+    def _append_output(cls, output_text):  # type: (str) -> None
         """Append text to class list in order to have a history output.
 
         The list can have a maximum size of 1mb after that it deletes the last element.
@@ -187,20 +207,17 @@ class ScriptEditor(NSE):
         :param output_text: text to append into the list
         :type output_text: str
         """
-        cls.lines.append(output_text)
-        list_size = [getsizeof(n) for n in cls.lines]
-
-        # print("➡ list_size :", sum(list_size))
-        # print("➡ list_size :", len(cls.lines))
+        cls.history.append(output_text)
+        list_size = [getsizeof(n) for n in cls.history]
 
         # HACK: not sure about this. give the list cap at 1 mb. way too generous?
         if sum(list_size) >= 1000000:
-            cls.lines.pop(0)
+            cls.history.pop(0)
 
     @classmethod
-    def _clear_list(cls):
+    def _clear_history(cls):
         """Clear the history list."""
-        cls.lines = []
+        cls.history = []
 
     def _restore_output(self):
         """Send text to script editor output if setting is True."""
@@ -218,14 +235,14 @@ class ScriptEditor(NSE):
             output_text = _format_output(output_text, self._file, use_unicode)
 
             if self.settings.get_bool('options/clear_output', True):
-                self._clear_list()
+                self._clear_history()
                 self.output_widget.setPlainText(output_text)
             else:
                 self._append_output(output_text)
-                self.output_widget.setPlainText(''.join(self.lines))
+                self.output_widget.setPlainText(''.join(self.history))
                 return
 
-        self._clear_list()
+        self._clear_history()
 
     def restore_state(self):
         """Restore the initial state of the editor."""
