@@ -4,7 +4,7 @@
 
 ## [0.0.3] - 2021-09-11
 
-Code refractoring, under the hood optimizations and cleaning.
+Code refactoring, under the hood optimizations and cleaning.
 
 ### Added
 
