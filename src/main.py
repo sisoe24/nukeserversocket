@@ -12,6 +12,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
+from .utils import NSE
 from .connection import Server, ClientTest
 from .widgets import (
     TextWidgets, ServerStatus, ErrorDialog, ToolBar
@@ -50,6 +51,8 @@ class MainWindowWidget(QWidget):
 
         self.server = None
         self.tcp_test = None
+
+        NSE()
 
     def _test_send(self):
         """Test connection internally from Qt."""
@@ -138,7 +141,7 @@ class MainWindow(QMainWindow):
         try:
             main_window = MainWindowWidget(self)
         except Exception as err:
-            ErrorDialog(self, err).show()
+            ErrorDialog(err, self).show()
             LOGGER.critical(err, exc_info=True)
         else:
             self.setCentralWidget(main_window)
