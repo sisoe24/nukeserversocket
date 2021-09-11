@@ -31,6 +31,7 @@ class QHLine(QFrame):
 
 class SettingsWidget(QWidget):
     def __init__(self):
+        # TODO: major refractoring needed here
         QWidget.__init__(self)
         self.settings = SettingsState()
 
