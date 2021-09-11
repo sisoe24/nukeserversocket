@@ -12,6 +12,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
+from .utils import NSE
 from .connection import Server, ClientTest
 from .widgets import (
     TextWidgets, ServerStatus, ErrorDialog, ToolBar
@@ -51,18 +52,19 @@ class MainWindowWidget(QWidget):
         self.server = None
         self.tcp_test = None
 
+        NSE()
+
     def _test_send(self):
         """Test connection internally from Qt."""
         self.tcp_test = ClientTest()
         self.tcp_test.send_message()
 
-    @staticmethod
-    def _show_port_error():
+    def _show_port_error(self):
         """Error message when port is not in the correct range."""
-        err_msg = QErrorMessage()
+        err_msg = QErrorMessage(self)
         err_msg.setWindowTitle('NukeServerSocket')
         err_msg.showMessage('Port should be between 49152 and 65535')
-        err_msg.exec_()
+        err_msg.show()
 
     def _validate_connection(self, state):
 
@@ -139,7 +141,7 @@ class MainWindow(QMainWindow):
         try:
             main_window = MainWindowWidget(self)
         except Exception as err:
-            ErrorDialog(self, err).show()
+            ErrorDialog(err, self).show()
             LOGGER.critical(err, exc_info=True)
         else:
             self.setCentralWidget(main_window)

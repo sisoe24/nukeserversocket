@@ -7,12 +7,14 @@ from PySide2 import QtTest
 
 from PySide2.QtWidgets import (
     QApplication,
+    QMainWindow,
     QVBoxLayout,
-    QWidget
+    QWidget,
+    QStatusBar
 )
 
-from src.widgets import FakeScriptEditor
-from src.main import MainWindowWidget, MainWindow
+from src.widgets import FakeScriptEditor, ToolBar
+from src.main import MainWindowWidget
 
 # personal monitor loc screen for rapid testing
 screen_loc = {
@@ -27,8 +29,8 @@ class TestMainwindowWidgets(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self)
 
-        self.main_app = MainWindowWidget(parent)
         self.script_editor = FakeScriptEditor()
+        self.main_app = MainWindowWidget(parent)
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.main_app)
@@ -40,18 +42,24 @@ class TestMainwindowWidgets(QWidget):
         self.main_app.test_btn.click()
 
 
-class TestMainWindow(MainWindow):
+class TestMainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
-        MainWindow.__init__(self)
-        self.setWindowTitle('Manual Test')
+        QMainWindow.__init__(self)
+        self.setWindowTitle('NukeServerSocket Test')
         self.setGeometry(screen_loc['hp']['x'],
                          screen_loc['hp']['y'],
                          1080, 1980)
 
+        toolbar = ToolBar()
+        self.addToolBar(toolbar)
+
+        self.status_bar = QStatusBar(self)
+        self.setStatusBar(self.status_bar)
+
         try:
             main_window = TestMainwindowWidgets(self)
         except Exception as err:
-            pass
+            print("err :", err)
         else:
             self.setCentralWidget(main_window)
 

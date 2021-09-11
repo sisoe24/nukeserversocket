@@ -3,12 +3,30 @@ from __future__ import print_function
 
 from PySide2.QtCore import QSize, Qt
 from PySide2.QtGui import QIcon
-from PySide2.QtWidgets import QAction, QToolBar, QWhatsThis
+from PySide2.QtWidgets import QAction, QDialog, QToolBar, QVBoxLayout
 
-from .options import OptionsDialog
+from .settings_widget import SettingsWidget
+from .about_widget import AboutWidget
+
+
+class FloatingDialog(QDialog):
+    def __init__(self, title, object_name, widget, parent=None):
+        QDialog.__init__(self, parent)
+        self.setWindowTitle(title)
+        self.setObjectName(object_name)
+
+        _layout = QVBoxLayout()
+        _layout.addWidget(widget())
+
+        self.setLayout(_layout)
+
+    def closeEvent(self, event):
+        """When close event triggers destroy the widget."""
+        self.deleteLater()
 
 
 class ToolBar(QToolBar):
+    # TODO: should create a toolbar controller class?
     def __init__(self):
         QToolBar.__init__(self)
         self.setIconSize(QSize(15, 15))
@@ -18,28 +36,49 @@ class ToolBar(QToolBar):
         self.setStyleSheet('''color: white;''')
         self._initial_style = self.styleSheet()
 
-        self.open_settings = QAction('Settings', self)
-        self.open_settings.triggered.connect(self.show_settings)
-        self.addAction(self.open_settings)
+        self._open_settings = QAction('Settings', self)
+        self._open_settings.triggered.connect(self._show_settings)
+        self.addAction(self._open_settings)
 
-        # XXX: for some unknown reason, older pyside2 cannot create a whatsthis instance
-        # even though is still a class
-        # if nuke.env['NukeVersionMajor'] == 11:
-        #     _whats_this = QWhatsThis
-        # else:
-        #     _whats_this = QWhatsThis()
+        self._open_about = QAction('About', self)
+        self._open_about.triggered.connect(self._show_about)
+        self.addAction(self._open_about)
 
-        # self._help_button = _whats_this.createAction(self)
-        # self._help_button.setIcon(QIcon(':/icons/question'))
+    def _dialog_exists(self, object_name):
+        """Check if the widget is already present. If yes then raise the window set focus
 
-    def show_settings(self):
+        Args:
+            object_name (str): objectName of the widget to search for
 
+        Returns:
+            bool: true if found and raised false otherwise
+        """
         for widget in self.children():
-            if widget.objectName() == 'OptionsDialog':
+            if widget.objectName() == object_name:
                 widget.setFocus(Qt.PopupFocusReason)
                 widget.raise_()
                 widget.activateWindow()
-                return
+                return True
+        return False
 
-        options = OptionsDialog(self)
-        options.show()
+    def _show_about(self):
+        obj_name = 'AboutDialog'
+        if not self._dialog_exists(obj_name):
+
+            FloatingDialog(
+                title='About',
+                object_name=obj_name,
+                widget=AboutWidget,
+                parent=self
+            ).show()
+
+    def _show_settings(self):
+        obj_name = 'SettingsDialog'
+        if not self._dialog_exists(obj_name):
+
+            FloatingDialog(
+                title='Settings',
+                object_name=obj_name,
+                widget=SettingsWidget,
+                parent=self
+            ).show()

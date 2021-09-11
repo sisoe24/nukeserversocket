@@ -15,7 +15,7 @@ from PySide2.QtWidgets import (
     QLineEdit
 )
 
-from  ..utils import Settings, get_ip
+from ..utils import SettingsState, get_ip
 
 LOGGER = logging.getLogger('NukeServerSocket.server_status')
 
@@ -23,7 +23,7 @@ LOGGER = logging.getLogger('NukeServerSocket.server_status')
 class ServerStatus(QWidget):
     def __init__(self):
         QWidget.__init__(self)
-        self.settings = Settings()
+        self.settings = SettingsState()
 
         self.is_connected = QLabel()
         self.is_connected.setObjectName('connection')

@@ -5,15 +5,15 @@ import logging
 
 from PySide2.QtWidgets import (
     QCheckBox,
-    QDialog,
     QFormLayout,
     QFrame,
     QSizePolicy,
     QLabel,
-    QSizePolicy
+    QSizePolicy,
+    QWidget
 )
 
-from ..utils import Settings
+from ..utils import SettingsState
 
 LOGGER = logging.getLogger('NukeServerSocket.server_status')
 
@@ -29,13 +29,11 @@ class QHLine(QFrame):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
 
 
-class OptionsDialog(QDialog):
-    def __init__(self, parent):
-        QDialog.__init__(self, parent)
-        self.setWindowTitle('NukeServerSocket Settings')
-        self.setObjectName('OptionsDialog')
-
-        self.settings = Settings()
+class SettingsWidget(QWidget):
+    def __init__(self):
+        # TODO: major refractoring needed here
+        QWidget.__init__(self)
+        self.settings = SettingsState()
 
         # setup checkboxes
         self._output_console = self._create_checkbox(
@@ -56,7 +54,6 @@ class OptionsDialog(QDialog):
         self._override_input = self._create_checkbox(
             state=False, obj_name='override_input',
             toolTip='Override internal input text editor',
-            statusBarTip="bo",
         )
 
         self._include_path = self._create_checkbox(
@@ -102,10 +99,6 @@ class OptionsDialog(QDialog):
                 default_value=checkbox.isChecked(),
                 config=checkbox.objectName()
             )
-
-    def closeEvent(self, event):
-        """When close event triggers destroy the widget."""
-        self.deleteLater()
 
     @staticmethod
     def _create_checkbox(*args, **kwargs):

@@ -36,21 +36,24 @@ class TextWidgets(QWidget):
         QWidget.__init__(self)
         self.status_text = TextBox('Status')
         self.input_text = TextBox('Input')
-        self.ouput_text = TextBox('Output')
+        self.output_text = TextBox('Output')
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.status_text)
         _layout.addWidget(self.input_text)
-        _layout.addWidget(self.ouput_text)
+        _layout.addWidget(self.output_text)
 
         self.setLayout(_layout)
 
     def set_status_text(self, text):
         self.status_text.text_box.insertPlainText(insert_time(text))
+        self.status_text.text_box.ensureCursorVisible()
 
     def set_input_text(self, text):
         self.input_text.text_box.insertPlainText(insert_time(text))
+        self.input_text.text_box.ensureCursorVisible()
 
     def set_output_text(self, text):
         text = str(text).strip()
-        self.ouput_text.text_box.insertPlainText(insert_time(text))
+        self.output_text.text_box.insertPlainText(insert_time(text))
+        self.output_text.text_box.ensureCursorVisible()

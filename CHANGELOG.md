@@ -2,7 +2,18 @@
 
 ## [Unreleased]
 
-* Output to KnobScripter instead of internal Script Editor.
+## [0.0.3] - 2021-09-11
+
+Code refractoring, under the hood optimizations and cleaning.
+
+### Added
+
+* New widget _About_.
+
+### Changed
+
+* Simple strings are also accepted when sending data to the API.
+* Nuke internal script editor gets initialized only at Nuke launch instead of each code execution.
 
 ## [0.0.2] - 2021-08-02
 
