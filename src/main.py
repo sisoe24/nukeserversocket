@@ -12,7 +12,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from .utils import NSE
+from .utils import NSE, SettingsState
 from .connection import Server, ClientTest
 from .widgets import (
     TextWidgets, ServerStatus, ErrorDialog, ToolBar
@@ -25,6 +25,7 @@ LOGGER.debug('\nSTART APPLICATION')
 class MainWindowWidget(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self)
+        self.settings = SettingsState()
 
         self.main_window = parent
 
@@ -76,6 +77,7 @@ class MainWindowWidget(QWidget):
         self.server_status.port_state(not state)
 
         if state:
+            self.settings.verify_port_config()
             is_connected = self._setup_connection()
 
             if is_connected:
@@ -117,7 +119,6 @@ class MainWindowWidget(QWidget):
         Returns:
             str: status of the connection: True if successful False otherwise
         """
-
         self.server = Server(self.text_widgets)
         status = self.server.start_server()
         self.server_status.update_status(status)

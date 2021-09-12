@@ -71,19 +71,11 @@ class ServerStatus(QWidget):
         return self._check_port_range(self.server_port.text())
 
     def _set_server_port(self):
-        """Setup the port entry field widget.
-
-        Creates a default port with value 54321 if not already present in the config.
-        Otherwise will grab that value.
-        """
+        """Setup the port entry field widget."""
         port = self.settings.value(self.port_config_id)
-        if not port:
-            port = '54321'
-            self.settings.setValue(self.port_config_id, port)
 
         self.server_port.setText(port)
         self.server_port.setValidator(QRegExpValidator(QRegExp('\d{5}')))
-
         self.server_port.textChanged.connect(self._update_port)
 
     @staticmethod

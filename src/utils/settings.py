@@ -20,12 +20,19 @@ class SettingsState(QSettings):
     def __init__(self):
         QSettings.__init__(self, config_file(), QSettings.IniFormat)
 
+    def verify_port_config(self):
+        """If .ini file or port gets deleted after execution, create it back."""
+        port = self.value('server/port')
+        LOGGER.debug('Verify port configuration: %s', port)
+        if not port or len(port) != 5:
+            self.setValue('server/port', '54321')
+
     def get_bool(self, value, default=False):
         """Convert .ini file bool to python valid data type.
 
         Args:
             value (str): the value to get from the config file.
-            default (bool, optional): Default vaule if not present in config. Defaults to False.
+            default (bool, optional): Default value if not present in config. Defaults to False.
 
         Returns:
             [type]: [description]
