@@ -58,6 +58,11 @@ class ServerStatus(QWidget):
 
         self.setLayout(_layout)
 
+    @property
+    def port(self):  # type: () -> str
+        """The current port from the entry widget."""
+        return self.server_port.text()
+
     def port_state(self, value):  # type: (bool) -> None
         """Public method to enable/disable port textual entry."""
         self.server_port.setEnabled(value)
