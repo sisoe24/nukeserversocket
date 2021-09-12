@@ -16,6 +16,7 @@ class Server(QObject):
     def __init__(self, status_widget):
         QObject.__init__(self)
         self.settings = SettingsState()
+        self.settings.verify_port_config()
 
         self.status_widget = status_widget
 

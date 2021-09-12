@@ -16,6 +16,7 @@ LOGGER = logging.getLogger('NukeServerSocket.client')
 class ClientTest:
     def __init__(self):
         self.settings = SettingsState()
+        self.settings.verify_port_config()
 
         self.tcp_host = "127.0.0.1"
         LOGGER.debug('client host: %s', self.tcp_host)
