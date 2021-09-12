@@ -75,17 +75,18 @@ class MainWindowWidget(QWidget):
         If port is changed manually on the .ini file, then app will pick the one
         from the file, but it will show the old on inside the widget.
         """
-        self.settings.setValue('server/port', self.server_status.port)
+        self.settings.setValue(
+            'server/port', self.server_status.port_entry.text())
 
     def _validate_connection(self, state):
-        if not self.server_status.valid_port_range():
+        if not self.server_status.is_valid_port():
             self._show_port_error()
             return
 
         self._update_port()
 
         self.test_btn.setEnabled(state)
-        self.server_status.port_state(not state)
+        self.server_status.port_entry.setEnabled(not state)
 
         if state:
             is_connected = self._setup_connection()
