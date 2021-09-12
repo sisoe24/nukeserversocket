@@ -53,6 +53,7 @@ class MainWindowWidget(QWidget):
         self.server = None
         self.tcp_test = None
 
+        # Initialize NSE when plugin gets created from Nuke
         NSE()
 
     def _test_send(self):
