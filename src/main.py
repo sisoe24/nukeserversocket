@@ -107,7 +107,7 @@ class MainWindowWidget(QWidget):
         self.text_widgets.set_status_text(_ds + '\n----')
         self.main_window.status_bar.showMessage(_ds)
         self.connect_btn.setText('Connect')
-        self.server_status.update_status('Idle')
+        self.server_status.set_idle()
 
         self.server.server.close()
 
