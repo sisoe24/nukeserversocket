@@ -38,52 +38,53 @@ class ServerStatus(QWidget):
         self.settings = SettingsState()
         self.port_config_id = 'server/port'
 
-        self.is_connected = QLabel()
-        self.is_connected.setObjectName('connection')
+        self._is_connected = QLabel()
+        self._is_connected.setObjectName('connection')
         self.set_idle()
 
-        self.server_port = QLineEdit()
-        self.server_port.setMaximumWidth(100)
-        self.server_port.setToolTip('Server port for vscode to listen')
-        self.server_port.setObjectName('port')
+        self._server_port = QLineEdit()
+        self._server_port.setMaximumWidth(100)
+        self._server_port.setToolTip('Server port for vscode to listen')
+        self._server_port.setObjectName('port')
         self._set_server_port()
 
         _layout = QFormLayout()
         _layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
-        _layout.addRow(QLabel('Status'), self.is_connected)
+        _layout.addRow(QLabel('Status'), self._is_connected)
         _layout.addRow(QLabel('Local Host Address'),
                        QLabel(QHostInfo().localHostName()))
         _layout.addRow(QLabel('Local IP Address'), QLabel(get_ip()))
-        _layout.addRow(QLabel('Port'), self.server_port)
+        _layout.addRow(QLabel('Port'), self._server_port)
 
         self.setLayout(_layout)
 
-    def port_state(self, value):  # type: (bool) -> None
-        """Public method to enable/disable port textual entry."""
-        self.server_port.setEnabled(value)
+    @property
+    def port_entry(self):  # type: () -> QLineEdit
+        """The entry widget port Qt object."""
+        return self._server_port
 
-    def valid_port_range(self):  # type: (str) -> bool
-        """Public method to che if current port is in valid range.
+    def is_valid_port(self):  # type: (str) -> bool
+        """Public method that checks if current port is in valid range.
 
         Returns:
             (bool): True if is in valid range, False otherwise
         """
-        return self._check_port_range(self.server_port.text())
+        return self._check_port_range(self._server_port.text())
 
     def _set_server_port(self):
         """Setup the port entry field widget."""
         port = self.settings.value(self.port_config_id)
 
-        self.server_port.setText(port)
-        self.server_port.setValidator(QRegExpValidator(QRegExp('\d{5}')))
-        self.server_port.textChanged.connect(self._update_port)
+        self._server_port.setText(port)
+        self._server_port.setValidator(QRegExpValidator(QRegExp('\d{5}')))
+        self._server_port.textChanged.connect(self._update_port)
 
     @staticmethod
     def _check_port_range(port):  # type: (str) -> bool
         """Check if port range is valid.
 
         Args:
-            (str) port: port to check.
+            port (str): port to check.
 
         Returns:
             (bool): True if is in valid range, False otherwise
@@ -114,7 +115,7 @@ class ServerStatus(QWidget):
         Returns:
             (str): Qt styleSheet to be added to main styleSheet.
         """
-        self.is_connected.setText('Idle')
+        self._is_connected.setText('Idle')
         return 'QLabel#connection { color: orange;}'
 
     @_set_style_sheet
@@ -124,7 +125,7 @@ class ServerStatus(QWidget):
         Returns:
             (str): Qt styleSheet to be added to main styleSheet.
         """
-        self.is_connected.setText('Not Connected')
+        self._is_connected.setText('Not Connected')
         return 'QLabel#connection { color: red;}'
 
     @_set_style_sheet
@@ -134,14 +135,14 @@ class ServerStatus(QWidget):
         Returns:
             (str): Qt styleSheet to be added to main styleSheet.
         """
-        self.is_connected.setText('Connected')
+        self._is_connected.setText('Connected')
         return 'QLabel#connection { color: green;}'
 
     def update_status(self, status):  # type (bool) -> None
         """Update status switch.
 
         Args:
-            (bool) status: bool representation of the connection status
+            status (bool): bool representation of the connection status
         """
         if status is True:
             self.set_connected()

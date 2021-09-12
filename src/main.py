@@ -26,6 +26,7 @@ class MainWindowWidget(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self)
         self.settings = SettingsState()
+        self.settings.verify_port_config()
 
         self.main_window = parent
 
@@ -68,17 +69,26 @@ class MainWindowWidget(QWidget):
         err_msg.showMessage('Port should be between 49152 and 65535')
         err_msg.show()
 
-    def _validate_connection(self, state):
+    def _update_port(self):
+        """Update port on the ini file from the text entry field widget.
 
-        if not self.server_status.valid_port_range():
+        If port is changed manually on the .ini file, then app will pick the one
+        from the file, but it will show the old on inside the widget.
+        """
+        self.settings.setValue(
+            'server/port', self.server_status.port_entry.text())
+
+    def _validate_connection(self, state):
+        if not self.server_status.is_valid_port():
             self._show_port_error()
             return
 
+        self._update_port()
+
         self.test_btn.setEnabled(state)
-        self.server_status.port_state(not state)
+        self.server_status.port_entry.setEnabled(not state)
 
         if state:
-            self.settings.verify_port_config()
             is_connected = self._setup_connection()
 
             if is_connected:
