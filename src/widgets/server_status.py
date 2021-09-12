@@ -50,7 +50,11 @@ class ServerStatus(QWidget):
 
     def _set_server_port(self):
 
-        port = self.settings.value('server/port', '54321')
+        port = self.settings.value('server/port')
+        if not port:
+            port = '54321'
+            self.settings.setValue('server/port', port)
+
         self.server_port.setText(port)
         self.server_port.setValidator(QRegExpValidator(QRegExp('\d{5}')))
 
@@ -58,7 +62,7 @@ class ServerStatus(QWidget):
             self._update_port
         )
 
-    @ staticmethod
+    @staticmethod
     def _check_port_range(port):
         port = 0 if not port else port
         return 49152 <= int(port) <= 65535
@@ -90,6 +94,6 @@ class ServerStatus(QWidget):
             self.is_connected.setText('Not Connected')
             style += '''QLabel#connection { color: red;}'''
         else:
-            LOGGER.debug('Unkown status: %s', status)
+            LOGGER.debug('Unknown status: %s', status)
 
         self.setStyleSheet(style)
