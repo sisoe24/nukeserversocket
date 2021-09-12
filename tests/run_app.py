@@ -2,9 +2,9 @@
 from __future__ import print_function
 
 import sys
+import traceback
 
 from PySide2 import QtTest
-
 from PySide2.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -59,7 +59,7 @@ class TestMainWindow(QMainWindow):
         try:
             main_window = TestMainwindowWidgets(self)
         except Exception as err:
-            print("err :", err)
+            print("err :", err, traceback.format_exc())
         else:
             self.setCentralWidget(main_window)
 

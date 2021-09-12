@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+## [0.0.4] - 2021-09-12
+
+### Changed
+
+* Better check for configuration file in case it gets deleted or modified after plugin execution.
+
 ## [0.0.3] - 2021-09-11
 
 Code refactoring, under the hood optimizations and cleaning.
