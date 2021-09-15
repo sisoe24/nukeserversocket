@@ -12,7 +12,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from .utils import NSE
+from .utils import NukeScriptEditor
 from .connection import Server, ClientTest
 from .widgets import (
     TextWidgets, ServerStatus, ErrorDialog, ToolBar
@@ -52,7 +52,7 @@ class MainWindowWidget(QWidget):
         self.server = None
         self.tcp_test = None
 
-        NSE()
+        NukeScriptEditor()
 
     def _test_send(self):
         """Test connection internally from Qt."""
@@ -130,6 +130,7 @@ class MainWindowWidget(QWidget):
 class MainWindow(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
+        self.setObjectName('NukeServerSocket')
         self.setWindowTitle("NukeServerSocket")
 
         toolbar = ToolBar()
