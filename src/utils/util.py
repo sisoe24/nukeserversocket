@@ -12,13 +12,22 @@ from .. import nuke
 LOGGER = logging.getLogger('NukeServerSocket.util')
 
 
-def insert_time(text):
+def insert_time(text):  # type: (str) -> str
+    """Insert textual time at the beginning of the string. 
+
+    Example: [17:49:25] Hello World
+
+    Args:
+        text (str): str to insert the time.
+
+    Returns:
+        str: string with inserted current timed at the beginning.
+    """
     time = QTime().currentTime().toString()
-    text = '[%s] %s\n' % (time, text)
-    return text
+    return '[%s] %s\n' % (time, text)
 
 
-def validate_output(data):
+def validate_output(data):  # type: (str) -> bytearray | QByteArray
     """Check for nuke version and return appropriate type of output data.
 
     Nuke11, 12 output type is 'unicode'
@@ -44,14 +53,12 @@ def validate_output(data):
 
 def get_ip():
     def _get_ip_qt():
-        """This doesnt work on nuke 11 as QNetworkInterface doesnt not have .isglobal()"""
-        ips = []
-        qt_network = QNetworkInterface()
-        for address in qt_network.allAddresses():
-            if address.isGlobal():
-                ips.append(address.toString())
-
-        return ips
+        """Doesn't work on Nuke 11 as QNetworkInterface doesn't not have .isglobal()"""
+        return [
+            address.toString()
+            for address in QNetworkInterface().allAddresses()
+            if address.isGlobal()
+        ]
 
     def _get_ip_py():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
