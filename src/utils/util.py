@@ -1,13 +1,12 @@
 # coding: utf-8
 from __future__ import print_function
 
+import sys
 import socket
 import logging
 
 from PySide2.QtCore import QByteArray, QTime
 from PySide2.QtNetwork import QNetworkInterface
-
-from .. import nuke
 
 LOGGER = logging.getLogger('NukeServerSocket.util')
 
@@ -40,10 +39,7 @@ def validate_output(data):  # type: (str) -> bytearray | QByteArray
         PySide2.QtCore.QByteArray(PySide2.QtCore.QByteArray)
         PySide2.QtCore.QByteArray(int, typing.Char)
     """
-    nuke_version = nuke.env['NukeVersionMajor']
-    LOGGER.debug('Running Nuke: %s', nuke_version)
-
-    if nuke_version == 13:
+    if sys.version_info > (3, 0):
         data = bytearray(data, 'utf-8')
     else:
         data = QByteArray(data.encode('utf-8'))
@@ -71,10 +67,10 @@ def get_ip():
             s.close()
         return [ip]
 
-    # HACK: Nuke11 doesnt have Network.isGlobal()
-    if nuke.env['NukeVersionMajor'] == 11:
+    # Nuke11 doesn't have Network.isGlobal()
+    try:
         ip1 = []
-    else:
+    except AttributeError:
         ip1 = _get_ip_qt()
 
     ip2 = _get_ip_py()
