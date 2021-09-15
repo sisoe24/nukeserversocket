@@ -6,7 +6,7 @@ import logging
 
 from PySide2.QtCore import QObject
 
-from ..utils import CodeExecutor, validate_output
+from ..utils import CodeEditor, validate_output
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
@@ -73,11 +73,11 @@ class Socket(QObject):
             LOGGER.warning("no text data to execute")
             return
 
-        executor = CodeExecutor(msg_data.get('file', None))
-        executor.set_input(msg_text)
-        executor.execute()
+        editor = CodeEditor(msg_data.get('file', None))
+        editor.controller.set_input(msg_text)
+        editor.controller.execute()
 
-        output_text = executor.output()
+        output_text = editor.controller.output()
 
         LOGGER.debug('Sending message back')
         self.socket.write(validate_output(output_text))
