@@ -358,7 +358,7 @@ class CodeEditor(object):
     """Abstract facade for the script editor controller."""
 
     def __init__(self, file):  # type: (str) -> None
-        if file and file.endswith('.blink'):
+        if file and re.search(r'(blink|cpp)$', file):
             self._controller = _BlinkController(file)
         else:
             self._controller = _PyController(file)
