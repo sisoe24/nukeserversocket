@@ -1,3 +1,4 @@
+"""Fake emulation of the internal nuke script editor layout/widgets."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -6,11 +7,10 @@ import random
 import subprocess
 
 
-from PySide2.QtCore import Qt, QEvent
+from PySide2.QtCore import Qt
 from PySide2.QtGui import QKeySequence, QKeyEvent
 
 from PySide2.QtWidgets import (
-    QShortcut,
     QVBoxLayout,
     QWidget,
     QPlainTextEdit,
