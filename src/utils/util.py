@@ -69,9 +69,9 @@ def get_ip():
 
     # Nuke11 doesn't have Network.isGlobal()
     try:
-        ip1 = []
-    except AttributeError:
         ip1 = _get_ip_qt()
+    except AttributeError:
+        ip1 = []
 
     ip2 = _get_ip_py()
 
