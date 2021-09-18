@@ -1,24 +1,32 @@
 # coding: utf-8
 from __future__ import print_function
 
+import sys
 import socket
 import logging
 
 from PySide2.QtCore import QByteArray, QTime
 from PySide2.QtNetwork import QNetworkInterface
 
-from .. import nuke
-
 LOGGER = logging.getLogger('NukeServerSocket.util')
 
 
-def insert_time(text):
+def insert_time(text):  # type: (str) -> str
+    """Insert textual time at the beginning of the string. 
+
+    Example: [17:49:25] Hello World
+
+    Args:
+        text (str): str to insert the time.
+
+    Returns:
+        str: string with inserted current timed at the beginning.
+    """
     time = QTime().currentTime().toString()
-    text = '[%s] %s\n' % (time, text)
-    return text
+    return '[%s] %s\n' % (time, text)
 
 
-def validate_output(data):
+def validate_output(data):  # type: (str) -> bytearray | QByteArray
     """Check for nuke version and return appropriate type of output data.
 
     Nuke11, 12 output type is 'unicode'
@@ -31,10 +39,7 @@ def validate_output(data):
         PySide2.QtCore.QByteArray(PySide2.QtCore.QByteArray)
         PySide2.QtCore.QByteArray(int, typing.Char)
     """
-    nuke_version = nuke.env['NukeVersionMajor']
-    LOGGER.debug('Running Nuke: %s', nuke_version)
-
-    if nuke_version == 13:
+    if sys.version_info > (3, 0):
         data = bytearray(data, 'utf-8')
     else:
         data = QByteArray(data.encode('utf-8'))
@@ -44,14 +49,12 @@ def validate_output(data):
 
 def get_ip():
     def _get_ip_qt():
-        """This doesnt work on nuke 11 as QNetworkInterface doesnt not have .isglobal()"""
-        ips = []
-        qt_network = QNetworkInterface()
-        for address in qt_network.allAddresses():
-            if address.isGlobal():
-                ips.append(address.toString())
-
-        return ips
+        """Doesn't work on Nuke 11 as QNetworkInterface doesn't not have .isglobal()"""
+        return [
+            address.toString()
+            for address in QNetworkInterface().allAddresses()
+            if address.isGlobal()
+        ]
 
     def _get_ip_py():
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -64,11 +67,11 @@ def get_ip():
             s.close()
         return [ip]
 
-    # HACK: Nuke11 doesnt have Network.isGlobal()
-    if nuke.env['NukeVersionMajor'] == 11:
-        ip1 = []
-    else:
+    # Nuke11 doesn't have Network.isGlobal()
+    try:
         ip1 = _get_ip_qt()
+    except AttributeError:
+        ip1 = []
 
     ip2 = _get_ip_py()
 
