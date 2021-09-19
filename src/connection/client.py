@@ -7,7 +7,6 @@ import logging
 
 from abc import abstractmethod, ABCMeta
 
-from PySide2.QtCore import QObject, Qt, Signal
 from PySide2.QtNetwork import QTcpSocket
 
 from ..utils import SettingsState, validate_output
@@ -41,7 +40,7 @@ class Client(object):
         """Method needs to return a string with the text to send write"""
 
     def write_data(self, data):
-        self.socket.write(data)
+        self.socket.write(validate_output(data))
         LOGGER.debug('message sent: %s', data)
 
         self.socket.flush()
@@ -84,8 +83,7 @@ class NodeClient(Client):
         LOGGER.debug('NodeClient -> Connected to host')
 
         output_text = {
-            "text": "print('SEND NODES %s %s')" % (self.tcp_port, self.tcp_host),
-            "file": "path/to/tmp_file.py"
+            "text": "nuke.nodeCopy('%nukeserversocket%')"
         }
 
         self.write_data(json.dumps(output_text))
