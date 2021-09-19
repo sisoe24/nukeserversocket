@@ -188,18 +188,15 @@ class ConnectionsWidget(QWidget):
 
     def set_connected(self):
         """Set connected status."""
-        # XXX: when testing internally will not color
         self._is_connected.setText('Connected')
         self.setStyleSheet('QLabel#connection { color: green;}')
 
     def update_status_label(self, status):  # type (bool) -> None
-        """Update status label and port widget modification.
+        """Update status label.
 
         Args:
             status (bool): bool representation of the connection status
         """
-        self.server_port.widget.setEnabled(not status)
-
         if status is True:
             self.set_connected()
         elif status is False:

@@ -71,6 +71,9 @@ class MainWindowWidget(QWidget):
             else:
                 LOGGER.debug('server is connected: %s', status)
 
+        # enable/disable port entry when connected
+        self.connections.server_port.widget.setEnabled(not state)
+
         if state:
             _start_connection()
         else:
