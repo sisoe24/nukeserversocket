@@ -76,7 +76,7 @@ class Socket(QObject):
             LOGGER.warning("no text data to execute")
             return
 
-        editor = CodeEditor(msg_data.get('file', None))
+        editor = CodeEditor(msg_data.get('file', ''))
         editor.controller.set_input(msg_text)
         editor.controller.execute()
 
