@@ -4,18 +4,19 @@ from __future__ import print_function
 import logging
 
 from PySide2.QtWidgets import (
-    QErrorMessage,
     QMainWindow,
-    QPushButton,
     QStatusBar,
     QVBoxLayout,
     QWidget
 )
 
 from .utils import NukeScriptEditor, SettingsState
-from .connection import Server, ClientTest
+from .connection import Server, TestClient, NodeClient
 from .widgets import (
-    TextWidgets, ServerStatus, ErrorDialog, ToolBar
+    LogWidgets,
+    ConnectionsWidget,
+    ErrorDialog,
+    ToolBar
 )
 
 LOGGER = logging.getLogger('NukeServerSocket.main')
@@ -25,118 +26,65 @@ LOGGER.debug('\nSTART APPLICATION')
 class MainWindowWidget(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self)
+
         self.settings = SettingsState()
         self.settings.verify_port_config()
 
-        self.main_window = parent
+        self.log_widgets = LogWidgets()
 
-        self.connect_btn = QPushButton("Connect")
-        self.connect_btn.setCheckable(True)
-        self.connect_btn.toggled.connect(self._validate_connection)
+        self.connections = ConnectionsWidget(parent=self)
 
-        self.test_btn = QPushButton("Test Server Receiver")
-        self.test_btn.setToolTip('Set server by sending a simple message')
-        self.test_btn.setEnabled(False)
-        self.test_btn.clicked.connect(self._test_send)
+        self.connect_btn = self.connections.buttons.connect_btn
+        self.connect_btn.clicked.connect(self._connection)
 
-        # TODO: don't like the text widget ping pong between classes
-        self.text_widgets = TextWidgets()
-        self.server_status = ServerStatus()
+        self.send_btn = self.connections.buttons.send_btn
+        self.send_btn.clicked.connect(self._send_nodes)
+
+        self.test_btn = self.connections.buttons.test_btn
+        self.test_btn.clicked.connect(self._test_receiver)
 
         _layout = QVBoxLayout()
-        _layout.addWidget(self.server_status)
-        _layout.addWidget(self.connect_btn)
-        _layout.addWidget(self.test_btn)
-        _layout.addWidget(self.text_widgets)
+        _layout.addWidget(self.connections)
+        _layout.addWidget(self.log_widgets)
 
         self.setLayout(_layout)
 
-        self.server = None
-        self.tcp_test = None
+        self._server = None
+        self._test_client = None
+        self._node_client = None
 
-        # Initialize NSE when plugin gets created from Nuke
         NukeScriptEditor()
 
-    def _test_send(self):
-        """Test connection internally from Qt."""
-        self.tcp_test = ClientTest()
-        self.tcp_test.send_message()
+    def _connection(self, state):
+        """When connect button is toggled start connection, otherwise close it."""
 
-    def _show_port_error(self):
-        """Error message when port is not in the correct range."""
-        err_msg = QErrorMessage(self)
-        err_msg.setWindowTitle('NukeServerSocket')
-        err_msg.showMessage('Port should be between 49152 and 65535')
-        err_msg.show()
+        def _start_connection():
+            """Setup connection to server."""
+            self._server = Server(self.log_widgets)
 
-    def _update_port(self):
-        """Update port on the ini file from the text entry field widget.
-
-        If port is changed manually on the .ini file, then app will pick the one
-        from the file, but it will show the old on inside the widget.
-        """
-        self.settings.setValue(
-            'server/port', self.server_status.port_entry.text())
-
-    def _validate_connection(self, state):
-        if not self.server_status.is_valid_port():
-            self._show_port_error()
-            return
-
-        self._update_port()
-
-        self.test_btn.setEnabled(state)
-        self.server_status.port_entry.setEnabled(not state)
+            try:
+                status = self._server.start_server()
+            except ValueError as err:
+                LOGGER.error('server is connected: %s', err)
+                self.connect_btn.disconnect()
+                self.connections.set_disconnected()
+            else:
+                LOGGER.debug('server is connected: %s', status)
 
         if state:
-            is_connected = self._setup_connection()
-
-            if is_connected:
-                self._update_ui_connect()
-            else:
-                self._update_ui_problems()
+            _start_connection()
         else:
-            self._update_ui_disconnect()
+            self._server.close_server()
 
-    def _update_ui_connect(self):
-        """Update ui when connected."""
-        _cs = 'Connected'
-        self.main_window.status_bar.showMessage(_cs)
-        self.text_widgets.set_status_text(_cs)
-        self.connect_btn.setText('Disconnect')
+    def _send_nodes(self):
+        """Send the selected Nuke Nodes using the internal client."""
+        self._node_client = NodeClient()
+        self._node_client.send_data()
 
-    def _update_ui_problems(self):
-        """Update ui when connection problem.
-
-        This will call _validate_connection() back and execute the disconnect_event
-        """
-        self.connect_btn.setChecked(False)
-        self.main_window.status_bar.showMessage(
-            'The specified port might be already in use.')
-
-    def _update_ui_disconnect(self):
-        """Update ui when disconnected."""
-        _ds = 'Disconnected'
-        self.text_widgets.set_status_text(_ds + '\n----')
-        self.main_window.status_bar.showMessage(_ds)
-        self.connect_btn.setText('Connect')
-        self.server_status.set_idle()
-
-        self.server.server.close()
-
-    def _setup_connection(self):
-        """Setup connection to server.
-
-        Returns:
-            str: status of the connection: True if successful False otherwise
-        """
-        self.server = Server(self.text_widgets)
-        status = self.server.start_server()
-        self.server_status.update_status(status)
-
-        LOGGER.debug('server is connected: %s', status)
-
-        return status
+    def _test_receiver(self):
+        """Send a test message using the internal client."""
+        self._test_client = TestClient()
+        self._test_client.send_data()
 
 
 class MainWindow(QMainWindow):
