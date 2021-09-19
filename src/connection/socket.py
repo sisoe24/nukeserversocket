@@ -12,9 +12,9 @@ LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
 class Socket(QObject):
-    def __init__(self, socket, status_widget):
+    def __init__(self, socket, log_widgets):
         QObject.__init__(self)
-        self.status_widget = status_widget
+        self.log_widgets = log_widgets
 
         self.socket = socket
         self.socket.connected.connect(self.on_connected)
@@ -23,11 +23,11 @@ class Socket(QObject):
 
     def on_connected(self):
         LOGGER.debug('Client connect event')
-        self.status_widget.set_status_text("Client Connected Event")
+        self.log_widgets.set_status_text("Client Connected Event")
 
     def on_disconnected(self):
         LOGGER.debug('-*- Client disconnect event -*-')
-        self.status_widget.set_status_text("Client socket closed.")
+        self.log_widgets.set_status_text("Client socket closed.")
 
     def _get_message(self):
         """Get the socket message.
@@ -41,6 +41,9 @@ class Socket(QObject):
             dict - dictionary data with the following keys:
                 'text': code to execute
                 'file': optional file name
+
+        Raises:
+            ValueError: if fails to deserialize json data.
         """
         msg = self.socket.readAll()
 
@@ -85,5 +88,5 @@ class Socket(QObject):
         self.socket.close()
         LOGGER.debug('Closing socket')
 
-        self.status_widget.set_input_text(msg_text)
-        self.status_widget.set_output_text(output_text)
+        self.log_widgets.set_input_text(msg_text)
+        self.log_widgets.set_output_text(output_text)
