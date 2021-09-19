@@ -15,7 +15,7 @@ from PySide2.QtWidgets import (
 
 from ..utils import SettingsState
 
-LOGGER = logging.getLogger('NukeServerSocket.server_status')
+LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
 
 
 class QHLine(QFrame):
