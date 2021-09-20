@@ -100,33 +100,26 @@ class ConnectionButtons(QObject):
         self.test_btn.setEnabled(state)
 
 
-class TcpPort(QObject):
+class TcpPort(QSpinBox):
     """Tcp port object"""
-    # TODO: class should be a Spinbxo
 
     def __init__(self, port_id):  # type: (str) -> None
-        QObject.__init__(self)
+        QSpinBox.__init__(self)
 
         self.port_id = port_id
         self.settings = AppSettings()
 
-        self._server_port = QSpinBox()
-        self._server_port.setRange(49512, 65535)
-        self._server_port.setMaximumHeight(100)
-        self._server_port.setToolTip('Server port for the socket to listen')
+        self.setRange(49512, 65535)
+        self.setMaximumHeight(100)
+        self.setToolTip('Server port for the socket to listen')
         self._setup_port()
 
     def _setup_port(self):
         """Setup the port entry field widget."""
         port = self.settings.value(self.port_id, 54321)
 
-        self._server_port.setValue(int(port))
-        self._server_port.valueChanged.connect(self._write_port)
-
-    @property
-    def widget(self):  # type: () -> QSpinBox
-        """The entry widget port Qt object."""
-        return self._server_port
+        self.setValue(int(port))
+        self.valueChanged.connect(self._write_port)
 
     def _write_port(self, port):
         """Write port id to configuration file is port is valid."""
@@ -146,7 +139,6 @@ class ConnectionsWidget(QWidget):
         self.set_idle()
 
         self.server_port = TcpPort(port_id='server/port')
-        self.port_widget = self.server_port.widget
 
         self.buttons = ConnectionButtons(self)
 
@@ -217,7 +209,7 @@ class ConnectionsWidget(QWidget):
         _form_layout.addRow(self.ip_address_label, self.ip_entry)
         # _form_layout.addRow(
         #     QLabel('Local Host Address'), QLabel(QHostInfo().localHostName()))
-        _form_layout.addRow(QLabel('Port'), self.port_widget)
+        _form_layout.addRow(QLabel('Port'), self.server_port)
 
         self._layout.addLayout(_form_layout)
 

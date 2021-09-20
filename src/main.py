@@ -75,7 +75,7 @@ class MainWindowWidget(QWidget):
         Args:
             state (bool): state of the widget.
         """
-        self.connections.server_port.widget.setEnabled(state)
+        self.connections.server_port.setEnabled(state)
         #TODO: intruder
         self.connections.sender_btn.setEnabled(state)
 
