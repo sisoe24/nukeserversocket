@@ -66,7 +66,17 @@ class MainWindowWidget(QWidget):
 
         NukeScriptEditor()
 
-    def _connection(self, state):
+    def _allow_change_port(self, state):  # type: (bool) -> None
+        """Enable/disable port widget modification.
+
+        When connected the port should be disable to avoid file configuration issues.
+
+        Args:
+            state (bool): state of the widget.
+        """
+        self.connections.server_port.widget.setEnabled(state)
+
+    def _connection(self, state):  # type: (bool) -> None
         """When connect button is toggled start connection, otherwise close it."""
 
         def _start_connection():
@@ -76,19 +86,18 @@ class MainWindowWidget(QWidget):
             try:
                 status = self._server.start_server()
             except ValueError as err:
-                LOGGER.error('server is connected: %s', err)
+                LOGGER.error('server did not connect: %s', err)
                 self.connect_btn.disconnect()
                 self.connections.set_disconnected()
             else:
                 LOGGER.debug('server is connected: %s', status)
-
-        # enable/disable port entry when connected
-        self.connections.server_port.widget.setEnabled(not state)
+                self._allow_change_port(False)
 
         if state:
             _start_connection()
         else:
             self._server.close_server()
+            self._allow_change_port(True)
 
     def _send_nodes(self):
         """Send the selected Nuke Nodes using the internal client."""
