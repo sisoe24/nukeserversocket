@@ -9,8 +9,11 @@ from PySide2.QtNetwork import QHostInfo
 from PySide2.QtWidgets import (
     QFormLayout,
     QGridLayout,
+    QHBoxLayout,
     QLabel,
+    QLineEdit,
     QPushButton,
+    QRadioButton,
     QVBoxLayout,
     QWidget,
     QSpinBox
@@ -64,6 +67,7 @@ class ConnectionButtons(QObject):
         self.test_btn.setEnabled(False)
 
         self.send_btn = QPushButton('Send Selected Nodes')
+        self.send_btn.setEnabled(False)
 
     def _toggle_buttons_state(self, state):
         """Switch button state based on the connect button.
@@ -74,7 +78,7 @@ class ConnectionButtons(QObject):
         Args:
             state (bool): state of the connect button
         """
-        self._enable_send(state)
+        # self._enable_send(state)
         self._enable_test(state)
 
     def _enable_send(self, state):
@@ -98,6 +102,7 @@ class ConnectionButtons(QObject):
 
 class TcpPort(QObject):
     """Tcp port object"""
+    # TODO: class should be a Spinbxo
 
     def __init__(self, port_id):  # type: (str) -> None
         QObject.__init__(self)
@@ -107,7 +112,7 @@ class TcpPort(QObject):
 
         self._server_port = QSpinBox()
         self._server_port.setRange(49512, 65535)
-        self._server_port.setMaximumWidth(100)
+        self._server_port.setMaximumHeight(100)
         self._server_port.setToolTip('Server port for the socket to listen')
         self._setup_port()
 
@@ -148,20 +153,70 @@ class ConnectionsWidget(QWidget):
         # when button is clicked, update server status label
         self.buttons.connect_btn.toggled.connect(self.update_status_label)
 
+        self.ip_entry = QLineEdit()
+        self.ip_entry.textChanged.connect(self._update_send_address)
+        self.ip_entry.setMaximumWidth(100)
+
+        self.ip_address_label = QLabel()
+
+        self.receiver_btn = QRadioButton('Receiver')
+        self.receiver_btn.toggled.connect(self._state_changed)
+        self.receiver_btn.setChecked(True)
+        self.receiver_btn.setLayoutDirection(Qt.RightToLeft)
+
+        self.sender_btn = QRadioButton('Sender')
+
         self._layout = QVBoxLayout()
+        self._add_switch_layout()
         self._add_form_layout()
         self._add_grid_layout()
 
         self.setLayout(self._layout)
 
+    def _update_send_address(self, text):
+        """Update settings for send port address if mode is on sender."""
+        if not self.receiver_btn.isChecked():
+            self.settings.setValue('server/send_to_address', text)
+
+    def _state_changed(self, state):
+        """When mode changes, update the UI accordingly.  """
+
+        def _update_ip_text(state):
+            """Update the ip widgets based on the mode."""
+            if state:
+                ip_label_text = 'Local IP Address'
+                ip_entry_text = get_ip()
+            else:
+                ip_label_text = 'Send To IP Address'
+                ip_entry_text = self.settings.value(
+                    'server/send_address', get_ip()
+                )
+
+            self.ip_entry.setText(ip_entry_text)
+            self.ip_address_label.setText(ip_label_text)
+
+        self.buttons.connect_btn.setEnabled(state)
+        self.buttons.send_btn.setEnabled(not state)
+        self.ip_entry.setReadOnly(state)
+
+        _update_ip_text(state)
+
+    def _add_switch_layout(self):
+        switch_layout = QHBoxLayout()
+        switch_layout.addWidget(self.receiver_btn)
+        switch_layout.addWidget(self.sender_btn)
+
+        self._layout.addLayout(switch_layout)
+
     def _add_form_layout(self):
         """Setup the form layout for the labels."""
+
         _form_layout = QFormLayout()
         _form_layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
         _form_layout.addRow(QLabel('Status'), self._is_connected)
-        _form_layout.addRow(QLabel('Local IP Address'), QLabel(get_ip()))
-        _form_layout.addRow(
-            QLabel('Local Host Address'), QLabel(QHostInfo().localHostName()))
+        _form_layout.addRow(self.ip_address_label, self.ip_entry)
+        # _form_layout.addRow(
+        #     QLabel('Local Host Address'), QLabel(QHostInfo().localHostName()))
         _form_layout.addRow(QLabel('Port'), self.port_widget)
 
         self._layout.addLayout(_form_layout)

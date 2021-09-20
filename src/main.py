@@ -76,6 +76,8 @@ class MainWindowWidget(QWidget):
             state (bool): state of the widget.
         """
         self.connections.server_port.widget.setEnabled(state)
+        #TODO: intruder
+        self.connections.sender_btn.setEnabled(state)
 
     def _connection(self, state):  # type: (bool) -> None
         """When connect button is toggled start connection, otherwise close it."""
