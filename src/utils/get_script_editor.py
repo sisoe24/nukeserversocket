@@ -358,6 +358,7 @@ class _CopyNodesController(ScriptEditorController, object):
     def __init__(self, file):
         ScriptEditorController.__init__(self)
         self._file = file
+        self.settings = SettingsState()
 
     def output(self):  # type: () -> str
         """Overriding parent method by returning a simple string when pasting nodes.
@@ -370,10 +371,11 @@ class _CopyNodesController(ScriptEditorController, object):
         Method will create a file with the text data received to be used as an
         argument for the `nuke.nodePaste('file')` method.
         """
-        with open(self._file, 'w') as file:
+        transfer_file = self.settings.value('path/transfer_file')
+        with open(transfer_file, 'w') as file:
             file.write(text)
 
-        text = "nuke.nodePaste('%s')" % self._file
+        text = "nuke.nodePaste('%s')" % transfer_file
         super(_CopyNodesController, self).set_input(text)
 
 
