@@ -354,12 +354,41 @@ class _BlinkController(ScriptEditorController, object):
         """).format(**kwargs).strip()
 
 
+class _CopyNodesController(ScriptEditorController, object):
+    def __init__(self, file):
+        ScriptEditorController.__init__(self)
+        self._file = file
+
+    def output(self):  # type: () -> str
+        """Overriding parent method by returning a simple string when pasting nodes.
+        """
+        return 'Nodes copied'
+
+    def set_input(self, text):  # type: (str) -> str
+        """Overriding parent method by executing the `nuke.nodePaste()` command.
+
+        Method will create a file with the text data received to be used as an
+        argument for the `nuke.nodePaste('file')` method.
+        """
+        with open(self._file, 'w') as file:
+            file.write(text)
+
+        text = "nuke.nodePaste('%s')" % self._file
+        super(_CopyNodesController, self).set_input(text)
+
+
 class CodeEditor(object):
     """Abstract facade for the script editor controller."""
 
     def __init__(self, file):  # type: (str) -> None
-        if file and re.search(r'(blink|cpp)$', file):
+        _, file_ext = os.path.splitext(file)
+
+        if file_ext in {'.cpp', '.blink'}:
             self._controller = _BlinkController(file)
+
+        elif file_ext == '.tmp':
+            self._controller = _CopyNodesController(file)
+
         else:
             self._controller = _PyController(file)
 
