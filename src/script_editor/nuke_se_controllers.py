@@ -23,10 +23,8 @@ class ScriptEditorController():
 
         self.script_editor = NukeScriptEditor()
 
-        self.initial_input = ""
-        self.initial_output = ""
-
-        self._file = ''
+        self.initial_input = None
+        self.initial_output = None
 
         self._save_state()
 
@@ -108,7 +106,7 @@ class _PyController(ScriptEditorController, object):
 
         The list can have a maximum size of 1mb after that it deletes the last element.
         Theoretically this is way to big, but I am also unsure about this method
-        in general so it works for now. 
+        in general so it works for now.
 
         Args:
             output_text (str): text to append into the list
@@ -232,9 +230,8 @@ class _BlinkController(ScriptEditorController, object):
 
 
 class _CopyNodesController(ScriptEditorController, object):
-    def __init__(self, file):
+    def __init__(self):
         ScriptEditorController.__init__(self)
-        self._file = file
         self.settings = AppSettings()
 
     def output(self):  # type: () -> str
@@ -266,7 +263,7 @@ class CodeEditor(object):
             self._controller = _BlinkController(file)
 
         elif file_ext == '.tmp':
-            self._controller = _CopyNodesController(file)
+            self._controller = _CopyNodesController()
 
         else:
             self._controller = _PyController(file)
