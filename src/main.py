@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import print_function
 
+import os
 import logging
 
 from PySide2.QtWidgets import (
@@ -22,6 +23,12 @@ from .widgets import (
 LOGGER = logging.getLogger('NukeServerSocket.main')
 LOGGER.debug('\nSTART APPLICATION')
 
+_TMP_FOLDER = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), '.tmp'
+)
+if not os.path.exists(_TMP_FOLDER):
+    os.mkdir(_TMP_FOLDER)
+
 
 class MainWindowWidget(QWidget):
     def __init__(self, parent):
@@ -29,6 +36,10 @@ class MainWindowWidget(QWidget):
 
         self.settings = SettingsState()
         self.settings.verify_port_config()
+        self.settings.setValue(
+            'path/transfer_file',
+            os.path.join(_TMP_FOLDER, 'transfer_nodes.tmp')
+        )
 
         self.log_widgets = LogWidgets()
 

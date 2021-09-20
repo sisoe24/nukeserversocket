@@ -80,35 +80,23 @@ class TestClient(Client):
 class NodeClient(Client):
     def __init__(self):
         Client.__init__(self)
-        self.tmp_file = self._create_tmp_file()
-
-    @staticmethod
-    def _create_tmp_file():
-        """Create a temporary file inside a temporary folder."""
-        tmp_folder = os.path.join(
-            os.path.abspath(os.path.dirname(__file__)), '.tmp'
-        )
-
-        if not os.path.exists(tmp_folder):
-            os.mkdir(tmp_folder)
-
-        return os.path.join(tmp_folder, 'transfer_nodes.tmp')
+        self.transfer_file = self.settings.value('path/transfer_file')
 
     def _nuke_copy(self):
-        """Invoke `nuke.copyNode()` method and write content to `self.tmp_file`"""
+        """Invoke `nuke.copyNode()` method and write content to `self.transfer_file`"""
         from .. import nuke
-        nuke.nodeCopy(self.tmp_file)
+        nuke.nodeCopy(self.transfer_file)
 
     def on_connected(self):
-        """When connected, send the content of the tmp file as data to the socket."""
+        """When connected, send the content of the transfer file as data to the socket."""
         LOGGER.debug('NodeClient -> Connected to host')
 
         self._nuke_copy()
 
-        with open(self.tmp_file) as file:
+        with open(self.transfer_file) as file:
             output_text = {
                 "text": file.read(),
-                "file": self.tmp_file
+                "file": self.transfer_file
             }
 
         self.write_data(json.dumps(output_text))
