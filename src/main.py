@@ -11,7 +11,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from .utils import NukeScriptEditor, SettingsState
+from .utils import NukeScriptEditor, AppSettings
 from .connection import Server, TestClient, NodeClient
 from .widgets import (
     LogWidgets,
@@ -34,7 +34,7 @@ class MainWindowWidget(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self)
 
-        self.settings = SettingsState()
+        self.settings = AppSettings()
         self.settings.verify_port_config()
         self.settings.setValue(
             'path/transfer_file',

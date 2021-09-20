@@ -16,7 +16,7 @@ from PySide2.QtWidgets import (
     QSpinBox
 )
 
-from ..utils import SettingsState, get_ip
+from ..utils import AppSettings, get_ip
 
 LOGGER = logging.getLogger('NukeServerSocket.connections_widget')
 
@@ -103,7 +103,7 @@ class TcpPort(QObject):
         QObject.__init__(self)
 
         self.port_id = port_id
-        self.settings = SettingsState()
+        self.settings = AppSettings()
 
         self._server_port = QSpinBox()
         self._server_port.setRange(49512, 65535)
@@ -134,7 +134,7 @@ class ConnectionsWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self, parent)
 
-        self.settings = SettingsState()
+        self.settings = AppSettings()
 
         self._is_connected = QLabel()
         self._is_connected.setObjectName('connection')

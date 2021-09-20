@@ -16,7 +16,7 @@ def config_file():
     )
 
 
-class SettingsState(QSettings):
+class AppSettings(QSettings):
     def __init__(self):
         QSettings.__init__(self, config_file(), QSettings.IniFormat)
 

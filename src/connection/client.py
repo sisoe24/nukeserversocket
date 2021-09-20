@@ -10,7 +10,7 @@ from abc import abstractmethod, ABCMeta
 
 from PySide2.QtNetwork import QTcpSocket
 
-from ..utils import SettingsState, validate_output
+from ..utils import AppSettings, validate_output
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
@@ -21,7 +21,7 @@ class Client(object):
 
     def __init__(self):
 
-        self.settings = SettingsState()
+        self.settings = AppSettings()
 
         self.tcp_host = "127.0.0.1"
         LOGGER.debug('client host: %s', self.tcp_host)

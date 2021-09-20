@@ -23,7 +23,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from . import SettingsState, insert_time
+from . import AppSettings, insert_time
 
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
@@ -205,7 +205,7 @@ class _PyController(ScriptEditorController, object):
 
     def __init__(self, file):
         ScriptEditorController.__init__(self)
-        self.settings = SettingsState()
+        self.settings = AppSettings()
         self._file = file
 
     def restore_input(self):
@@ -358,7 +358,7 @@ class _CopyNodesController(ScriptEditorController, object):
     def __init__(self, file):
         ScriptEditorController.__init__(self)
         self._file = file
-        self.settings = SettingsState()
+        self.settings = AppSettings()
 
     def output(self):  # type: () -> str
         """Overriding parent method by returning a simple string when pasting nodes.
