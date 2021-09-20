@@ -146,7 +146,7 @@ class ConnectionsWidget(QWidget):
         self.buttons = ConnectionButtons(self)
 
         # when button is clicked, update server status label
-        self.buttons.connect_btn.clicked.connect(self.update_status_label)
+        self.buttons.connect_btn.toggled.connect(self.update_status_label)
 
         self._layout = QVBoxLayout()
         self._add_form_layout()

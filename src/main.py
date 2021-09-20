@@ -47,7 +47,7 @@ class MainWindowWidget(QWidget):
         self.connections = ConnectionsWidget(parent=self)
 
         self.connect_btn = self.connections.buttons.connect_btn
-        self.connect_btn.clicked.connect(self._connection)
+        self.connect_btn.toggled.connect(self._connection)
 
         self.send_btn = self.connections.buttons.send_btn
         self.send_btn.clicked.connect(self._send_nodes)
