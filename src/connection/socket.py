@@ -6,7 +6,8 @@ import logging
 
 from PySide2.QtCore import QObject
 
-from ..utils import CodeEditor, validate_output
+from ..utils import validate_output
+from ..script_editor import CodeEditor
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 

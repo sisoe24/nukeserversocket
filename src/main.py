@@ -11,7 +11,8 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from .utils import NukeScriptEditor, AppSettings
+from .utils import AppSettings
+from .script_editor import NukeScriptEditor
 from .connection import Server, TestClient, NodeClient
 from .widgets import (
     LogWidgets,
