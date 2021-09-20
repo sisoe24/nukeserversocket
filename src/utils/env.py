@@ -3,7 +3,20 @@ import os
 import re
 import json
 
-from .paths import get_root
+
+from os.path import (
+    dirname, abspath
+)
+
+
+def get_src():
+    """Return src absolute path."""
+    return dirname(dirname(abspath(__file__)))
+
+
+def get_root():
+    """Return package root absolute path."""
+    return dirname(get_src())
 
 
 def get_env():
