@@ -29,6 +29,8 @@ class BaseScriptEditor(object):
     """
     __metaclass__ = ABCMeta
 
+    # TODO: input/output widget should be a method ?
+
     @abstractmethod
     def execute(self):
         pass
@@ -58,13 +60,10 @@ class NukeScriptEditor(BaseScriptEditor):
     input_widget = QWidget
     output_widget = QWidget
 
-    def __init__(self):
-        LOGGER.debug('init')
-        self.init_editor()
-
     @classmethod
     def init_editor(cls):
         """Initialize NukeScriptEditor properties"""
+        LOGGER.debug('Initialize getting Nuke Script Editor')
         cls.script_editor = cls.get_script_editor()
         cls.run_button = cls.get_run_button()
         cls.console = cls.script_editor.findChild(QSplitter)
@@ -121,12 +120,12 @@ class NukeScriptEditor(BaseScriptEditor):
         QTest.keyPress(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
         QTest.keyRelease(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
 
-    def execute(self):
+    def execute(cls):
         """Execute code inside Nuke Script Editor.
 
         Check if run_button exists otherwise simulate shortcut press.
         """
         try:
-            self.run_button.click()
+            cls.run_button.click()
         except AttributeError:
-            self._execute_shortcut()
+            cls._execute_shortcut()

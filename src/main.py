@@ -65,7 +65,7 @@ class MainWindowWidget(QWidget):
         self._test_client = None
         self._node_client = None
 
-        NukeScriptEditor()
+        NukeScriptEditor.init_editor()
 
     def _enable_connection_mod(self, state):  # type: (bool) -> None
         """Enable/disable connection widgets modification.
