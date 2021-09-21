@@ -1,5 +1,5 @@
-"""Fake emulation of the internal nuke script editor layout/widgets."""
 # coding: utf-8
+"""Fake emulation of the internal nuke script editor layout/widgets."""
 from __future__ import print_function
 
 import sys
@@ -71,8 +71,9 @@ class FakeScriptEditor(QWidget):
 
     def run_code(self):
         code = self.input_console.toPlainText()
-        call = subprocess.check_output(['python', '-c', code])
-        self.output_console.setPlainText(call)
+        if 'nuke.nodePaste' not in code:
+            code = subprocess.check_output(['python', '-c', code])
+        self.output_console.setPlainText(code)
 
 
 class MainWindow(QMainWindow):
