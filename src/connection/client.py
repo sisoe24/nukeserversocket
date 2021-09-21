@@ -1,7 +1,6 @@
 # coding: utf-8
 from __future__ import print_function, with_statement
 
-import os
 import json
 import random
 import logging
@@ -10,6 +9,7 @@ from abc import abstractmethod, ABCMeta
 
 from PySide2.QtNetwork import QTcpSocket
 
+from .. import nuke
 from ..utils import AppSettings, validate_output
 
 
@@ -23,7 +23,13 @@ class Client(object):
 
         self.settings = AppSettings()
 
-        self.tcp_host = self.settings.value('server/send_to_address', '127.0.0.1')
+        self.tcp_host = self.settings.value(
+            'server/send_to_address', '127.0.0.1')
+
+        # BUG: Nuke 11 host like: 192.168.1.44 will fail so for now fallback on local
+        if nuke.env['NukeVersionMajor'] == 11:
+            self.tcp_host = '127.0.0.1'
+
         LOGGER.debug('client host: %s', self.tcp_host)
 
         self.tcp_port = int(self.settings.value('server/port', '54321'))
