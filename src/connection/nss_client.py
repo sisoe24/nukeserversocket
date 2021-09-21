@@ -2,7 +2,6 @@
 from __future__ import print_function, with_statement
 
 import json
-import socket
 import random
 import logging
 
@@ -35,7 +34,8 @@ class NetworkAddresses(object):
 
     @property
     def local_host(self):  # type: () -> QHostAddress
-        """Get host address data from the configuration.ini file"""
+        """Get local host address QHostAddress object"""
+        # REVIEW: why not returning '127.0.0.1'?
         return QHostAddress.LocalHost
 
 

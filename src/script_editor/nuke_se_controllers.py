@@ -72,6 +72,7 @@ class ScriptEditorController():
 
     def __del__(self):
         """Restore widget text after deleting object"""
+        # TODO: this is kind of confusing
         self.restore_state()
 
 
@@ -133,7 +134,6 @@ class _PyController(ScriptEditorController, object):
         """Return last section (after #Result:) of the output.
 
         Args:
-
             text (str): text do be cleaned
 
         Returns:
@@ -172,7 +172,6 @@ class _PyController(ScriptEditorController, object):
             )
 
             if self.settings.get_bool('options/clear_output', True):
-                self._clear_history()
                 super(_PyController, self).set_output(output_text)
             else:
                 self._append_output(output_text)

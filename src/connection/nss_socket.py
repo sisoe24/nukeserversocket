@@ -33,10 +33,8 @@ class Socket(QObject):
     def _get_message(self):
         """Get the socket message.
 
-        If the message is a simple string then return it into a dictionary,
+        If the message is a simple string then add it to a dictionary,
         else return deserialized array.
-
-        Will raise a ValueError exception if can not convert the stringified array.
 
         Returns:
             dict - dictionary data with the following keys:
