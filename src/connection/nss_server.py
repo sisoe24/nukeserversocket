@@ -6,7 +6,7 @@ import logging
 from PySide2.QtCore import QObject
 from PySide2.QtNetwork import QTcpServer, QHostAddress
 
-from .socket import Socket
+from .nss_socket import Socket
 from ..utils import AppSettings
 
 LOGGER = logging.getLogger('NukeServerSocket.server')

@@ -1,3 +1,3 @@
-from .server import Server
-from .socket import Socket
-from .client import TestClient, SendNodesClient
+from .nss_server import Server
+from .nss_socket import Socket
+from .nss_client import TestClient, SendNodesClient
