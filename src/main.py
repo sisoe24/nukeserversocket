@@ -105,12 +105,12 @@ class MainWindowWidget(QWidget):
     def _send_nodes(self):
         """Send the selected Nuke Nodes using the internal client."""
         self._node_client = SendNodesClient()
-        self._node_client.send_data()
+        self._node_client.connect()
 
     def _test_receiver(self):
         """Send a test message using the internal client."""
         self._test_client = TestClient()
-        self._test_client.send_data()
+        self._test_client.connect()
 
 
 class MainWindow(QMainWindow):
