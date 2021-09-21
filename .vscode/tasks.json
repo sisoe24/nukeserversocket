@@ -25,7 +25,7 @@
         {
             "label": "Zip Project",
             "type": "shell",
-            "command": "bash ${workspaceFolder}/tasks/build.sh",
+            "command": "bash ${workspaceFolder}/scripts/create_zip_project.sh",
             "dependsOn": [
                 "Clean .pyc"
             ]
