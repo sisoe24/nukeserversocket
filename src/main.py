@@ -13,7 +13,7 @@ from PySide2.QtWidgets import (
 
 from .utils import AppSettings
 from .script_editor import NukeScriptEditor
-from .connection import Server, TestClient, NodeClient
+from .connection import Server, TestClient, SendNodesClient
 from .widgets import (
     LogWidgets,
     ConnectionsWidget,
@@ -104,7 +104,7 @@ class MainWindowWidget(QWidget):
 
     def _send_nodes(self):
         """Send the selected Nuke Nodes using the internal client."""
-        self._node_client = NodeClient()
+        self._node_client = SendNodesClient()
         self._node_client.send_data()
 
     def _test_receiver(self):

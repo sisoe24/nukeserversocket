@@ -83,14 +83,14 @@ class TestClient(Client):
         self.write_data(json.dumps(output_text))
 
 
-class NodeClient(Client):
+class SendNodesClient(Client):
     def __init__(self):
         Client.__init__(self)
         self.transfer_file = self.settings.value('path/transfer_file')
 
     def on_connected(self):
         """When connected, send the content of the transfer file as data to the socket."""
-        LOGGER.debug('NodeClient -> Connected to host')
+        LOGGER.debug('SendNodesClient -> Connected to host')
 
         nuke.nodeCopy(self.transfer_file)
 
