@@ -102,67 +102,23 @@ class TestClient(QBaseClient):
         self.write_data(output_text)
 
 
-class QtSendNodesClient(QBaseClient):
+class SendNodesClient(QBaseClient):
     """Send nuke nodes using the Qt client socket."""
 
-    def __init__(self, addresses, transfer_data):  # type: (NetworkAddresses, dict) -> None
+    def __init__(self, addresses=NetworkAddresses()):  # type: (NetworkAddresses, dict) -> None
         QBaseClient.__init__(self, addresses.hostname, addresses.port)
-        self.transfer_data = transfer_data
+        self.transfer_data = self.transfer_file_content()
 
     def on_connected(self):
         """When connected, send the content of the transfer file as data to the socket."""
         LOGGER.debug('SendNodesClient -> Connected to host')
         self.write_data(self.transfer_data)
 
-
-class PySendNodesClient(object):
-    """Send nuke nodes using the python client socket.
-
-    This class is needed because in nuke 11 there seems to be a bug when sending
-    to a different hostname. For now nuke 11 will fallback on python socket module.
-    """
-
-    def __init__(self, addresses, transfer_data):  # type: (NetworkAddresses, dict) -> None
-        self.tcp_host = addresses.hostname
-        self.tcp_port = addresses.port
-
-        self.socket = socket.socket()
-
-        self.transfer_data = transfer_data
-
-    def connect(self):
-        try:
-            self.socket.connect((self.tcp_host, self.tcp_port))
-        except Exception as err:
-            LOGGER.error('py.socket connection problem: %s', err)
-        else:
-            self.on_connected()
-
-    def on_connected(self):
-        self.socket.sendall(bytearray(json.dumps(self.transfer_data)))
-        self.socket.close()
-
-
-class SendNodesClient(object):
-    """Abstract facade to establish the proper client based on nuke version."""
-
-    def __init__(self):
-
-        transfer_file = self.transfer_file_content()
-
-        addresses = NetworkAddresses()
-
-        if nuke.env['NukeVersionMajor'] == 13:
-            self.client = PySendNodesClient(addresses, transfer_file)
-        else:
-            self.client = QtSendNodesClient(addresses, transfer_file)
-
-    def connect(self):
-        self.client.connect()
-
     def transfer_file_content(self):
         settings = AppSettings()
         transfer_file = settings.value('path/transfer_file')
+
+        # this will also create the file if it doesn't exists already
         nuke.nodeCopy(transfer_file)
 
         with open(transfer_file) as file:
