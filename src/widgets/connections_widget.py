@@ -151,12 +151,12 @@ class ConnectionsWidget(QWidget):
 
         self.ip_address_label = QLabel()
 
-        self.receiver_btn = QRadioButton('Receiver')
-        self.receiver_btn.toggled.connect(self._state_changed)
-        self.receiver_btn.setChecked(True)
-        self.receiver_btn.setLayoutDirection(Qt.RightToLeft)
+        self.receiver_mode = QRadioButton('Receiver')
+        self.receiver_mode.toggled.connect(self._state_changed)
+        self.receiver_mode.setChecked(True)
+        self.receiver_mode.setLayoutDirection(Qt.RightToLeft)
 
-        self.sender_btn = QRadioButton('Sender')
+        self.sender_mode = QRadioButton('Sender')
 
         self._layout = QVBoxLayout()
         self._add_switch_layout()
@@ -167,7 +167,7 @@ class ConnectionsWidget(QWidget):
 
     def _update_send_address(self, text):
         """Update settings for send port address if mode is on sender."""
-        if not self.receiver_btn.isChecked():
+        if not self.receiver_mode.isChecked():
             self.settings.setValue('server/send_to_address', text)
 
     def _state_changed(self, state):
@@ -195,8 +195,8 @@ class ConnectionsWidget(QWidget):
 
     def _add_switch_layout(self):
         switch_layout = QHBoxLayout()
-        switch_layout.addWidget(self.receiver_btn)
-        switch_layout.addWidget(self.sender_btn)
+        switch_layout.addWidget(self.receiver_mode)
+        switch_layout.addWidget(self.sender_mode)
 
         self._layout.addLayout(switch_layout)
 
