@@ -181,7 +181,7 @@ class ConnectionsWidget(QWidget):
             else:
                 ip_label_text = 'Send To IP Address'
                 ip_entry_text = self.settings.value(
-                    'server/send_address', get_ip()
+                    'server/send_to_address', get_ip()
                 )
 
             self.ip_entry.setText(ip_entry_text)
