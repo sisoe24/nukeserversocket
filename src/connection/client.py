@@ -88,16 +88,11 @@ class NodeClient(Client):
         Client.__init__(self)
         self.transfer_file = self.settings.value('path/transfer_file')
 
-    def _nuke_copy(self):
-        """Invoke `nuke.copyNode()` method and write content to `self.transfer_file`"""
-        from .. import nuke
-        nuke.nodeCopy(self.transfer_file)
-
     def on_connected(self):
         """When connected, send the content of the transfer file as data to the socket."""
         LOGGER.debug('NodeClient -> Connected to host')
 
-        self._nuke_copy()
+        nuke.nodeCopy(self.transfer_file)
 
         with open(self.transfer_file) as file:
             output_text = {
