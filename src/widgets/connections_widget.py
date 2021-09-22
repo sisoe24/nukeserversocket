@@ -124,7 +124,7 @@ class TcpPort(QSpinBox):
     def _write_port(self, port):
         """Write port id to configuration file is port is valid."""
         if 49152 <= port <= 65535:
-            self.settings.setValue(self.port_id, port)
+            self.settings.setValue(self.port_id, self.textFromValue(port))
 
 
 class ConnectionsWidget(QWidget):
