@@ -35,9 +35,9 @@ class InputEditor(QPlainTextEdit):
 
 
 class FakeScriptEditor(QWidget):
-    def __init__(self):
+    def __init__(self, object_name='uk.co.thefoundry.scripteditor.1'):
         QWidget.__init__(self)
-        self.setObjectName('uk.co.thefoundry.scripteditor.1')
+        self.setObjectName(object_name)
 
         self.run_btn = QPushButton('Run')
         self.run_btn.setToolTip('Run the current')
