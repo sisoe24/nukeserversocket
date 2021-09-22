@@ -8,6 +8,7 @@ from PySide2 import QtTest
 from PySide2.QtWidgets import (
     QApplication,
     QMainWindow,
+    QPushButton,
     QVBoxLayout,
     QWidget,
     QStatusBar
@@ -25,16 +26,37 @@ screen_loc = {
 }
 
 
+class SecondFakeScriptEditor(QWidget):
+    def __init__(self, se1):
+        QWidget.__init__(self)
+        self.se1 = se1
+        self.se2 = FakeScriptEditor('uk.co.thefoundry.scripteditor.2')
+
+        delete_btn = QPushButton('Delete Editor')
+        delete_btn.clicked.connect(self.delete_widget)
+
+        _layout = QVBoxLayout()
+        _layout.addWidget(delete_btn)
+        _layout.addWidget(self.se2)
+
+        self.setLayout(_layout)
+
+    def delete_widget(self):
+        print('delete editor.1')
+        self.se1.deleteLater()
+
+
 class TestMainwindowWidgets(QWidget):
     def __init__(self, parent):
         QWidget.__init__(self)
 
-        self.script_editor = FakeScriptEditor()
+        self.script_editor = FakeScriptEditor('uk.co.thefoundry.scripteditor.1')
         self.main_app = MainWindowWidget(parent)
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.main_app)
         _layout.addWidget(self.script_editor)
+        # _layout.addWidget(SecondFakeScriptEditor(self.script_editor))
         self.setLayout(_layout)
 
         self.main_app.connect_btn.click()
