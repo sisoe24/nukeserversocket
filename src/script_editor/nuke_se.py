@@ -84,7 +84,7 @@ class NukeScriptEditor(BaseScriptEditor):
         for widget in QApplication.allWidgets():
 
             # TODO: user should be able to decide which SE to use
-            if 'scripteditor' in widget.objectName():
+            if 'scripteditor.1' in widget.objectName():
                 return widget
 
         # XXX: can the script editor not exists?
