@@ -57,6 +57,9 @@ class QBaseClient(object):
         self.socket.connected.connect(self.on_connected)
         self.socket.disconnected.connect(self.on_disconnect)
         self.socket.error.connect(self.on_error)
+        self.socket.stateChanged.connect(
+            lambda x: LOGGER.debug('connection state: %s', x)
+        )
 
     @abstractmethod
     def on_connected(self):
@@ -76,6 +79,9 @@ class QBaseClient(object):
     def connect(self):
         LOGGER.debug('Connecting to host: %s %s', self.tcp_host, self.tcp_port)
         self.socket.connectToHost(self.tcp_host, self.tcp_port)
+
+        # REVIEW: docs says this would freeze the UI but I don't see it doing it
+        self.socket.waitForConnected(10000)
 
     def on_error(self, error):
         LOGGER.error("QBaseClient Error: %s", error)
