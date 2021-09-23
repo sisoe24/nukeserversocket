@@ -78,7 +78,7 @@ def about_links():
         ('Issues', github_web + '/issues'),
         ('Nukepedia', 'https://www.nukepedia.com/python/misc/nukeserversocket'),
         ('Logs', 'file:///%s/src/log' % _get_root()),
-        ('Vscode Ext.', 'https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools'),
+        ('VSCode Ext.', 'https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools'),
         ('Other', '')
     )
 

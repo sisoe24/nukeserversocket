@@ -6,15 +6,16 @@ import logging
 
 from PySide2.QtCore import QObject
 
-from ..utils import ScriptEditor, validate_output
+from ..utils import validate_output
+from ..script_editor import CodeEditor
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
 class Socket(QObject):
-    def __init__(self, socket, status_widget):
+    def __init__(self, socket, log_widgets):
         QObject.__init__(self)
-        self.status_widget = status_widget
+        self.log_widgets = log_widgets
 
         self.socket = socket
         self.socket.connected.connect(self.on_connected)
@@ -23,24 +24,25 @@ class Socket(QObject):
 
     def on_connected(self):
         LOGGER.debug('Client connect event')
-        self.status_widget.set_status_text("Client Connected Event")
+        self.log_widgets.set_status_text("Client Connected Event")
 
     def on_disconnected(self):
         LOGGER.debug('-*- Client disconnect event -*-')
-        self.status_widget.set_status_text("Client socket closed.")
+        self.log_widgets.set_status_text("Client socket closed.")
 
     def _get_message(self):
         """Get the socket message.
 
-        If the message is a simple string then return it into a dictionary,
+        If the message is a simple string then add it to a dictionary,
         else return deserialized array.
-
-        Will raise a ValueError exception if can not convert the stringified array.
 
         Returns:
             dict - dictionary data with the following keys:
                 'text': code to execute
                 'file': optional file name
+
+        Raises:
+            ValueError: if fails to deserialize json data.
         """
         msg = self.socket.readAll()
 
@@ -73,14 +75,11 @@ class Socket(QObject):
             LOGGER.warning("no text data to execute")
             return
 
-        script_editor = ScriptEditor()
-        script_editor.set_file(msg_data.get('file', ''))
-        script_editor.set_text(msg_text)
-        script_editor.execute()
+        editor = CodeEditor(msg_data.get('file', ''))
+        editor.controller.set_input(msg_text)
+        editor.controller.execute()
 
-        output_text = script_editor.set_status_output()
-
-        script_editor.restore_state()
+        output_text = editor.controller.output()
 
         LOGGER.debug('Sending message back')
         self.socket.write(validate_output(output_text))
@@ -88,5 +87,5 @@ class Socket(QObject):
         self.socket.close()
         LOGGER.debug('Closing socket')
 
-        self.status_widget.set_input_text(msg_text)
-        self.status_widget.set_output_text(output_text)
+        self.log_widgets.set_input_text(msg_text)
+        self.log_widgets.set_output_text(output_text)

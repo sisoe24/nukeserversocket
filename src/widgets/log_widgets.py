@@ -14,14 +14,14 @@ from PySide2.QtWidgets import (
 from ..utils import insert_time
 
 
-class TextBox(QGroupBox):
+class LogBox(QGroupBox):
     def __init__(self, title):
         QGroupBox.__init__(self, title)
 
         self.text_box = QPlainTextEdit()
         self.text_box.setReadOnly(True)
 
-        btn = QPushButton('Clear text')
+        btn = QPushButton('Clear log')
         btn.clicked.connect(self.text_box.clear)
 
         _layout = QVBoxLayout()
@@ -31,12 +31,12 @@ class TextBox(QGroupBox):
         self.setLayout(_layout)
 
 
-class TextWidgets(QWidget):
+class LogWidgets(QWidget):
     def __init__(self):
         QWidget.__init__(self)
-        self.status_text = TextBox('Status')
-        self.input_text = TextBox('Input')
-        self.output_text = TextBox('Output')
+        self.status_text = LogBox('Status')
+        self.input_text = LogBox('Input')
+        self.output_text = LogBox('Output')
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.status_text)
@@ -45,15 +45,17 @@ class TextWidgets(QWidget):
 
         self.setLayout(_layout)
 
+    @staticmethod
+    def _write_log(widget, text):
+        widget.text_box.insertPlainText(insert_time(text))
+        widget.text_box.ensureCursorVisible()
+
     def set_status_text(self, text):
-        self.status_text.text_box.insertPlainText(insert_time(text))
-        self.status_text.text_box.ensureCursorVisible()
+        self._write_log(self.status_text, text)
 
     def set_input_text(self, text):
-        self.input_text.text_box.insertPlainText(insert_time(text))
-        self.input_text.text_box.ensureCursorVisible()
+        self._write_log(self.input_text, text)
 
     def set_output_text(self, text):
         text = str(text).strip()
-        self.output_text.text_box.insertPlainText(insert_time(text))
-        self.output_text.text_box.ensureCursorVisible()
+        self._write_log(self.output_text, text)

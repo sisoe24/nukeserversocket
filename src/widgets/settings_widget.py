@@ -13,9 +13,9 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from ..utils import SettingsState
+from ..utils import AppSettings
 
-LOGGER = logging.getLogger('NukeServerSocket.server_status')
+LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
 
 
 class QHLine(QFrame):
@@ -33,7 +33,7 @@ class SettingsWidget(QWidget):
     def __init__(self):
         # TODO: major refactoring needed here
         QWidget.__init__(self)
-        self.settings = SettingsState()
+        self.settings = AppSettings()
 
         # setup checkboxes
         self._output_console = self._create_checkbox(

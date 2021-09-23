@@ -1,4 +1,5 @@
 # coding: utf-8
+"""Fake emulation of the internal nuke script editor layout/widgets."""
 from __future__ import print_function
 
 import sys
@@ -6,11 +7,10 @@ import random
 import subprocess
 
 
-from PySide2.QtCore import Qt, QEvent
+from PySide2.QtCore import Qt
 from PySide2.QtGui import QKeySequence, QKeyEvent
 
 from PySide2.QtWidgets import (
-    QShortcut,
     QVBoxLayout,
     QWidget,
     QPlainTextEdit,
@@ -35,9 +35,9 @@ class InputEditor(QPlainTextEdit):
 
 
 class FakeScriptEditor(QWidget):
-    def __init__(self):
+    def __init__(self, object_name='uk.co.thefoundry.scripteditor.1'):
         QWidget.__init__(self)
-        self.setObjectName('uk.co.thefoundry.scripteditor.1')
+        self.setObjectName(object_name)
 
         self.run_btn = QPushButton('Run')
         self.run_btn.setToolTip('Run the current')
@@ -71,8 +71,9 @@ class FakeScriptEditor(QWidget):
 
     def run_code(self):
         code = self.input_console.toPlainText()
-        call = subprocess.check_output(['python', '-c', code])
-        self.output_console.setPlainText(call)
+        if 'nuke.nodePaste' not in code:
+            code = subprocess.check_output(['python', '-c', code])
+        self.output_console.setPlainText(code)
 
 
 class MainWindow(QMainWindow):

@@ -82,4 +82,7 @@ class ErrorDialog(QMessageBox):
         elif button.text() == 'Open logs':
             to_open = get_about_key('Logs')
 
+        elif button.text() == 'Cancel':
+            return
+
         QDesktopServices.openUrl(to_open)
