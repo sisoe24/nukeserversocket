@@ -121,8 +121,11 @@ class TcpPort(QSpinBox):
         self.setValue(int(port))
         self.valueChanged.connect(self._write_port)
 
-    def _write_port(self, port):
-        """Write port id to configuration file is port is valid."""
+    def _write_port(self, port):  # type: (int) -> None
+        """Write port id to configuration file is port is valid.
+
+        The method will convert the port value into text before writing it.
+        """
         if 49152 <= port <= 65535:
             self.settings.setValue(self.port_id, self.textFromValue(port))
 
