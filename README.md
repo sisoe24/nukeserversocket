@@ -1,14 +1,18 @@
 # 1. NukeServerSocket README
 
-A Nuke that plugin that will allow code execution inside Nuke from the local network.
+A Nuke plugin that will allow code execution from the local network and more.
 
-> This is primarily a companion plugin for: [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools).
+> This is primarily a companion plugin for [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools).
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
-  - [1.1. Features](#11-features)
-  - [1.2. Installation](#12-installation)
-  - [1.3. Usage](#13-usage)
-  - [1.4. Connection](#14-connection)
+  - [1.1. Tools](#11-tools)
+  - [1.2. Features](#12-features)
+  - [1.3. Installation](#13-installation)
+  - [1.4. Usage](#14-usage)
+    - [1.4.1. Receive incoming request](#141-receive-incoming-request)
+    - [1.4.2. Receive/Send nodes](#142-receivesend-nodes)
+      - [1.4.2.1. Send](#1421-send)
+      - [1.4.2.2. Receive](#1422-receive)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
     - [1.6.1. Code Sample](#161-code-sample)
@@ -18,53 +22,70 @@ A Nuke that plugin that will allow code execution inside Nuke from the local net
   - [1.9. Test plugin locally](#19-test-plugin-locally)
   - [1.10. Overview](#110-overview)
 
-## 1.1. Features
 
-- Execute code from your local network by using Visual Studio Code.
-- If used locally (same machine) no configuration required, just start the server.
-- Connect from another computer by specify a custom address.
-- Multiple computer can connect to the same Nuke instance.
-- Easy expandable with any method of your choice (read more [Extendibility](#16-extendibility))
+## 1.1. Tools
 
-## 1.2. Installation
+Tools that are using NukeServerSocket:
+
+- [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
+
+## 1.2. Features
+
+- Send Python or BlinkScript code to be executed inside Nuke from your local network.
+- Multiple computers can connect to the same Nuke instance.
+- Receive/Send nodes from another Nuke instance in your local network.
+- Not bound to any application. (more on [Extendibility](#16-extendibility))
+
+## 1.3. Installation
 
 Save the plugin in your _.nuke_ directory or in a custom directory and then `import NukeServerSocket` in your _menu.py_.  
 **Remember**: If you use a custom plugin path, add the path in your init.py: `nuke.pluginAddPath('custom/path')`.
 > N.B. if your downloaded  zip folder has a different name (NukeServerSocket-master, NukeServerSocket-0.0.2 etc._), then you **need to rename it to just NukeServerSocket**.
 
-## 1.3. Usage
+## 1.4. Usage
 
-1. Open the _NukeServerSocket_ panel and start the server by clicking on **Connect**.
-   1. If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", just change the **port** entry to a different one and try again. It means that probably you have a connection listening on that port already.
-2. When connected you could test the receiver with the **Test Server Receiver** otherwise you are done.
-3. Send code from Visual Studio Code by using the companion extension.
+### 1.4.1. Receive incoming request
 
-> The plugin doesn't have to stay visible after the server has been initialized.
+Open the _NukeServerSocket_ panel and with the mode on **Receiver**, start the server by clicking **Connect**.
 
-## 1.4. Connection
+  > If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", just change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already. Also when connected, you could test the receiver with the **Test Receiver** button, otherwise you are done.
 
-When used locally (same machine), no configuration is required as the server will listen on the **Local Host Address**. If the server **port** is already busy, just change it by typing a random number between `49152` and `65535` and try again. Visual Studio Code will pick Nuke's settings automatically.
+When connected, NukeServerSocket will listen for incoming request on the IP Address and Port shown in the plugin.
 
-When connecting from/to another computer, manual configuration will be required inside Visual Studio Code.
-You will need the **Local IP address** and the **port** information from NukeServerSocket.
+Now you can send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
-The information inside Visual Studio Code must match the information inside NukeServerSocket.
+### 1.4.2. Receive/Send nodes
 
-> VMs: Sending from your local machine to a VM machine will likely require some configuration on your side like enabling some network settings etc.
+#### 1.4.2.1. Send
 
-If you still have some problems, please feel free to reach out for any questions.
+When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-receive-incoming-request)). Select the nodes you want to send a click **Send Selected Nodes**.
+
+> By default, the IP Address on the sender points to the local IP address, so if you want to send nodes between the same computer you should only specify the Port. When sending nodes to another computer you will also need to specify the IP Address of the NukeServerSocket computer you want the nodes to be sended.
+
+#### 1.4.2.2. Receive
+
+When receiving nodes just follow the steps for [Receive incoming request](#141-receive-incoming-request) for the receiving instance and the [Send](#1421-send) steps for the sending instances.
 
 ## 1.5. Settings
 
-The plugin offers some minor settings for the internal script editor, like send output, format text and so on but they are pretty self explanatory.
+The plugin offers some minor settings like output text to internal script editor, format text and so on.
 
 ## 1.6. Extendibility
 
-At its core, the plugin is just a server socket that waits for an incoming request, performs the operations inside Nuke and returns the result. Nothing ties it to Visual Studio Code per se.
+At its core, the plugin is just a server socket that awaits for an incoming request, performs the operations inside Nuke and returns the result. Nothing ties it to any application per se.
 
-The only requirement is to send the code to be executed as a string.
+The only requirement is that the code received should be inside a string.
 
-Additionally the plugin accepts a _stringified Associative Array_ with the key **text** containing the code to be executed as a string, and an optional key **file** to show the name of the file that is being executed (this will only show if settings **Output to Script Editor** and **Clean & Format Text** are enabled). On the plugin side, the data is converted with `json.loads()` into a valid `dictionary` python type.
+From the client point of view, the code can be sended either inside a _stringified_ associative array or inside a simple string, with the latter being valid only when sending Python code.
+
+The associative array should have the following keys: `text` and an optional `file`.
+
+- `text`: Must contain the code to be executed as a string.
+- `file`: Could contain the file path of the script that is being executed.
+
+Although the associative array is optional when executing Python code, it is a requirement when executing BlinkScript. The key **file** must contain a valid file extension: `.cpp` or `.blink` in order for the plugin to know where to delegate the job.
+
+> When sending a stringified array, the plugin will try to deserialize it with `json.loads()`.
 
 ### 1.6.1. Code Sample
 
@@ -104,31 +125,34 @@ print("Result :", data) # Hello World from py
 ```js
 // Node.js Send data example.
 
-let s = new require('net').Socket();
+let socket = new require('net').Socket();
 
 // connection host and port must match information inside Nuke plugin
-s.connect(54321, '127.0.0.1', function () {
+  socket.connect(54321, '127.0.0.1', function () {
 
     const data = {
-        'text': 'print("Hello World from node.js")',
+        "text": "print('Hello World from node.js')",
     };
 
     // stringify the object before sending
-    s.write(JSON.stringify(data));
+      socket.write(JSON.stringify(data));
 });
 
 // the returned data from NukeServerSocket
-s.on('data', function (data) {
+  socket.on('data', function (data) {
     // data could be <Buffer> | <string> | <any>
     console.log(data.toString('utf8'));
-    s.destroy();
+      socket.destroy();
 });
 ```
 
 ### 1.6.2. Port & Host address
 
-NukeServerSocket by default will listen on the local address so you just need to specify the local host address (eg.`127.0.0.1`) in your socket client code.
-The port information is written automatically to _.nuke/NukeServerSocket.ini_ file each time the user changes it. This is used from the Visual Studio Code extension to pick automatically to which port connect. Otherwise it will required to be specified manually.
+NukeServerSocket by default will listen on any host address.
+
+When connecting locally (same computer) you can just specify the local host address (eg.`127.0.0.1`) in your socket client code. When connecting from a different computer you also specify the exact IP Address (eg `192.168.1.10`).
+
+The port value is written to _.nuke/NukeServerSocket.ini_ inside the `server/port` field. Each time the user changes it, it gets update automatically. If used locally, this can be used from your extension to pick at which port to connect.
 
 This is pretty much all you need to start your own extension for your favorite text editor or any other method you prefer.
 
@@ -136,8 +160,8 @@ If you still have some problems, please feel free to reach out for any questions
 
 ## 1.7. Known Issues
 
-- Settings window doesn't display the tooltip text. This seems to be a Nuke bug as outside it works correctly.
-- Plugin has been tested only on small amount of scripts so if you encounter problems/bugs will be great to receive a testable sample code.
+- Settings window doesn't display the tooltip text.
+- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. The only way to force close all of the connections is to restart Nuke.
 
 ## 1.8. Compatibility
 
@@ -161,7 +185,7 @@ While it should work the same on all platforms, it has been currently only teste
 While limited in some regards, the plugin can be tested outside Nuke environment.
 
 1. Clone the github repo into your machine.
-2. `pipenv install --ignore-pipfile` for normal installation or `pipenv install --ignore-pipfile --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing. 🤭)
+2. `pipenv install --ignore-pipfile` for normal installation or `pipenv install --ignore-pipfile --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing).
 3. Launch the app via terminal `python -m tests.run_app` or vscode task: `RunApp`
 
 The local plugin offers a simple emulation of the Nuke's internal Script Editor layout. It just basic enough to test some simple code.
