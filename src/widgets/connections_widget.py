@@ -111,7 +111,7 @@ class TcpPort(QSpinBox):
 
         self.setRange(49512, 65535)
         self.setMaximumHeight(100)
-        self.setToolTip('Server port for the socket to listen')
+        self.setToolTip('Server port for the socket to listen/send.')
         self._setup_port()
 
     def _setup_port(self):
@@ -167,6 +167,24 @@ class ConnectionsWidget(QWidget):
         self._add_grid_layout()
 
         self.setLayout(self._layout)
+        self._set_tooltips()
+
+    def _set_tooltips(self):
+        """Setup the various tooltips so to clean the init method."""
+        self._is_connected.setToolTip(
+            'State of the server when listening for incoming requests.'
+        )
+        self.ip_entry.setToolTip(
+            'Local IP address for current host.\n'
+            'When on Receiver mode this only serves as a lookup.\n'
+            'When on Sender mode, field can be changed to match a different computer address.')
+        self.receiver_mode.setToolTip(
+            'Receiver Mode.\n'
+            'This puts the plugin into listening for incoming request mode.'
+        )
+        self.sender_mode.setToolTip(
+            'Sender Mode.\nThis puts the plugin into the sending nodes mode.'
+        )
 
     def _update_send_address(self, text):
         """Update settings for send port address if mode is on sender."""
