@@ -2,7 +2,14 @@
 
 ## [Unreleased]
 
-## [0.0.4] - 2021-09-12
+## [0.1.0] - 2021-09-23
+
+Code refactoring and some new features.
+
+### Added
+
+* Send/Receive nodes between Nuke instances.
+* Execute BlinkScript code.
 
 ### Changed
 
