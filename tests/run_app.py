@@ -14,7 +14,7 @@ from PySide2.QtWidgets import (
     QStatusBar
 )
 
-from src.widgets import FakeScriptEditor, ToolBar
+from src.widgets import FakeScriptEditor, ToolBar, ErrorDialog
 from src.main import MainWindowWidget
 
 # personal monitor loc screen for rapid testing
@@ -82,6 +82,7 @@ class TestMainWindow(QMainWindow):
             main_window = TestMainwindowWidgets(self)
         except Exception as err:
             print("err :", err, traceback.format_exc())
+            ErrorDialog(err, self).show()
         else:
             self.setCentralWidget(main_window)
 
