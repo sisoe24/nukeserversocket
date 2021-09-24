@@ -78,7 +78,7 @@ class NukeScriptEditor(BaseScriptEditor):
             QWidget: Nuke Internal script editor widget
 
         Raises:
-            BaseException: if script editor was not found
+            RuntimeWarning: if script editor was not found
         """
         # .topLevelWidgets() is a smaller list but SE is not always there
         for widget in QApplication.allWidgets():
@@ -89,7 +89,7 @@ class NukeScriptEditor(BaseScriptEditor):
 
         # XXX: can the script editor not exists?
         # TODO: don't like the traceback but probably will never be called anyway
-        raise BaseException(
+        raise RuntimeWarning(
             'NukeServerSocket: Script Editor panel not found!'
             'Please create one and reload the panel.'
         )
