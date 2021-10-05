@@ -160,6 +160,8 @@ class ConnectionsWidget(QWidget):
         self.receiver_mode.setLayoutDirection(Qt.RightToLeft)
 
         self.sender_mode = QRadioButton('Sender')
+        # TODO: change label to sender mode
+        # self.sender_mode.toggled.connect(self.set_sender)
 
         self._layout = QVBoxLayout()
         self._add_switch_layout()
@@ -243,6 +245,11 @@ class ConnectionsWidget(QWidget):
         _grid_layout.addWidget(self.buttons.send_btn, 1, 1)
 
         self._layout.addLayout(_grid_layout)
+
+    def set_sender(self):
+        """Set idle status."""
+        self._is_connected.setText('Sending')
+        self.setStyleSheet('QLabel#connection { color: yellow;}')
 
     def set_idle(self):
         """Set idle status."""
