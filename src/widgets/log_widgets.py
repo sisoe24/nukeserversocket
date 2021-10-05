@@ -35,7 +35,7 @@ class LogWidgets(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.status_text = LogBox('Status')
-        self.input_text = LogBox('Input')
+        self.input_text = LogBox('Received')
         self.output_text = LogBox('Output')
 
         _layout = QVBoxLayout()
