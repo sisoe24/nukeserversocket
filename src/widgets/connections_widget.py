@@ -139,7 +139,6 @@ class ConnectionsWidget(QWidget):
 
         self._is_connected = QLabel()
         self._is_connected.setObjectName('connection')
-        self.set_idle()
 
         self.server_port = TcpPort(port_id='server/port')
 
@@ -161,7 +160,7 @@ class ConnectionsWidget(QWidget):
 
         self.sender_mode = QRadioButton('Sender')
         # TODO: change label to sender mode
-        # self.sender_mode.toggled.connect(self.set_sender)
+        self.sender_mode.toggled.connect(self.set_sender)
 
         self._layout = QVBoxLayout()
         self._add_switch_layout()
@@ -194,7 +193,8 @@ class ConnectionsWidget(QWidget):
             self.settings.setValue('server/send_to_address', text)
 
     def _state_changed(self, state):
-        """When mode changes, update the UI accordingly.  """
+        """When mode changes, update the UI accordingly."""
+        self.set_idle()
 
         def _update_ip_text(state):
             """Update the ip widgets based on the mode."""
@@ -248,8 +248,8 @@ class ConnectionsWidget(QWidget):
 
     def set_sender(self):
         """Set idle status."""
-        self._is_connected.setText('Sending')
-        self.setStyleSheet('QLabel#connection { color: yellow;}')
+        self._is_connected.setText('Ready to send')
+        self.setStyleSheet('QLabel#connection { color: CornflowerBlue;}')
 
     def set_idle(self):
         """Set idle status."""
