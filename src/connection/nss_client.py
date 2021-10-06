@@ -81,7 +81,7 @@ class QBaseClient(object):
         self.socket.connectToHost(self.tcp_host, self.tcp_port)
 
         # REVIEW: docs says this would freeze the UI but I don't see it doing it
-        self.socket.waitForConnected(10000)
+        # self.socket.waitForConnected(10000)
 
     def on_error(self, error):
         LOGGER.error("QBaseClient Error: %s", error)
