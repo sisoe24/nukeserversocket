@@ -32,7 +32,7 @@ if not os.path.exists(_TMP_FOLDER):
 
 
 class MainWindowWidget(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         QWidget.__init__(self)
 
         self.settings = AppSettings()

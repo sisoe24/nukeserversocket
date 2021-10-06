@@ -3,6 +3,8 @@ from __future__ import print_function, with_statement
 
 import os
 import platform
+
+from collections import namedtuple
 from os.path import (
     basename, join, exists, dirname, abspath
 )
@@ -51,7 +53,8 @@ PACKAGE = _get_package_name()
 
 def _clean_empty(_list):
     """Don't include key if value is empty"""
-    return [(k, v) for k, v in _list if v]
+    AboutData = namedtuple('AboutData', ['label', 'repr'])
+    return [AboutData(k, v) for k, v in _list if v]
 
 
 def about():
