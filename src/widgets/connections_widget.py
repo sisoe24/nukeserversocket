@@ -78,7 +78,6 @@ class ConnectionButtons(QObject):
         Args:
             state (bool): state of the connect button
         """
-        # self._enable_send(state)
         self._enable_test(state)
 
     def _enable_send(self, state):
@@ -139,7 +138,6 @@ class ConnectionsWidget(QWidget):
 
         self._is_connected = QLabel()
         self._is_connected.setObjectName('connection')
-        self.set_idle()
 
         self.server_port = TcpPort(port_id='server/port')
 
@@ -160,6 +158,7 @@ class ConnectionsWidget(QWidget):
         self.receiver_mode.setLayoutDirection(Qt.RightToLeft)
 
         self.sender_mode = QRadioButton('Sender')
+        self.sender_mode.toggled.connect(self.set_sender)
 
         self._layout = QVBoxLayout()
         self._add_switch_layout()
@@ -192,7 +191,8 @@ class ConnectionsWidget(QWidget):
             self.settings.setValue('server/send_to_address', text)
 
     def _state_changed(self, state):
-        """When mode changes, update the UI accordingly.  """
+        """When mode changes, update the UI accordingly."""
+        self.set_idle()
 
         def _update_ip_text(state):
             """Update the ip widgets based on the mode."""
@@ -243,6 +243,11 @@ class ConnectionsWidget(QWidget):
         _grid_layout.addWidget(self.buttons.send_btn, 1, 1)
 
         self._layout.addLayout(_grid_layout)
+
+    def set_sender(self):
+        """Set idle status."""
+        self._is_connected.setText('Ready to send')
+        self.setStyleSheet('QLabel#connection { color: CornflowerBlue;}')
 
     def set_idle(self):
         """Set idle status."""
