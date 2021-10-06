@@ -35,12 +35,12 @@ class LogWidgets(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.status_text = LogBox('Status')
-        self.input_text = LogBox('Received')
+        self.received_text = LogBox('Received')
         self.output_text = LogBox('Output')
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.status_text)
-        _layout.addWidget(self.input_text)
+        _layout.addWidget(self.received_text)
         _layout.addWidget(self.output_text)
 
         self.setLayout(_layout)
@@ -53,8 +53,8 @@ class LogWidgets(QWidget):
     def set_status_text(self, text):
         self._write_log(self.status_text, text)
 
-    def set_input_text(self, text):
-        self._write_log(self.input_text, text)
+    def set_received_text(self, text):
+        self._write_log(self.received_text, text)
 
     def set_output_text(self, text):
         text = str(text).strip()

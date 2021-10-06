@@ -87,5 +87,5 @@ class Socket(QObject):
         self.socket.close()
         LOGGER.debug('Closing socket')
 
-        self.log_widgets.set_input_text(msg_text)
+        self.log_widgets.set_received_text(msg_text)
         self.log_widgets.set_output_text(output_text)
