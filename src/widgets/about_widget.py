@@ -27,10 +27,7 @@ class AboutWidget(QWidget):
         # self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
 
         self._form_layout = QFormLayout()
-        self._form_layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
-
-        for key, value in about():
-            self._form_layout.addRow(QLabel(key), QLabel(value))
+        self._fill_form_layout()
 
         self._grid_layout = QGridLayout()
         self._fill_grid_buttons()
@@ -43,6 +40,13 @@ class AboutWidget(QWidget):
         # self._layout.addStretch(5000)
 
         self.setLayout(self._layout)
+
+    def _fill_form_layout(self):
+        """fill the form layout with the information from about.py"""
+        self._form_layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
+
+        for key, value in about():
+            self._form_layout.addRow(QLabel(key), QLabel(value))
 
     def _fill_grid_buttons(self, columns=2):
         """Fill the grid layout with the buttons. By default will change row every 2 columns"""
@@ -63,5 +67,6 @@ class AboutWidget(QWidget):
         """Template to create buttons and assign them the signal to open an url."""
         btn = QPushButton(key)
         btn.setToolTip('Open ' + value)
+        btn.setProperty('link', value)
         btn.clicked.connect(lambda: QDesktopServices.openUrl(value))
         return btn
