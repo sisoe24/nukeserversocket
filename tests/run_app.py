@@ -50,7 +50,8 @@ class _MainwindowWidgets(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self)
 
-        self.script_editor = FakeScriptEditor('uk.co.thefoundry.scripteditor.1')
+        self.script_editor = FakeScriptEditor(
+            'uk.co.thefoundry.scripteditor.1')
         self.main_app = MainWindowWidget(parent)
 
         _layout = QVBoxLayout()
@@ -87,9 +88,14 @@ class _MainWindow(QMainWindow):
             self.setCentralWidget(self.main_window)
 
 
+class MyApplication(QApplication):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.window = _MainWindow()
+        self.window.show()
+
+
 if __name__ == '__main__':
 
-    app = QApplication(sys.argv)
-    window = _MainWindow()
-    window.show()
+    app = MyApplication(sys.argv)
     app.exec_()
