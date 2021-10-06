@@ -41,7 +41,7 @@ class TestAboutWidget:
             assert widget.isEnabled()
 
 
-@pytest.mark.skip(reason='This test should de bone only once in a while')
+@pytest.mark.skip(reason='should be done once in a while')
 def test_about_links():
     """Test if about links are reachable."""
     for link in about.about_links():
