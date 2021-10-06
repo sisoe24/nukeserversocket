@@ -23,7 +23,8 @@ from pytestqt.qt_compat import qt_api
 
 @pytest.fixture(scope='session')
 def myapp():
-    yield MyApplication([])
+    app = MyApplication([])
+    yield
 
 
 @pytest.fixture(scope='class')
