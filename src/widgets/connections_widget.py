@@ -78,7 +78,6 @@ class ConnectionButtons(QObject):
         Args:
             state (bool): state of the connect button
         """
-        # self._enable_send(state)
         self._enable_test(state)
 
     def _enable_send(self, state):
@@ -159,7 +158,6 @@ class ConnectionsWidget(QWidget):
         self.receiver_mode.setLayoutDirection(Qt.RightToLeft)
 
         self.sender_mode = QRadioButton('Sender')
-        # TODO: change label to sender mode
         self.sender_mode.toggled.connect(self.set_sender)
 
         self._layout = QVBoxLayout()
