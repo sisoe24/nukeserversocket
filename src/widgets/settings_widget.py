@@ -2,13 +2,11 @@
 from __future__ import print_function
 
 import logging
-from collections import namedtuple
 
 from PySide2.QtWidgets import (
     QCheckBox,
     QFormLayout,
     QLabel,
-    QSizePolicy,
     QWidget
 )
 
