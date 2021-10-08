@@ -9,16 +9,14 @@ from PySide2.QtCore import QSettings
 LOGGER = logging.getLogger('NukeServerSocket.settings')
 
 
-def config_file():
-    """Get configuration file in home/.nuke"""
-    return os.path.join(
-        os.path.expanduser('~'), '.nuke/NukeServerSocket.ini'
-    )
+CONFIG_FILE = os.path.join(
+    os.path.expanduser('~'), '.nuke', 'NukeServerSocket.ini'
+)
 
 
 class AppSettings(QSettings):
     def __init__(self):
-        QSettings.__init__(self, config_file(), QSettings.IniFormat)
+        QSettings.__init__(self, CONFIG_FILE, QSettings.IniFormat)
 
     def verify_port_config(self, default_port='54321'):
         """If .ini file or port gets deleted after execution, create it back."""
