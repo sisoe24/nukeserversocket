@@ -1,3 +1,4 @@
+import os
 import sys
 
 import pytest
@@ -6,7 +7,7 @@ from src.main import MainWindow
 
 from tests.run_app import MyApplication, _MainWindow
 from pytestqt.qt_compat import qt_api
-
+from src.utils import settings
 
 # @pytest.fixture()
 # def main_app(qtbot):
@@ -24,7 +25,7 @@ from pytestqt.qt_compat import qt_api
 @pytest.fixture(scope='session')
 def myapp():
     app = MyApplication([])
-    yield
+    yield app
 
 
 @pytest.fixture(scope='class')
@@ -64,3 +65,29 @@ def activate_sender_mode(main_window):
     main_window.connections.sender_mode.toggle()
     yield
     main_window.connections.receiver_mode.toggle()
+
+
+@pytest.fixture(scope='session')
+def fake_settings_file():
+    print('\nGenerating Fake Settings file')
+    current_dir = os.path.abspath(os.path.dirname(__file__))
+    tmp_dir = os.path.join(current_dir, 'tmp')
+
+    os.makedirs(tmp_dir, exist_ok=True)
+
+    file = os.path.join(tmp_dir, 'fake_ini.ini')
+
+    yield file
+
+    os.remove(file)
+
+
+@pytest.fixture()
+def setup_no_settings(myapp, fake_settings_file, monkeypatch):
+    print('-> Setup No Settings')
+
+    with open(fake_settings_file, 'w') as _:
+        pass
+
+    monkeypatch.setattr(settings, 'CONFIG_FILE', fake_settings_file)
+    yield fake_settings_file
