@@ -18,12 +18,15 @@ class AppSettings(QSettings):
     def __init__(self):
         QSettings.__init__(self, CONFIG_FILE, QSettings.IniFormat)
 
-    def verify_port_config(self, default_port='54321'):
-        """If .ini file or port gets deleted after execution, create it back."""
+    def validate_port_settings(self, default_port='54321'):
+        """Check for the port settings in the ini file and verify its correctness.
+
+        If value is not found or is wrong, then create a default one with value `54321`
+        """
         port = self.value('server/port')
         LOGGER.debug('Verify port configuration: %s', port)
 
-        if not port or len(port) != 5:
+        if not port or not 49512 <= int(port) <= 65535:
             self.setValue('server/port', default_port)
 
     def get_bool(self, value, default=False):

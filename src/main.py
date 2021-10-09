@@ -36,7 +36,7 @@ class MainWindowWidget(QWidget):
         QWidget.__init__(self)
 
         self.settings = AppSettings()
-        self.settings.verify_port_config()
+        self.settings.validate_port_settings()
         self.settings.setValue(
             'path/transfer_file',
             os.path.join(_TMP_FOLDER, 'transfer_nodes.tmp')
