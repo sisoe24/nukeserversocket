@@ -6,16 +6,6 @@ from PySide2.QtWidgets import (
 
 from src.main import MainWindowWidget
 
-@pytest.mark.skip(reason='not correct')
-def test_port_is_modifiable(connection_widgets):
-    """Test if port widget can be changed to a different value."""
-    port = connection_widgets.server_port
-
-    port_value = port.value()
-    port.setValue(port_value + 1)
-
-    assert port.value() != port_value
-
 
 class GuiApp:
     label = None
@@ -157,6 +147,7 @@ class TestGuiIsSenderMode(GuiApp):
         cls.status_text = 'Disconnected'
         cls.received_text = ''
         cls.output_text = ''
+
 
 @pytest.mark.skip('not implemented yet')
 class TestGuiIsNotConnected(GuiApp):
