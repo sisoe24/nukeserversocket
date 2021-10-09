@@ -11,3 +11,8 @@ dist
 **/config/
 *.egg-info
 .pytest_cache
+
+
+# tests
+.coverage
+htmlcov/
