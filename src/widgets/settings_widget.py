@@ -16,7 +16,8 @@ LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
 
 
 class CheckBox(QCheckBox):
-    def __init__(self, title: str, is_checked: bool, tooltip: str, parent=None):
+    def __init__(self, title, is_checked, tooltip, parent=None):
+        # type: (str, bool, str, QWidget | None) -> None
         QCheckBox.__init__(self, title, parent)
         self.setToolTip(tooltip)
 
@@ -35,6 +36,7 @@ class CheckBox(QCheckBox):
 class SettingsWidget(QWidget):
     def __init__(self):
         QWidget.__init__(self)
+        # TODO: refactor sections into their own classes
 
         self._output_console = CheckBox(
             is_checked=True, title='Output To Console', parent=self,
@@ -63,7 +65,7 @@ class SettingsWidget(QWidget):
         _layout = QFormLayout()
         _layout.setVerticalSpacing(10)
 
-        # HACK: this is obviously really ugly. need to find something else
+        # HACK: this is really ugly. need to think something else
         # try to add the labels dynamically in a loop
         labels = ('Output:', '', '', 'Input:', 'Misc:', '')
         for label, checkbox in zip(labels, self.children()):
@@ -75,12 +77,12 @@ class SettingsWidget(QWidget):
         self._output_console.toggled.connect(self._enable_sub_options)
         self._format_output.toggled.connect(self._enable_clear_console)
 
-    def _enable_clear_console(self, state: bool):
+    def _enable_clear_console(self, state):  # type: (bool) -> None
         """Set state of format output option."""
         self._clear_output.setEnabled(state)
         self._clear_output.setChecked(state)
 
-    def _enable_format_output(self, state: bool):
+    def _enable_format_output(self, state):  # type: (bool) -> None
         """Set state of format output option."""
         self._format_output.setEnabled(state)
         self._format_output.setChecked(state)
