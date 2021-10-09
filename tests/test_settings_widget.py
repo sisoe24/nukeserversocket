@@ -22,7 +22,7 @@ class TestSubStateSettings:
     def clear_text(self) -> QCheckBox:
         return self.settings_widget._clear_output
 
-    def test_output_console_is_true(self, setup_no_settings):
+    def test_output_console_is_true(self, startup_no_settings):
         """If `console_output` is enable, so it should be for `clear_text` and 
         `format_output`.
         """
@@ -33,7 +33,7 @@ class TestSubStateSettings:
         assert self.clear_text.isChecked()
         assert self.format_output.isChecked()
 
-    def test_output_console_is_false(self, setup_no_settings):
+    def test_output_console_is_false(self, startup_no_settings):
         """If `console_output` is disabled, so it should be for `clear_text` and 
         `format_output`.
         """
@@ -53,7 +53,7 @@ class TestSubStateSettings:
         self.clear_text.click()
         is_sub_state_false()
 
-    def test_format_text_is_false(self, setup_no_settings):
+    def test_format_text_is_false(self, startup_no_settings):
         """If `format_text` is disabled so it should be for `clear_text`"""
         def is_sub_state_false():
             assert not self.clear_text.isEnabled()
@@ -77,7 +77,7 @@ class TestSettingsFile:
     def checkboxes(self) -> List[QCheckBox]:
         return self.settings_widget.findChildren(QCheckBox)
 
-    def test_no_settings_default_values(self, setup_no_settings):
+    def test_no_settings_default_values(self, startup_no_settings):
         """Check if checkbox values are on the default if no ini file is found."""
         initial_values = {
             'output_to_console': True,
@@ -95,7 +95,7 @@ class TestSettingsFile:
             assert checkbox.isChecked() == value
 
     @pytest.fixture()
-    def setup_fake_config_file(self, setup_no_settings):
+    def setup_fake_config_file(self, startup_no_settings):
         """Write options state to fake config file"""
 
         self.settings_widget = settings_widget.SettingsWidget()
@@ -105,15 +105,15 @@ class TestSettingsFile:
             checkbox.toggle()
             checkbox.setChecked(True)
 
-    def test_settings_exists(self, setup_fake_config_file, fake_settings_file):
+    def test_settings_exists(self, setup_fake_config_file, tmp_settings_file):
         """Check if file settings was created."""
-        assert os.path.exists(fake_settings_file)
+        assert os.path.exists(tmp_settings_file)
 
-    def test_check_value(self, setup_fake_config_file, fake_settings_file):
+    def test_check_value(self, setup_fake_config_file, tmp_settings_file):
         """Check if file checkboxes saved their state on the file settings"""
 
         config = configparser.ConfigParser()
-        config.read(fake_settings_file)
+        config.read(tmp_settings_file)
 
         settings_values = config['options']
 

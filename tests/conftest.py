@@ -68,8 +68,7 @@ def activate_sender_mode(main_window):
 
 
 @pytest.fixture(scope='session')
-def fake_settings_file():
-    print('\nGenerating Fake Settings file')
+def tmp_settings_file():
     current_dir = os.path.abspath(os.path.dirname(__file__))
     tmp_dir = os.path.join(current_dir, 'tmp')
 
@@ -83,11 +82,8 @@ def fake_settings_file():
 
 
 @pytest.fixture()
-def setup_no_settings(myapp, fake_settings_file, monkeypatch):
-    print('-> Setup No Settings')
-
-    with open(fake_settings_file, 'w') as _:
+def startup_no_settings(myapp, tmp_settings_file, monkeypatch):
+    with open(tmp_settings_file, 'w') as _:
         pass
-
-    monkeypatch.setattr(settings, 'CONFIG_FILE', fake_settings_file)
-    yield fake_settings_file
+    monkeypatch.setattr(settings, 'CONFIG_FILE', tmp_settings_file)
+    yield tmp_settings_file
