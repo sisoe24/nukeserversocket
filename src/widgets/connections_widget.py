@@ -102,10 +102,10 @@ class ConnectionButtons(QObject):
 class TcpPort(QSpinBox):
     """Tcp port object"""
 
-    def __init__(self, port_id):  # type: (str) -> None
+    def __init__(self, port_id='port'):  # type: (str) -> None
         QSpinBox.__init__(self)
 
-        self.port_id = port_id
+        self.port_id = 'server/%s' % port_id
         self.settings = AppSettings()
 
         self.setRange(49512, 65535)
@@ -139,7 +139,7 @@ class ConnectionsWidget(QWidget):
         self._is_connected = QLabel()
         self._is_connected.setObjectName('connection')
 
-        self.server_port = TcpPort(port_id='server/port')
+        self.server_port = TcpPort()
 
         self.buttons = ConnectionButtons(self)
 
