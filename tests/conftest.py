@@ -44,17 +44,6 @@ def start_connection(main_window: MainWindow):
     print('End server Connection')
 
 
-@pytest.fixture(scope='class')
-def toggle_receiver_btn(main_window):
-    main_window.connect_btn.click()
-    main_window.test_btn.click()
-    # time.sleep(5)
-
-    yield
-
-    main_window.connect_btn.click()
-
-
 @pytest.fixture()
 def connection_widgets(main_window):
     yield main_window.connections
@@ -78,7 +67,7 @@ def tmp_settings_file():
 
     yield file
 
-    os.remove(file)
+    # os.remove(file)
 
 
 @pytest.fixture()
