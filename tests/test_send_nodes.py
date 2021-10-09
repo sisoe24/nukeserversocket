@@ -1,12 +1,14 @@
 
+from multiprocessing import Queue, Process
 import os
 import configparser
 from textwrap import dedent
 
 import pytest
 
-from src.main import MainWindowWidget
+from src.main import MainWindow, MainWindowWidget
 from src.widgets import ConnectionsWidget
+from tests.run_app import MyApplication
 
 
 @pytest.fixture()
@@ -56,3 +58,18 @@ def test_transfer_file_is_valid(transfer_node_file):
     """).strip()
     with open(transfer_node_file) as f:
         assert _transfer_nodes == f.read()
+
+
+def test_send_was_successful(myapp):
+    widget = ConnectionsWidget()
+
+    widget.server_port.setValue(54322)
+    widget.ip_entry.setText('192.168.1.34')
+    widget.sender_mode.toggle()
+
+    main = MainWindowWidget()
+    main._send_nodes()
+
+    log = main.log_widgets
+
+    assert 'Nodes copied' in log.output_text.text_box.toPlainText()
