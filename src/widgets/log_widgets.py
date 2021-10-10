@@ -2,7 +2,6 @@
 """ Text widget needed for status purposes."""
 from __future__ import print_function
 
-
 from PySide2.QtWidgets import (
     QGroupBox,
     QPlainTextEdit,
@@ -31,7 +30,7 @@ class LogBox(QGroupBox):
         self.setLayout(_layout)
 
 
-class LogWidgets(QWidget):
+class LogWidget(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.status_text = LogBox('Status')
@@ -59,3 +58,13 @@ class LogWidgets(QWidget):
     def set_output_text(self, text):
         text = str(text).strip()
         self._write_log(self.output_text, text)
+
+
+class LogWidgets:
+    """Ensure that each instance reference points to the same class."""
+    log_widgets = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls.log_widgets:
+            cls.log_widgets = LogWidget()
+        return cls.log_widgets

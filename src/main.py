@@ -83,7 +83,7 @@ class MainWindowWidget(QWidget):
 
         def _start_connection():
             """Setup connection to server."""
-            self._server = Server(self.log_widgets)
+            self._server = Server()
 
             try:
                 status = self._server.start_server()
@@ -103,12 +103,12 @@ class MainWindowWidget(QWidget):
 
     def _send_nodes(self):
         """Send the selected Nuke Nodes using the internal client."""
-        self._node_client = SendNodesClient(self.log_widgets)
+        self._node_client = SendNodesClient()
         self._node_client.connect_to_host()
 
     def _test_receiver(self):
         """Send a test message using the internal client."""
-        self._test_client = TestClient(self.log_widgets)
+        self._test_client = TestClient()
         self._test_client.connect_to_host()
 
 

@@ -8,17 +8,18 @@ from PySide2.QtNetwork import QTcpServer, QHostAddress
 
 from .nss_socket import Socket
 from ..utils import AppSettings
+from ..widgets import LogWidgets
 
 LOGGER = logging.getLogger('NukeServerSocket.server')
 
 
 class Server(QObject):
 
-    def __init__(self, log_widgets):
+    def __init__(self):
         QObject.__init__(self)
         self.settings = AppSettings()
 
-        self.log_widgets = log_widgets
+        self.log_widgets = LogWidgets()
 
         self.tcp_port = int(self.settings.value('server/port', '54321'))
         LOGGER.debug('server tcp port: %s', self.tcp_port)
@@ -38,9 +39,7 @@ class Server(QObject):
 
     def _create_connection(self):
         while self.server.hasPendingConnections():
-            self.socket = Socket(
-                self.server.nextPendingConnection(), self.log_widgets
-            )
+            self.socket = Socket(self.server.nextPendingConnection())
             LOGGER.debug('socket: %s', self.socket)
 
     def start_server(self):

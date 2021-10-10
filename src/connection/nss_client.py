@@ -8,10 +8,11 @@ import logging
 from abc import abstractmethod, ABCMeta
 
 from PySide2.QtCore import QObject, QTimer
-from PySide2.QtNetwork import QAbstractSocket, QHostAddress, QTcpSocket
+from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 
 from .. import nuke
 from ..utils import AppSettings, validate_output
+from ..widgets import LogWidgets
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
@@ -43,7 +44,7 @@ class NetworkAddresses(object):
 class QBaseClient(QObject):
     __metaclass__ = ABCMeta
 
-    def __init__(self, hostname, port, log_widgets):  # type: (str, int, LogWidgets) -> None
+    def __init__(self, hostname, port):  # type: (str, int, LogWidgets) -> None
         QObject.__init__(self)
 
         self.tcp_host = hostname
@@ -55,7 +56,7 @@ class QBaseClient(QObject):
         self.socket = QTcpSocket()
         LOGGER.debug('creating socket: %s', self.socket)
 
-        self.log_widgets = log_widgets
+        self.log_widgets = LogWidgets()
 
         self.socket.readyRead.connect(self.read_data)
         self.socket.connected.connect(self.on_connected)
@@ -85,7 +86,6 @@ class QBaseClient(QObject):
         # TODO: docstring not accurate anymore
         """Method needs to return a string with the text to send write"""
 
-    # @abstractmethod
     def connection_state(self, socket_state):
         if socket_state == QAbstractSocket.ConnectingState:
             self.log_widgets.set_status_text('Establishing connection...')
@@ -98,7 +98,7 @@ class QBaseClient(QObject):
             )
 
     def _connection_timeout(self):
-        self.log_widgets.set_status_text('Connection timeout.')
+        self.log_widgets.set_status_text('Connection timeout.\n----')
         LOGGER.debug('Connection Timeout')
         self.socket.abort()
 
@@ -118,8 +118,9 @@ class QBaseClient(QObject):
         self.timer.start()
 
     def on_error(self, error):
+        self.timer.stop()
         self.log_widgets.set_status_text(
-            'Error: %s' % self.socket.errorString())
+            'Error: %s\n----' % self.socket.errorString())
         LOGGER.error("QBaseClient Error: %s", error)
 
     def read_data(self):
@@ -129,9 +130,8 @@ class QBaseClient(QObject):
 class TestClient(QBaseClient):
     """Test Socket by send a sample text to the local host port."""
 
-    def __init__(self, log_widgets, addresses=NetworkAddresses()):
-        QBaseClient.__init__(self, addresses.local_host,
-                             addresses.port, log_widgets)
+    def __init__(self, addresses=NetworkAddresses()):
+        QBaseClient.__init__(self, addresses.local_host, addresses.port)
 
     def on_connected(self):
         LOGGER.debug('TestClient -> Connected to host')
@@ -148,9 +148,8 @@ class TestClient(QBaseClient):
 class SendNodesClient(QBaseClient):
     """Send nuke nodes using the Qt client socket."""
 
-    def __init__(self, log_widgets, addresses=NetworkAddresses()):
-        QBaseClient.__init__(self, addresses.send_address,
-                             addresses.port, log_widgets)
+    def __init__(self,  addresses=NetworkAddresses()):
+        QBaseClient.__init__(self, addresses.send_address, addresses.port)
         self.transfer_data = self.transfer_file_content()
 
     def on_connected(self):
