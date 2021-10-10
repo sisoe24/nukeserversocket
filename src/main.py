@@ -81,12 +81,17 @@ class MainWindowWidget(QWidget):
         self.connections.server_port.setEnabled(state)
         self.connections.sender_mode.setEnabled(state)
 
+    def _disconnect(self):
+        """If server connection gets timeout then close it and reset UI."""
+        self.connect_btn.setChecked(False)
+
     def _connection(self, state):  # type: (bool) -> None
         """When connect button is toggled start connection, otherwise close it."""
 
         def _start_connection():
             """Setup connection to server."""
             self._server = Server()
+            self._server.timeout.connect(self._disconnect)
 
             try:
                 status = self._server.start_server()

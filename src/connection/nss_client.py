@@ -11,7 +11,7 @@ from PySide2.QtCore import QObject, QTimer
 from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 
 from .. import nuke
-from ..utils import AppSettings, validate_output
+from ..utils import AppSettings, validate_output, connection_timer
 from ..widgets import LogWidgets
 
 
@@ -64,22 +64,8 @@ class QBaseClient(QObject):
         self.socket.error.connect(self.on_error)
         self.socket.stateChanged.connect(self.connection_state)
 
-        self.timer = self.connection_timer()
+        self.timer = connection_timer(10)
         self.timer.timeout.connect(self._connection_timeout)
-
-    @staticmethod
-    def connection_timer():  # type: () -> QTimer
-        """Setup a single shot connection timeout timer for the client with
-        10 seconds internal.
-
-        Returns:
-            QTimer: QTimer object
-        """
-        _timer = QTimer()
-        ten_sec = 10000
-        _timer.setInterval(ten_sec)
-        _timer.setSingleShot(True)
-        return _timer
 
     @abstractmethod
     def on_connected(self):

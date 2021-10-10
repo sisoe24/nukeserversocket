@@ -5,7 +5,7 @@ import sys
 import socket
 import logging
 
-from PySide2.QtCore import QByteArray, QTime
+from PySide2.QtCore import QByteArray, QTime, QTimer
 from PySide2.QtNetwork import QNetworkInterface
 
 LOGGER = logging.getLogger('NukeServerSocket.util')
@@ -24,6 +24,22 @@ def insert_time(text):  # type: (str) -> str
     """
     time = QTime().currentTime().toString()
     return '[%s] %s\n' % (time, text)
+
+
+def connection_timer(timeout):  # type: (int) -> QTimer
+    """Setup a single shot connection timeout timer.
+
+    Args:
+        timeout (int): timeout time in seconds: 1, 10, 60
+
+    Returns:
+        QTimer: QTimer object
+    """
+    # TODO: should be cool to have a widget timer with the time left
+    _timer = QTimer()
+    _timer.setInterval(timeout * 1000)
+    _timer.setSingleShot(True)
+    return _timer
 
 
 def validate_output(data):  # type: (str) -> bytearray | QByteArray
