@@ -80,12 +80,12 @@ class _MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         try:
-            self.main_window = _MainwindowWidgets(self)
+            self.main_widgets = _MainwindowWidgets(self)
         except Exception as err:
             print("err :", err, traceback.format_exc())
             ErrorDialog(err, self).show()
         else:
-            self.setCentralWidget(self.main_window)
+            self.setCentralWidget(self.main_widgets)
 
 
 class MyApplication(QApplication):
