@@ -31,7 +31,7 @@ def myapp():
 @pytest.fixture(scope='class')
 def main_window(myapp: MyApplication) -> MainWindow:
     print('initialize main app')
-    window = myapp.window.main_window.main_app
+    window = myapp.window.main_widgets.main_app
     yield window
 
 

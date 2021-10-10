@@ -17,7 +17,7 @@ def port_range(value):
 
 def test_default_value_server(startup_no_settings):
     """Test port default value if no settings.ini is found"""
-    server_port = Server(LogWidgets()).tcp_port
+    server_port = Server().tcp_port
     assert server_port == 54321
 
 
