@@ -33,14 +33,14 @@ class LogBox(QGroupBox):
 class LogWidget(QWidget):
     def __init__(self):
         QWidget.__init__(self)
-        self.status_text = LogBox('Status')
-        self.received_text = LogBox('Received')
-        self.output_text = LogBox('Output')
+        self.status_widget = LogBox('Status')
+        self.received_widget = LogBox('Received')
+        self.output_widget = LogBox('Output')
 
         _layout = QVBoxLayout()
-        _layout.addWidget(self.status_text)
-        _layout.addWidget(self.received_text)
-        _layout.addWidget(self.output_text)
+        _layout.addWidget(self.status_widget)
+        _layout.addWidget(self.received_widget)
+        _layout.addWidget(self.output_widget)
 
         self.setLayout(_layout)
 
@@ -50,14 +50,14 @@ class LogWidget(QWidget):
         widget.text_box.ensureCursorVisible()
 
     def set_status_text(self, text):
-        self._write_log(self.status_text, text)
+        self._write_log(self.status_widget, text)
 
     def set_received_text(self, text):
-        self._write_log(self.received_text, text)
+        self._write_log(self.received_widget, text)
 
     def set_output_text(self, text):
         text = str(text).strip()
-        self._write_log(self.output_text, text)
+        self._write_log(self.output_widget, text)
 
 
 class LogWidgets:

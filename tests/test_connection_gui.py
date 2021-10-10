@@ -21,9 +21,9 @@ class GuiApp:
 
     connect_btn_text = None
 
-    status_text = None
-    received_text = None
-    output_text = None
+    status_widget = None
+    received_widget = None
+    output_widget = None
 
     def test_label(self, connection_widgets):
         assert connection_widgets._is_connected.text() == self.label
@@ -71,13 +71,13 @@ class GuiApp:
         """Test if logs widgets are empty."""
         log_widgets = main_window.log_widgets
 
-        status = log_widgets.status_text.text_box
-        received = log_widgets.received_text.text_box
-        output = log_widgets.output_text.text_box
+        status = log_widgets.status_widget.text_box
+        received = log_widgets.received_widget.text_box
+        output = log_widgets.output_widget.text_box
 
-        assert self.status_text in status.toPlainText()
-        assert self.received_text in received.toPlainText()
-        assert self.output_text in output.toPlainText()
+        assert self.status_widget in status.toPlainText()
+        assert self.received_widget in received.toPlainText()
+        assert self.output_widget in output.toPlainText()
 
 
 class TestGuiIsIdle(GuiApp):
@@ -98,9 +98,9 @@ class TestGuiIsIdle(GuiApp):
 
         cls.connect_btn_text = 'Connect'
 
-        cls.status_text = ''
-        cls.received_text = ''
-        cls.output_text = ''
+        cls.status_widget = ''
+        cls.received_widget = ''
+        cls.output_widget = ''
 
 
 @pytest.mark.usefixtures('start_connection')
@@ -121,9 +121,9 @@ class TestGuiIsConnected(GuiApp):
 
         cls.connect_btn_text = 'Disconnect'
 
-        cls.status_text = 'Connected. Server listening to port'
-        cls.received_text = ''
-        cls.output_text = ''
+        cls.status_widget = 'Connected. Server listening to port'
+        cls.received_widget = ''
+        cls.output_widget = ''
 
 
 @pytest.mark.usefixtures('activate_sender_mode')
@@ -144,9 +144,9 @@ class TestGuiIsSenderMode(GuiApp):
 
         cls.connect_btn_text = 'Connect'
 
-        cls.status_text = 'Disconnected'
-        cls.received_text = ''
-        cls.output_text = ''
+        cls.status_widget = 'Disconnected'
+        cls.received_widget = ''
+        cls.output_widget = ''
 
 
 @pytest.mark.skip('not implemented yet')
