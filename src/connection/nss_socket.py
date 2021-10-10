@@ -8,14 +8,15 @@ from PySide2.QtCore import QObject
 
 from ..utils import validate_output
 from ..script_editor import CodeEditor
+from ..widgets import LogWidgets
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
 class Socket(QObject):
-    def __init__(self, socket, log_widgets):
+    def __init__(self, socket):
         QObject.__init__(self)
-        self.log_widgets = log_widgets
+        self.log_widgets = LogWidgets()
 
         self.socket = socket
         self.socket.connected.connect(self.on_connected)

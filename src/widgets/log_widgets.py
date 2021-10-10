@@ -2,7 +2,6 @@
 """ Text widget needed for status purposes."""
 from __future__ import print_function
 
-
 from PySide2.QtWidgets import (
     QGroupBox,
     QPlainTextEdit,
@@ -31,17 +30,17 @@ class LogBox(QGroupBox):
         self.setLayout(_layout)
 
 
-class LogWidgets(QWidget):
+class LogWidget(QWidget):
     def __init__(self):
         QWidget.__init__(self)
-        self.status_text = LogBox('Status')
-        self.received_text = LogBox('Received')
-        self.output_text = LogBox('Output')
+        self.status_widget = LogBox('Status')
+        self.received_widget = LogBox('Received')
+        self.output_widget = LogBox('Output')
 
         _layout = QVBoxLayout()
-        _layout.addWidget(self.status_text)
-        _layout.addWidget(self.received_text)
-        _layout.addWidget(self.output_text)
+        _layout.addWidget(self.status_widget)
+        _layout.addWidget(self.received_widget)
+        _layout.addWidget(self.output_widget)
 
         self.setLayout(_layout)
 
@@ -51,11 +50,21 @@ class LogWidgets(QWidget):
         widget.text_box.ensureCursorVisible()
 
     def set_status_text(self, text):
-        self._write_log(self.status_text, text)
+        self._write_log(self.status_widget, text)
 
     def set_received_text(self, text):
-        self._write_log(self.received_text, text)
+        self._write_log(self.received_widget, text)
 
     def set_output_text(self, text):
         text = str(text).strip()
-        self._write_log(self.output_text, text)
+        self._write_log(self.output_widget, text)
+
+
+class LogWidgets:
+    """Ensure that each instance reference points to the same class."""
+    log_widgets = None
+
+    def __new__(cls, *args, **kwargs):
+        if not cls.log_widgets:
+            cls.log_widgets = LogWidget()
+        return cls.log_widgets
