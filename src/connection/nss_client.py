@@ -7,7 +7,8 @@ import logging
 
 from abc import abstractmethod, ABCMeta
 
-from PySide2.QtNetwork import QHostAddress, QTcpSocket
+from PySide2.QtCore import QObject, QTimer
+from PySide2.QtNetwork import QAbstractSocket, QHostAddress, QTcpSocket
 
 from .. import nuke
 from ..utils import AppSettings, validate_output
@@ -21,6 +22,7 @@ class NetworkAddresses(object):
 
     def __init__(self):
         self.settings = AppSettings()
+        self.local_address = '127.0.0.1'
 
     @property
     def port(self):  # type: () -> int
@@ -28,21 +30,21 @@ class NetworkAddresses(object):
         return int(self.settings.value('server/port', 54321))
 
     @property
-    def hostname(self):  # type: () -> str
+    def send_address(self):  # type: () -> str
         """Get host address data from the configuration.ini file"""
-        return self.settings.value('server/send_to_address', '127.0.0.1')
+        return self.settings.value('server/send_to_address', self.local_address)
 
     @property
-    def local_host(self):  # type: () -> QHostAddress
+    def local_host(self):  # type: () -> str
         """Get local host address QHostAddress object"""
-        # REVIEW: why not returning '127.0.0.1'?
-        return QHostAddress.LocalHost
+        return self.local_address
 
 
-class QBaseClient(object):
+class QBaseClient(QObject):
     __metaclass__ = ABCMeta
 
-    def __init__(self, hostname, port):  # type: (str, int) -> None
+    def __init__(self, hostname, port, log_widgets):  # type: (str, int, LogWidgets) -> None
+        QObject.__init__(self)
 
         self.tcp_host = hostname
         LOGGER.debug('client host: %s', self.tcp_host)
@@ -53,18 +55,52 @@ class QBaseClient(object):
         self.socket = QTcpSocket()
         LOGGER.debug('creating socket: %s', self.socket)
 
+        self.log_widgets = log_widgets
+
         self.socket.readyRead.connect(self.read_data)
         self.socket.connected.connect(self.on_connected)
         self.socket.disconnected.connect(self.on_disconnect)
         self.socket.error.connect(self.on_error)
-        self.socket.stateChanged.connect(
-            lambda x: LOGGER.debug('connection state: %s', x)
-        )
+        self.socket.stateChanged.connect(self.connection_state)
+
+        self.timer = self.connection_timer()
+        self.timer.timeout.connect(self._connection_timeout)
+
+    @staticmethod
+    def connection_timer():  # type: () -> QTimer
+        """Setup a single shot connection timeout timer for the client with
+        10 seconds internal.
+
+        Returns:
+            QTimer: QTimer object
+        """
+        _timer = QTimer()
+        ten_sec = 10000
+        _timer.setInterval(ten_sec)
+        _timer.setSingleShot(True)
+        return _timer
 
     @abstractmethod
     def on_connected(self):
         # TODO: docstring not accurate anymore
         """Method needs to return a string with the text to send write"""
+
+    # @abstractmethod
+    def connection_state(self, socket_state):
+        if socket_state == QAbstractSocket.ConnectingState:
+            self.log_widgets.set_status_text('Establishing connection...')
+
+        elif socket_state == QAbstractSocket.ConnectedState:
+            self.timer.stop()
+            self.log_widgets.set_status_text(
+                'Connection successful to %s:%s' % (
+                    self.tcp_host, self.tcp_port)
+            )
+
+    def _connection_timeout(self):
+        self.log_widgets.set_status_text('Connection timeout.')
+        LOGGER.debug('Connection Timeout')
+        self.socket.abort()
 
     def write_data(self, data):
         self.socket.write(validate_output(json.dumps(data)))
@@ -76,14 +112,14 @@ class QBaseClient(object):
     def on_disconnect(self):
         LOGGER.debug('Disconnected from host')
 
-    def connect(self):
+    def connect_to_host(self):
         LOGGER.debug('Connecting to host: %s %s', self.tcp_host, self.tcp_port)
         self.socket.connectToHost(self.tcp_host, self.tcp_port)
-
-        # REVIEW: this freezes the GUI if sending to a ip address that is not yet present on the network
-        # self.socket.waitForConnected(5000)
+        self.timer.start()
 
     def on_error(self, error):
+        self.log_widgets.set_status_text(
+            'Error: %s' % self.socket.errorString())
         LOGGER.error("QBaseClient Error: %s", error)
 
     def read_data(self):
@@ -93,8 +129,9 @@ class QBaseClient(object):
 class TestClient(QBaseClient):
     """Test Socket by send a sample text to the local host port."""
 
-    def __init__(self, addresses=NetworkAddresses()):  # type: (NetworkAddresses) -> None
-        QBaseClient.__init__(self, addresses.local_host, addresses.port)
+    def __init__(self, log_widgets, addresses=NetworkAddresses()):
+        QBaseClient.__init__(self, addresses.local_host,
+                             addresses.port, log_widgets)
 
     def on_connected(self):
         LOGGER.debug('TestClient -> Connected to host')
@@ -111,8 +148,9 @@ class TestClient(QBaseClient):
 class SendNodesClient(QBaseClient):
     """Send nuke nodes using the Qt client socket."""
 
-    def __init__(self, addresses=NetworkAddresses()):  # type: (NetworkAddresses, dict) -> None
-        QBaseClient.__init__(self, addresses.hostname, addresses.port)
+    def __init__(self, log_widgets, addresses=NetworkAddresses()):
+        QBaseClient.__init__(self, addresses.send_address,
+                             addresses.port, log_widgets)
         self.transfer_data = self.transfer_file_content()
 
     def on_connected(self):
@@ -121,6 +159,7 @@ class SendNodesClient(QBaseClient):
         self.write_data(self.transfer_data)
 
     def transfer_file_content(self):
+        """Get the transfer file content to be sent to socket."""
         settings = AppSettings()
         transfer_file = settings.value('path/transfer_file')
 
