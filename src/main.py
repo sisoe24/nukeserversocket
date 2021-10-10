@@ -35,14 +35,7 @@ class MainWindowWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self)
 
-        self.settings = AppSettings()
-        self.settings.validate_port_settings()
-        self.settings.setValue(
-            'path/transfer_file',
-            os.path.join(_TMP_FOLDER, 'transfer_nodes.tmp')
-        )
-
-        self.log_widgets = LogWidgets()
+        self.setup_settings()
 
         self.connections = ConnectionsWidget(parent=self)
 
@@ -54,6 +47,8 @@ class MainWindowWidget(QWidget):
 
         self.test_btn = self.connections.buttons.test_btn
         self.test_btn.clicked.connect(self._test_receiver)
+
+        self.log_widgets = LogWidgets(self)
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.connections)
@@ -67,6 +62,14 @@ class MainWindowWidget(QWidget):
 
         NukeScriptEditor.init_editor()
 
+    @staticmethod
+    def setup_settings():
+        """Setup settings file."""
+        settings = AppSettings()
+        settings.validate_port_settings()
+        settings.setValue('path/transfer_file',
+                          os.path.join(_TMP_FOLDER, 'transfer_nodes.tmp'))
+
     def _enable_connection_mod(self, state):  # type: (bool) -> None
         """Enable/disable connection widgets modification.
 
@@ -78,12 +81,17 @@ class MainWindowWidget(QWidget):
         self.connections.server_port.setEnabled(state)
         self.connections.sender_mode.setEnabled(state)
 
+    def _disconnect(self):
+        """If server connection gets timeout then close it and reset UI."""
+        self.connect_btn.setChecked(False)
+
     def _connection(self, state):  # type: (bool) -> None
         """When connect button is toggled start connection, otherwise close it."""
 
         def _start_connection():
             """Setup connection to server."""
             self._server = Server()
+            self._server.timeout.connect(self._disconnect)
 
             try:
                 status = self._server.start_server()
@@ -125,12 +133,12 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         try:
-            main_window = MainWindowWidget(self)
+            main_widgets = MainWindowWidget(self)
         except Exception as err:
             ErrorDialog(err, self).show()
             LOGGER.critical(err, exc_info=True)
         else:
-            self.setCentralWidget(main_window)
+            self.setCentralWidget(main_widgets)
 
 
 try:

@@ -29,7 +29,7 @@ class Socket(QObject):
 
     def on_disconnected(self):
         LOGGER.debug('-*- Client disconnect event -*-')
-        self.log_widgets.set_status_text("Client socket closed.")
+        self.log_widgets.set_status_text("Message received.")
 
     def _get_message(self):
         """Get the socket message.
