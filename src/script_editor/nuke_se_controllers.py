@@ -70,11 +70,6 @@ class ScriptEditorController():
         self.restore_input()
         self.restore_output()
 
-    def __del__(self):
-        """Restore widget text after deleting object"""
-        # TODO: this is kind of confusing
-        self.restore_state()
-
 
 class _PyController(ScriptEditorController, object):
     history = []
