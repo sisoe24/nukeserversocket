@@ -1,25 +1,43 @@
 
-from multiprocessing import Queue, Process
 import os
 import configparser
+from shutil import rmtree
+
 from textwrap import dedent
 
 import pytest
 
-from src.main import MainWindow, MainWindowWidget
+from src.connection import SendNodesClient
+from src.main import MainWindow, MainWindowWidget, init_settings
 from src.widgets import ConnectionsWidget
+
 from tests.run_app import MyApplication
 
 
+@pytest.fixture(scope='module')
+def init_tmp(package):
+    tmp_folder = os.path.join(package, 'src', '.tmp')
+    rmtree(tmp_folder)
+    yield
+
+
 @pytest.fixture()
-def transfer_node_file(startup_no_settings, tmp_settings_file):
-    """Initialize the tmp directory creating and get the file path from settings."""
-    MainWindowWidget()
+def transfer_node_file(init_tmp, tmp_settings_file):
+    """Initialize the tmp directory.
+
+    If transfer_nodes.tmp file exists then it will be deleted.
+
+    Yields:
+        str: path to the transfer_node.tmp file
+    """
+    init_settings()
 
     config = configparser.ConfigParser()
     config.read(tmp_settings_file)
 
-    yield config['path']['transfer_file']
+    path = config['path']['transfer_file']
+
+    yield path
 
 
 def test_transfer_dir_exists(transfer_node_file):
@@ -27,11 +45,14 @@ def test_transfer_dir_exists(transfer_node_file):
     assert os.path.exists(os.path.dirname(transfer_node_file))
 
 
-def test_transfer_file_exists(transfer_node_file):
-    """Check if file got created."""
-    widget = ConnectionsWidget()
+def test_transfer_file_exists(ui, transfer_node_file):
+    """Check if transfer_nodes.tmp file gets created."""
+
+    widget = ui.connections
     widget.sender_mode.toggle()
-    MainWindowWidget()._send_nodes()
+
+    ui._send_nodes()
+
     assert os.path.exists(transfer_node_file)
 
 
@@ -60,16 +81,25 @@ def test_transfer_file_is_valid(transfer_node_file):
         assert _transfer_nodes == f.read()
 
 
-def test_send_was_successful(myapp):
-    widget = ConnectionsWidget()
+# TODO: need to create second instance
+
+@pytest.mark.xfail()
+def test_send_was_successful(ui, qtbot):
+    """Check if nodes were sent with success.
+
+    This will only work if there is another instance connected.
+    """
+    widget = ui.connections
+    widget.sender_mode.toggle()
 
     widget.server_port.setValue(54322)
     widget.ip_entry.setText('192.168.1.34')
-    widget.sender_mode.toggle()
 
-    main = MainWindowWidget()
-    main._send_nodes()
+    ui._send_nodes()
 
-    log = main.log_widgets
+    def check_status():
+        """Wait for the status to register the transfer"""
+        log = ui.log_widgets.status_widget.text_box
+        assert 'Connection successful' in log.toPlainText()
 
-    assert 'Nodes copied' in log.output_text.text_box.toPlainText()
+    qtbot.waitUntil(check_status)

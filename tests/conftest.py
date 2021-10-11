@@ -9,9 +9,17 @@ from tests.run_app import MyApplication, _MainWindow, _MainwindowWidgets
 
 
 @pytest.fixture(scope='session')
-def tmp_settings_file():
-    current_dir = os.path.abspath(os.path.dirname(__file__))
-    tmp_dir = os.path.join(current_dir, 'tmp')
+def package():
+    """Package directory path"""
+    current_dir = os.path.dirname(__file__)
+    package_dir = os.path.abspath(os.path.dirname(current_dir))
+    yield package_dir
+
+
+@pytest.fixture(scope='session')
+def tmp_settings_file(package):
+    """Temporary settings file path"""
+    tmp_dir = os.path.join(package, 'tests', 'tmp')
 
     os.makedirs(tmp_dir, exist_ok=True)
 
@@ -57,6 +65,7 @@ def ui(qtbot):
 @pytest.fixture()
 def start_connection(ui):
     """Click the connect button of the UI and enter in the connected state."""
+    # TODO: probably should be inside test_connections.py
     ui.connect_btn.setChecked(True)
     yield
     ui.connect_btn.setChecked(False)
@@ -65,6 +74,7 @@ def start_connection(ui):
 @pytest.fixture()
 def activate_sender_mode(ui):
     """Click the connect button of the UI and enter in the connected state."""
+    # TODO: probably should be inside test_connections.py
     ui.connections.sender_mode.toggle()
     yield
     ui.connections.receiver_mode.toggle()
