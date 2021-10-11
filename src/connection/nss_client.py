@@ -7,12 +7,11 @@ import logging
 
 from abc import abstractmethod, ABCMeta
 
-from PySide2.QtCore import QObject, QTimer
+from PySide2.QtCore import QObject, Signal
 from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 
 from .. import nuke
 from ..utils import AppSettings, validate_output, connection_timer
-from ..widgets import LogWidgets
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
@@ -44,7 +43,10 @@ class NetworkAddresses(object):
 class QBaseClient(QObject):
     __metaclass__ = ABCMeta
 
-    def __init__(self, hostname, port):  # type: (str, int, LogWidgets) -> None
+    timeout = Signal()
+    state_changed = Signal(str)
+
+    def __init__(self, hostname, port):  # type: (str, int) -> None
         QObject.__init__(self)
 
         self.tcp_host = hostname
@@ -55,8 +57,6 @@ class QBaseClient(QObject):
 
         self.socket = QTcpSocket()
         LOGGER.debug('creating socket: %s', self.socket)
-
-        self.log_widgets = LogWidgets()
 
         self.socket.readyRead.connect(self.read_data)
         self.socket.connected.connect(self.on_connected)
@@ -74,17 +74,16 @@ class QBaseClient(QObject):
 
     def connection_state(self, socket_state):
         if socket_state == QAbstractSocket.ConnectingState:
-            self.log_widgets.set_status_text('Establishing connection...')
+            self.state_changed.emit('Establishing connection...')
 
         elif socket_state == QAbstractSocket.ConnectedState:
             self.timer.stop()
-            self.log_widgets.set_status_text(
-                'Connection successful to %s:%s' % (
-                    self.tcp_host, self.tcp_port)
+            self.state_changed.emit(
+                'Connection successful %s:%s' % (self.tcp_host, self.tcp_port)
             )
 
     def _connection_timeout(self):
-        self.log_widgets.set_status_text('Connection timeout.\n----')
+        self.state_changed.emit('Connection timeout.\n----')
         LOGGER.debug('Connection Timeout')
         self.socket.abort()
 
@@ -105,8 +104,7 @@ class QBaseClient(QObject):
 
     def on_error(self, error):
         self.timer.stop()
-        self.log_widgets.set_status_text(
-            'Error: %s\n----' % self.socket.errorString())
+        self.state_changed.emit('Error: %s\n----' % self.socket.errorString())
         LOGGER.error("QBaseClient Error: %s", error)
 
     def read_data(self):

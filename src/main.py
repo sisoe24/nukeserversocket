@@ -48,7 +48,7 @@ class MainWindowWidget(QWidget):
         self.test_btn = self.connections.buttons.test_btn
         self.test_btn.clicked.connect(self._test_receiver)
 
-        self.log_widgets = LogWidgets(self)
+        self.log_widgets = LogWidgets()
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.connections)
@@ -85,13 +85,32 @@ class MainWindowWidget(QWidget):
         """If server connection gets timeout then close it and reset UI."""
         self.connect_btn.setChecked(False)
 
+    def setup_server(self):
+        """Setup server class and log signals.
+
+        Returns:
+            Server: the server object.
+        """
+        def _setup_socket_log(socket):
+            """Setup socket log signals."""
+            socket.state_changed.connect(self.log_widgets.set_status_text)
+            socket.received_text.connect(self.log_widgets.set_received_text)
+            socket.output_text.connect(self.log_widgets.set_output_text)
+
+        _server = Server()
+
+        _server.timeout.connect(self._disconnect)
+        _server.state_changed.connect(self.log_widgets.set_status_text)
+        _server.socket_ready.connect(_setup_socket_log)
+
+        return _server
+
     def _connection(self, state):  # type: (bool) -> None
         """When connect button is toggled start connection, otherwise close it."""
 
         def _start_connection():
             """Setup connection to server."""
-            self._server = Server()
-            self._server.timeout.connect(self._disconnect)
+            self._server = self.setup_server()
 
             try:
                 status = self._server.start_server()
@@ -112,11 +131,15 @@ class MainWindowWidget(QWidget):
     def _send_nodes(self):
         """Send the selected Nuke Nodes using the internal client."""
         self._node_client = SendNodesClient()
+        self._node_client.state_changed.connect(
+            self.log_widgets.set_status_text)
         self._node_client.connect_to_host()
 
     def _test_receiver(self):
         """Send a test message using the internal client."""
         self._test_client = TestClient()
+        self._test_client.state_changed.connect(
+            self.log_widgets.set_status_text)
         self._test_client.connect_to_host()
 
 

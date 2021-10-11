@@ -30,7 +30,7 @@ class LogBox(QGroupBox):
         self.setLayout(_layout)
 
 
-class LogWidget(QWidget):
+class LogWidgets(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         self.status_widget = LogBox('Status')
@@ -58,13 +58,3 @@ class LogWidget(QWidget):
     def set_output_text(self, text):
         text = str(text).strip()
         self._write_log(self.output_widget, text)
-
-
-class LogWidgets:
-    """Ensure that each instance reference points to the same class."""
-    log_widgets = None
-
-    def __new__(cls, *args, **kwargs):
-        if not cls.log_widgets:
-            cls.log_widgets = LogWidget()
-        return cls.log_widgets
