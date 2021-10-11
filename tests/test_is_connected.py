@@ -4,28 +4,24 @@ import socket
 
 import pytest
 
-# from src.connection import SendNodesClient, SendTestClient
+from src.connection import SendNodesClient, SendTestClient
+from src.connection.nss_client import NetworkAddresses
+
+
+# TODO: should connect to a different port in case the usual port is already busy
+# TODO: need second instance to test if already connected
 
 STRING = 'nss test msg'
 TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
 
-data = [TEXT, json.dumps({"text": TEXT, "file": FILE})]
 
-# TODO: should connect to a different port in case the usual port is already busy
-# TODO: need second instance to test if already connected
-
-
-@pytest.fixture(params=data)
+@pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})])
 def send_data(request):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    # connection host and port must match whats inside Nuke
-    # 127.0.0.1 == localhost
     s.connect(('127.0.0.1', 54321))
-
     s.sendall(bytearray(request.param, encoding='utf-8'))
-
     s.close()
 
 
@@ -62,6 +58,7 @@ class TestSendTestMsg:
 
         qtbot.waitUntil(check_status)
 
+    # # @pytest.mark.skip()
     def test_message_received(self, qtbot, ui):
         ui._send_test()
 
