@@ -24,18 +24,29 @@ from .widgets import (
 LOGGER = logging.getLogger('NukeServerSocket.main')
 LOGGER.debug('\nSTART APPLICATION')
 
-_TMP_FOLDER = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), '.tmp'
-)
-if not os.path.exists(_TMP_FOLDER):
-    os.mkdir(_TMP_FOLDER)
+
+def init_settings():
+    """Setup settings file."""
+    # TODO: need to think this better
+
+    tmp_folder = os.path.join(
+        os.path.abspath(os.path.dirname(__file__)), '.tmp'
+    )
+
+    if not os.path.exists(tmp_folder):
+        os.mkdir(tmp_folder)
+
+    settings = AppSettings()
+    settings.validate_port_settings()
+    settings.setValue('path/transfer_file',
+                      os.path.join(tmp_folder, 'transfer_nodes.tmp'))
 
 
 class MainWindowWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self)
 
-        self.setup_settings()
+        init_settings()
 
         self.connections = ConnectionsWidget(parent=self)
 
@@ -61,14 +72,6 @@ class MainWindowWidget(QWidget):
         self._node_client = None
 
         NukeScriptEditor.init_editor()
-
-    @staticmethod
-    def setup_settings():
-        """Setup settings file."""
-        settings = AppSettings()
-        settings.validate_port_settings()
-        settings.setValue('path/transfer_file',
-                          os.path.join(_TMP_FOLDER, 'transfer_nodes.tmp'))
 
     def _enable_connection_mod(self, state):  # type: (bool) -> None
         """Enable/disable connection widgets modification.
