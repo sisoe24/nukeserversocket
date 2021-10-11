@@ -73,6 +73,7 @@ class QBaseClient(QObject):
         """Method needs to return a string with the text to send write"""
 
     def connection_state(self, socket_state):
+        # BUG: segmentation fault when testing
         if socket_state == QAbstractSocket.ConnectingState:
             self.state_changed.emit('Establishing connection...')
 
