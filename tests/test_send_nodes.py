@@ -83,7 +83,7 @@ def test_transfer_file_is_valid(transfer_node_file):
 
 # TODO: need to create second instance
 
-@pytest.mark.xfail()
+@pytest.mark.skip(reason='need second instace')
 def test_send_was_successful(ui, qtbot):
     """Check if nodes were sent with success.
 
