@@ -84,6 +84,8 @@ class Socket(QObject):
 
         output_text = editor.controller.output()
 
+        editor.controller.restore_state()
+
         LOGGER.debug('Sending message back')
         self.socket.write(validate_output(output_text))
 

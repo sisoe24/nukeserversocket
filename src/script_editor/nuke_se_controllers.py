@@ -70,11 +70,6 @@ class ScriptEditorController():
         self.restore_input()
         self.restore_output()
 
-    def __del__(self):
-        """Restore widget text after deleting object"""
-        # TODO: this is kind of confusing
-        self.restore_state()
-
 
 class _PyController(ScriptEditorController, object):
     history = []
@@ -86,12 +81,12 @@ class _PyController(ScriptEditorController, object):
 
     def restore_input(self):
         """Override input editor if setting is True."""
-        if not self.settings.get_bool('options/override_input'):
+        if not self.settings.get_bool('options/override_input_editor'):
             super(_PyController, self).restore_input()
 
     def restore_output(self):
         """Send text to script editor output if setting is True."""
-        if self.settings.get_bool('options/output_console'):
+        if self.settings.get_bool('options/output_to_console'):
             self._output_to_console()
         else:
             super(_PyController, self).restore_output()
@@ -127,7 +122,7 @@ class _PyController(ScriptEditorController, object):
             (str) file - file path of the file that is being executed from NukeTools
         """
         return self._file if self.settings.get_bool(
-            'options/include_path') else os.path.basename(self._file)
+            'options/show_file_path') else os.path.basename(self._file)
 
     @staticmethod
     def _clean_output(text):  # type: (str) -> str
@@ -151,7 +146,7 @@ class _PyController(ScriptEditorController, object):
 
         output = "[Nuke Tools] %s \n%s" % (file, text)
 
-        if self.settings.get_bool('options/use_unicode', True):
+        if self.settings.get_bool('options/show_unicode', True):
             # Arrow sign going down
             unicode = u'\u21B4'
             output = "[Nuke Tools] %s %s\n%s" % (file, unicode, text)
