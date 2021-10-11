@@ -19,9 +19,25 @@ LOGGER = logging.getLogger('NukeServerSocket.client')
 
 class NetworkAddresses(object):
     """Convenient class with network addresses"""
-    local_host = '127.0.0.1'
-    port = int(AppSettings().value('server/port', 54321))
-    send_address = AppSettings().value('server/send_to_address', local_host)
+
+    def __init__(self):
+        self.settings = AppSettings()
+        self._local_host = '127.0.0.1'
+
+    @property
+    def port(self):  # type: () -> int
+        """Get port data from the configuration.ini file"""
+        return int(self.settings.value('server/port', 54321))
+
+    @property
+    def send_address(self):  # type: () -> str
+        """Get host address data from the configuration.ini file"""
+        return self.settings.value('server/send_to_address', self._local_host)
+
+    @property
+    def local_host(self):  # type: () -> str
+        """Get local host address QHostAddress object"""
+        return self._local_host
 
 
 class QBaseClient(QObject):
@@ -103,8 +119,9 @@ class SendTestClient(QBaseClient):
 
     def __init__(self, hostname=None, port=None):
 
-        hostname = hostname or NetworkAddresses.local_host
-        port = port or NetworkAddresses.port
+        addresses = NetworkAddresses()
+        hostname = hostname or addresses.local_host
+        port = port or addresses.port
 
         QBaseClient.__init__(self, hostname, port)
 
@@ -125,8 +142,9 @@ class SendNodesClient(QBaseClient):
 
     def __init__(self, hostname=None, port=None):
 
-        hostname = hostname or NetworkAddresses.send_address
-        port = port or NetworkAddresses.port
+        addresses = NetworkAddresses()
+        hostname = hostname or addresses.send_address
+        port = port or addresses.port
 
         QBaseClient.__init__(self, hostname, port)
 
