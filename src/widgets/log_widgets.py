@@ -44,6 +44,18 @@ class LogWidgets(QWidget):
 
         self.setLayout(_layout)
 
+    @property
+    def status_text(self):
+        return self.status_widget.text_box.toPlainText()
+
+    @property
+    def received_text(self):
+        return self.received_widget.text_box.toPlainText()
+
+    @property
+    def output_text(self):
+        return self.output_widget.text_box.toPlainText()
+
     @staticmethod
     def _write_log(widget, text):
         widget.text_box.insertPlainText(insert_time(text))
