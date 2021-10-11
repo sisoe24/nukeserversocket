@@ -52,7 +52,7 @@ class Socket(QObject):
         # startsWith is a method of QByteArray
         if not msg.startsWith('{'):
             LOGGER.debug('Message is simple string. Converting into dict')
-            return {'text': msg.data()}
+            return {'text': msg.data().decode('utf-8')}
 
         try:
             LOGGER.debug('Message is stringified array.')
