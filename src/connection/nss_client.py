@@ -111,14 +111,14 @@ class QBaseClient(QObject):
         LOGGER.debug('Reading data: %s', self.socket.readAll())
 
 
-class TestClient(QBaseClient):
+class SendTestClient(QBaseClient):
     """Test Socket by send a sample text to the local host port."""
 
     def __init__(self, addresses=NetworkAddresses()):
         QBaseClient.__init__(self, addresses.local_host, addresses.port)
 
     def on_connected(self):
-        LOGGER.debug('TestClient -> Connected to host')
+        LOGGER.debug('SendTestClient -> Connected to host')
         r = random.randint(1, 50)
 
         output_text = {

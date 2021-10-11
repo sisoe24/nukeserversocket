@@ -13,7 +13,7 @@ from PySide2.QtWidgets import (
 
 from .utils import AppSettings
 from .script_editor import NukeScriptEditor
-from .connection import Server, TestClient, SendNodesClient
+from .connection import Server, SendTestClient, SendNodesClient
 from .widgets import (
     LogWidgets,
     ConnectionsWidget,
@@ -57,7 +57,7 @@ class MainWindowWidget(QWidget):
         self.send_btn.clicked.connect(self._send_nodes)
 
         self.test_btn = self.connections.buttons.test_btn
-        self.test_btn.clicked.connect(self._test_receiver)
+        self.test_btn.clicked.connect(self._send_test)
 
         self.log_widgets = LogWidgets()
 
@@ -138,9 +138,9 @@ class MainWindowWidget(QWidget):
             self.log_widgets.set_status_text)
         self._node_client.connect_to_host()
 
-    def _test_receiver(self):
+    def _send_test(self):
         """Send a test message using the internal client."""
-        self._test_client = TestClient()
+        self._test_client = SendTestClient()
         self._test_client.state_changed.connect(
             self.log_widgets.set_status_text)
         self._test_client.connect_to_host()
