@@ -4,19 +4,21 @@ from __future__ import print_function
 import json
 import logging
 
-from PySide2.QtCore import QObject
+from PySide2.QtCore import QObject, Signal
 
 from ..utils import validate_output
 from ..script_editor import CodeEditor
-from ..widgets import LogWidgets
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
 class Socket(QObject):
+    state_changed = Signal(str)
+    received_text = Signal(str)
+    output_text = Signal(str)
+
     def __init__(self, socket):
         QObject.__init__(self)
-        self.log_widgets = LogWidgets()
 
         self.socket = socket
         self.socket.connected.connect(self.on_connected)
@@ -25,11 +27,11 @@ class Socket(QObject):
 
     def on_connected(self):
         LOGGER.debug('Client connect event')
-        self.log_widgets.set_status_text("Client Connected Event")
+        self.state_changed.emit("Client Connected Event")
 
     def on_disconnected(self):
         LOGGER.debug('-*- Client disconnect event -*-')
-        self.log_widgets.set_status_text("Message received.")
+        self.state_changed.emit("Message received.")
 
     def _get_message(self):
         """Get the socket message.
@@ -88,5 +90,5 @@ class Socket(QObject):
         self.socket.close()
         LOGGER.debug('Closing socket')
 
-        self.log_widgets.set_received_text(msg_text)
-        self.log_widgets.set_output_text(output_text)
+        self.received_text.emit(msg_text)
+        self.output_text.emit(output_text)

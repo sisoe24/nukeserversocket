@@ -8,19 +8,18 @@ from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
 from .nss_socket import Socket
 from ..utils import AppSettings, connection_timer
-from ..widgets import LogWidgets
 
 LOGGER = logging.getLogger('NukeServerSocket.server')
 
 
 class Server(QObject):
     timeout = Signal()
+    state_changed = Signal(str)
+    socket_ready = Signal(object)
 
     def __init__(self):
         QObject.__init__(self)
         self.settings = AppSettings()
-
-        self.log_widgets = LogWidgets()
 
         self.tcp_port = int(self.settings.value('server/port', '54321'))
         LOGGER.debug('server tcp port: %s', self.tcp_port)
@@ -44,7 +43,7 @@ class Server(QObject):
         """Close server connection."""
         self.server.close()
         self.timer.stop()
-        self.log_widgets.set_status_text('Disconnected\n----')
+        self.state_changed.emit('Disconnected\n----')
         LOGGER.debug('Disconnected')
 
     def _create_connection(self):
@@ -53,6 +52,7 @@ class Server(QObject):
             socket.stateChanged.connect(self.connection_state)
 
             self.socket = Socket(socket)
+            self.socket_ready.emit(self.socket)
             LOGGER.debug('socket: %s', self.socket)
 
     def start_server(self):
@@ -63,11 +63,12 @@ class Server(QObject):
 
         """
         if self.server.listen(QHostAddress.Any, self.tcp_port):
-            self.log_widgets.set_status_text(
-                "Connected. Server listening to port: %s..." % self.tcp_port)
             self.timer.start()
+            self.state_changed.emit(
+                "Connected. Server listening to port: %s..." % self.tcp_port)
             return True
 
         msg = "Server did not initiate. Error: %s." % self.server.errorString()
-        self.log_widgets.set_status_text(msg)
+        self.state_changed.emit(msg)
+
         raise ValueError(msg)
