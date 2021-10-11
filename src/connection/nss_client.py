@@ -19,25 +19,9 @@ LOGGER = logging.getLogger('NukeServerSocket.client')
 
 class NetworkAddresses(object):
     """Convenient class with network addresses"""
-
-    def __init__(self):
-        self.settings = AppSettings()
-        self.local_address = '127.0.0.1'
-
-    @property
-    def port(self):  # type: () -> int
-        """Get port data from the configuration.ini file"""
-        return int(self.settings.value('server/port', 54321))
-
-    @property
-    def send_address(self):  # type: () -> str
-        """Get host address data from the configuration.ini file"""
-        return self.settings.value('server/send_to_address', self.local_address)
-
-    @property
-    def local_host(self):  # type: () -> str
-        """Get local host address QHostAddress object"""
-        return self.local_address
+    local_host = '127.0.0.1'
+    port = int(AppSettings().value('server/port', 54321))
+    send_address = AppSettings().value('server/send_to_address', local_host)
 
 
 class QBaseClient(QObject):
@@ -73,10 +57,11 @@ class QBaseClient(QObject):
         """Method needs to return a string with the text to send write"""
 
     def connection_state(self, socket_state):
+        print("➡ socket_state :", socket_state)
         if socket_state == QAbstractSocket.ConnectingState:
             self.state_changed.emit('Establishing connection...')
 
-        elif socket_state == QAbstractSocket.ConnectedState:
+        if socket_state == QAbstractSocket.ConnectedState:
             self.timer.stop()
             self.state_changed.emit(
                 'Connection successful %s:%s' % (self.tcp_host, self.tcp_port)
@@ -100,9 +85,11 @@ class QBaseClient(QObject):
     def connect_to_host(self):
         LOGGER.debug('Connecting to host: %s %s', self.tcp_host, self.tcp_port)
         self.socket.connectToHost(self.tcp_host, self.tcp_port)
+        print('try connecting')
         self.timer.start()
 
     def on_error(self, error):
+        print('error connecting')
         self.timer.stop()
         self.state_changed.emit('Error: %s\n----' % self.socket.errorString())
         LOGGER.error("QBaseClient Error: %s", error)
@@ -114,8 +101,12 @@ class QBaseClient(QObject):
 class SendTestClient(QBaseClient):
     """Test Socket by send a sample text to the local host port."""
 
-    def __init__(self, addresses=NetworkAddresses()):
-        QBaseClient.__init__(self, addresses.local_host, addresses.port)
+    def __init__(self, hostname=None, port=None):
+
+        hostname = hostname or NetworkAddresses.local_host
+        port = port or NetworkAddresses.port
+
+        QBaseClient.__init__(self, hostname, port)
 
     def on_connected(self):
         LOGGER.debug('SendTestClient -> Connected to host')
@@ -132,8 +123,13 @@ class SendTestClient(QBaseClient):
 class SendNodesClient(QBaseClient):
     """Send nuke nodes using the Qt client socket."""
 
-    def __init__(self,  addresses=NetworkAddresses()):
-        QBaseClient.__init__(self, addresses.send_address, addresses.port)
+    def __init__(self, hostname=None, port=None):
+
+        hostname = hostname or NetworkAddresses.send_address
+        port = port or NetworkAddresses.port
+
+        QBaseClient.__init__(self, hostname, port)
+
         self.transfer_data = self.transfer_file_content()
 
     def on_connected(self):
