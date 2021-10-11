@@ -7,7 +7,6 @@ from src import about
 from src.widgets import about_widget
 
 
-@pytest.mark.usefixtures('myapp')
 class TestAboutWidget:
 
     @classmethod
