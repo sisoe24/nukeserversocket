@@ -59,6 +59,7 @@ def ui(qtbot):
     """Main UI Widget"""
     widget = _MainwindowWidgets()
     qtbot.addWidget(widget)
+    widget.show()
     yield widget.main_app
 
 
