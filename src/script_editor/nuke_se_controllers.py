@@ -226,12 +226,11 @@ class _BlinkController(ScriptEditorController, object):
 class _CopyNodesController(ScriptEditorController, object):
     def __init__(self):
         ScriptEditorController.__init__(self)
-        self.settings = AppSettings()
 
     def output(self):  # type: () -> str
         """Overriding parent method by returning a simple string when pasting nodes.
         """
-        return 'Nodes copied'
+        return 'Nodes received.'
 
     def set_input(self, text):  # type: (str) -> str
         """Overriding parent method by executing the `nuke.nodePaste()` command.
@@ -239,12 +238,18 @@ class _CopyNodesController(ScriptEditorController, object):
         Method will create a file with the text data received to be used as an
         argument for the `nuke.nodePaste('file')` method.
         """
-        transfer_file = self.settings.value('path/transfer_file')
+        settings = AppSettings()
+        transfer_file = settings.value('path/transfer_file')
+
         with open(transfer_file, 'w') as file:
             file.write(text)
 
-        text = "nuke.nodePaste('%s')" % transfer_file
+        text = self._paste_nodes_wrapper(transfer_file)
         super(_CopyNodesController, self).set_input(text)
+
+    def _paste_nodes_wrapper(self, transfer_file):
+        """Wrap the file into a nuke paste command."""
+        return "nuke.nodePaste('{}')".format(transfer_file)
 
 
 class CodeEditor(object):
