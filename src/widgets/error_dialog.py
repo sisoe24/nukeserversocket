@@ -67,20 +67,31 @@ class ErrorDialog(QMessageBox):
         self._traceback = traceback.format_exc()
         self.setDetailedText(_info + self._traceback)
 
+    def prepare_report(self):
+        """Prepare the error report and copy it to the clipboard.
+
+        Returns:
+            str: github issues weblink.
+        """
+        report = _prepare_report() or self._traceback
+
+        clipboard = QClipboard()
+        clipboard.setText(report)
+
+        return get_about_key('Issues')
+
+    @staticmethod
+    def open_logs_path():
+        """Return the log directory path."""
+        return get_about_key('Logs')
+
     def click_event(self, button):
+        """After the click event prepare the link to open."""
         if button.text() == 'Report bug':
-
-            report = _prepare_report()
-            if not report:
-                report = self._traceback
-
-            clipboard = QClipboard()
-            clipboard.setText(report)
-
-            to_open = get_about_key('Issues')
+            to_open = self.prepare_report()
 
         elif button.text() == 'Open logs':
-            to_open = get_about_key('Logs')
+            to_open = self.open_logs_path()
 
         elif button.text() in ['OK', 'Cancel']:
             return
