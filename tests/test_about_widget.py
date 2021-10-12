@@ -1,10 +1,34 @@
 import os
 import requests
-
+import platform
 import pytest
 
 from src import about
 from src.widgets import about_widget
+
+
+def test_get_about_key():
+    """Get a key from the about dictionary"""
+    key = about.get_about_key('Python')
+    assert key == platform.python_version()
+
+
+def test_get_about_missing_key():
+    """Get a key from the about dictionary"""
+    key = about.get_about_key('Maya')
+    assert key == ''
+
+
+def test_about_to_string():
+    """Get the about data into a string format"""
+    keys = about.about_to_string()
+    assert isinstance(keys, str)
+
+
+def test_about_to_string():
+    """Get the about data into a string format and exclude one key"""
+    keys = about.about_to_string(exclude=['Machine'])
+    assert 'Machine' not in keys
 
 
 class TestAboutWidget:
