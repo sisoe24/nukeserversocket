@@ -10,6 +10,7 @@ from src.connection.nss_client import NetworkAddresses
 
 # TODO: should connect to a different port in case the usual port is already busy
 # TODO: need second instance to test if already connected
+# TODO: send empty data
 
 STRING = 'nss test msg'
 TEXT = "print('%s'.upper())" % STRING
