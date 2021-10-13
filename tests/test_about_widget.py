@@ -13,6 +13,12 @@ def test_get_about_key():
     assert key == platform.python_version()
 
 
+def test_about_python_version():
+    """Python version should be 3.7.7 for nuke 13 or 2.7.16 for nuke11/12"""
+    version = about.get_about_key('Python')
+    assert version <= '3.7.7'
+
+
 def test_get_about_missing_key():
     """Get a key from the about dictionary"""
     key = about.get_about_key('Maya')
