@@ -196,14 +196,19 @@ class ConnectionsWidget(QWidget):
 
         def _update_ip_text(state):
             """Update the ip widgets based on the mode."""
+            ip_text = get_ip()
+
             if state:
                 ip_label_text = 'Local IP Address'
-                ip_entry_text = get_ip()
+                ip_entry_text = ip_text
             else:
                 ip_label_text = 'Send To IP Address'
                 ip_entry_text = self.settings.value(
-                    'server/send_to_address', get_ip()
+                    'server/send_to_address', ip_text
                 )
+
+            width = 50 if len(ip_text) <= 12 else 150
+            self.ip_entry.setMinimumWidth(width)
 
             self.ip_entry.setText(ip_entry_text)
             self.ip_address_label.setText(ip_label_text)
