@@ -71,7 +71,7 @@ class NukeScriptEditor(BaseScriptEditor):
         cls.input_widget = cls.console.findChild(QPlainTextEdit)
 
     @classmethod
-    def get_script_editor(cls):  # type: () -> QWidget
+    def get_script_editor(cls, editor='scripteditor.1'):  # type: (str) -> QWidget
         """Get script editor widget.
 
         Returns:
@@ -84,7 +84,7 @@ class NukeScriptEditor(BaseScriptEditor):
         for widget in QApplication.allWidgets():
 
             # TODO: user should be able to decide which SE to use
-            if 'scripteditor.1' in widget.objectName():
+            if editor in widget.objectName():
                 return widget
 
         # XXX: can the script editor not exists?
@@ -95,7 +95,7 @@ class NukeScriptEditor(BaseScriptEditor):
         )
 
     @classmethod
-    def get_run_button(cls):  # type: () -> QPushButton | None
+    def get_run_button(cls, tooltip='Run'):  # type: (str) -> QPushButton | None
         """Get the run button from the script editor.
 
         Returns:
@@ -103,7 +103,7 @@ class NukeScriptEditor(BaseScriptEditor):
         """
         for button in cls.script_editor.findChildren(QPushButton):
             # The only apparent identifier of the button is a tooltip. Risky
-            if 'Run' in button.toolTip():
+            if tooltip in button.toolTip():
                 return button
 
         # XXX: can the button not be found?
@@ -120,6 +120,7 @@ class NukeScriptEditor(BaseScriptEditor):
         QTest.keyPress(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
         QTest.keyRelease(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
 
+    @classmethod
     def execute(cls):
         """Execute code inside Nuke Script Editor.
 
