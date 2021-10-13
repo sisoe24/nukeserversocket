@@ -1,13 +1,18 @@
-import re
 import os
-from collections import namedtuple
+import subprocess
 
 from textwrap import dedent
+from subprocess import check_output
 
 import pytest
+from PySide2.QtWidgets import QPushButton
+
+from .run_app import _MainwindowWidgets
 
 from src.utils import AppSettings
 from src.main import init_settings
+from src.script_editor import nuke_se
+from src.widgets import fake_script_editor as fake_se
 from src.script_editor import nuke_se_controllers as se
 
 
@@ -104,3 +109,42 @@ class TestBlinkController:
 
         wrapper = blink_controller._blink_wrapper("TEST CODE")
         assert expected == wrapper
+
+
+class TestNukeSe:
+    """Test base Nuke Script editor class"""
+
+    @pytest.fixture()
+    def editor(self):
+        """Initialize the editor"""
+        se_editor = nuke_se.NukeScriptEditor()
+        se_editor.init_editor()
+        yield se_editor
+
+    def test_get_script_editor(self, editor):
+        """Check if script editor was found."""
+        assert isinstance(editor.script_editor, fake_se.FakeScriptEditor)
+
+    def test_get_run_button(self, editor):
+        """Check if run button was found."""
+        assert isinstance(editor.run_button, QPushButton)
+
+    def test_execute_shortcut(self, editor):
+        """Check if execute shortcut is working when run button is not found."""
+        se_controller = se.ScriptEditorController()
+        input_text = se_controller.input()
+
+        nuke_se.NukeScriptEditor.run_button = None
+        editor.execute()
+
+        assert se_controller.output() == subprocess.check_output(
+            ['python', '-c', input_text], encoding='utf-8')
+
+    def test_run_button_not_found(self, editor):
+        """Check if run button was not found."""
+        assert editor.get_run_button('test') is None
+
+    def test_script_editor_not_found(self, editor):
+        """Check if script editor was not found."""
+        with pytest.raises(RuntimeWarning, match='NukeServerSocket: Script Editor panel not found.+'):
+            editor.get_script_editor('scripteditor.3')
