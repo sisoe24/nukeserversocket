@@ -73,7 +73,6 @@ class QBaseClient(QObject):
         """Method needs to return a string with the text to send write"""
 
     def connection_state(self, socket_state):
-        print("➡ socket_state :", socket_state)
         if socket_state == QAbstractSocket.ConnectingState:
             self.state_changed.emit('Establishing connection...')
 
@@ -101,11 +100,9 @@ class QBaseClient(QObject):
     def connect_to_host(self):
         LOGGER.debug('Connecting to host: %s %s', self.tcp_host, self.tcp_port)
         self.socket.connectToHost(self.tcp_host, self.tcp_port)
-        print('try connecting')
         self.timer.start()
 
     def on_error(self, error):
-        print('error connecting')
         self.timer.stop()
         self.state_changed.emit('Error: %s\n----' % self.socket.errorString())
         LOGGER.error("QBaseClient Error: %s", error)
