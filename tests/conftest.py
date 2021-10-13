@@ -1,11 +1,33 @@
 import os
 import configparser
+from _pytest.outcomes import skip
 
 import pytest
 
 from src.utils import settings
 from src.main import MainWindow, MainWindowWidget
 from tests.run_app import MyApplication, _MainWindow, _MainwindowWidgets
+
+
+def pytest_addoption(parser):
+    parser.addoption(
+        '--checklinks', action='store_true', default=False, help='Validate web link'
+    )
+
+
+def pytest_configure(config):
+    config.addinivalue_line('markers', 'web: validate web link')
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption('--checklinks'):
+        return
+
+    skip_check = pytest.mark.skip(reason='need --checklink option to run')
+
+    for item in items:
+        if "web" in item.keywords:
+            item.add_marker(skip_check)
 
 
 @pytest.fixture(scope='session')
