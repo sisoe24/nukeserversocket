@@ -6,25 +6,25 @@ from collections import namedtuple
 from src.script_editor import nuke_se_controllers as nse
 from src.utils import AppSettings
 
-TEXT = 'Random Code Result: Hello'
+SAMPLE_TEXT = 'Random Code Result: Hello'
 
 
 @pytest.fixture()
-def settings():
+def settings(scope='session'):
     yield AppSettings()
+
+
+@pytest.fixture(scope='session')
+def se_controller():
+    """Get the ScriptEditorController Class"""
+    controller = nse.ScriptEditorController()
+    yield controller
 
 
 @pytest.fixture()
 def py_controller():
     """Get the PyController Class"""
     controller = nse._PyController('path/to/file.py')
-    yield controller
-
-
-@pytest.fixture()
-def se_controller():
-    """Get the ScriptEditorController Class"""
-    controller = nse.ScriptEditorController()
     yield controller
 
 
@@ -67,14 +67,14 @@ def test_output_format(py_controller, settings, output):
     settings.setValue('options/show_file_path', output.show_file)
     settings.setValue('options/show_unicode', output.show_unicode)
 
-    result = py_controller._format_output(TEXT)
+    result = py_controller._format_output(SAMPLE_TEXT)
     assert re.match(output.pattern, result)
 
 
 def test_append_output(py_controller):
     """Append output to class attribute."""
-    py_controller._append_output(TEXT)
-    assert py_controller.history == [TEXT]
+    py_controller._append_output(SAMPLE_TEXT)
+    assert py_controller.history == [SAMPLE_TEXT]
 
 
 def test_clear_history(py_controller):
@@ -82,52 +82,71 @@ def test_clear_history(py_controller):
     py_controller._clear_history()
     assert py_controller.history == []
 
+# FIX: when calling set_input_text or execute_code, not having py_controller fixture
+# will break the code.
 
-def test_restore_input(settings, se_controller,  py_controller):
+
+@pytest.fixture()
+def set_input_text(se_controller, py_controller):
+    """Set input to input widget."""
     input_widget = se_controller.script_editor.input_widget
-    initial_input = se_controller.initial_input
-
-    input_widget.setPlainText(TEXT)
-
-    settings.setValue('options/override_input_editor', False)
-    py_controller.restore_input()
-
-    assert initial_input == input_widget.toPlainText()
+    input_widget.setPlainText(SAMPLE_TEXT)
 
 
-def test_override_input(settings, se_controller,  py_controller):
+@pytest.fixture()
+def override_input_editor(set_input_text, se_controller, settings, py_controller):
+    """Override input editor fixture factory."""
+
+    def _override_input_editor(value):
+        settings.setValue('options/override_input_editor', value)
+        py_controller.restore_input()
+        return se_controller.script_editor.input_widget.toPlainText()
+
+    return _override_input_editor
+
+
+def test_restore_input(override_input_editor, se_controller):
+    """Check if input was restored."""
+    input_text = override_input_editor(False)
+    assert input_text == se_controller.initial_input
+
+
+def test_override_input(override_input_editor):
+    """Check if input was overridden."""
+    input_text = override_input_editor(True)
+    assert input_text == SAMPLE_TEXT
+
+
+@pytest.fixture()
+def execute_code(se_controller, py_controller):
+    """Execute code inside the Script editor.
+
+    Note: py_controller fixtures is needed to avoid a call back to save_save?
+    """
     input_widget = se_controller.script_editor.input_widget
-    initial_input = se_controller.initial_input
-
-    input_widget.setPlainText(TEXT)
-
-    settings.setValue('options/override_input_editor', True)
-    py_controller.restore_input()
-
-    assert initial_input != input_widget.toPlainText()
-
-
-def test_override_ouput(settings, se_controller,  py_controller):
-    input_widget = se_controller.script_editor.input_widget
-    input_widget.setPlainText("print('Hello NSS'.upper())")
+    input_widget.setPlainText("print('hello nukeserversocket'.upper())")
     se_controller.execute()
 
-    settings.setValue('options/output_to_console', False)
-    py_controller.restore_output()
 
-    output_widget = se_controller.script_editor.output_widget
+@pytest.fixture()
+def output_to_console(execute_code, se_controller, py_controller, settings):
+    """Restore output fixture factory."""
 
-    assert output_widget.toPlainText() == ''
+    def _restore_output(value):
+        settings.setValue('options/output_to_console', value)
+        py_controller.restore_output()
+        return se_controller.script_editor.output_widget.toPlainText()
+
+    return _restore_output
 
 
-def test_restore_ouput(settings, se_controller,  py_controller):
-    input_widget = se_controller.script_editor.input_widget
-    input_widget.setPlainText("print('Hello NSS'.upper())")
-    se_controller.execute()
+def test_override_output(output_to_console, se_controller):
+    """Check if output was not sent to console."""
+    output_text = output_to_console(False)
+    assert output_text == se_controller.initial_output
 
-    settings.setValue('options/output_to_console', True)
-    py_controller.restore_output()
 
-    output_widget = se_controller.script_editor.output_widget
-
-    assert re.search('HELLO NSS', output_widget.toPlainText())
+def test_restore_output(output_to_console):
+    """Check if output was sent to console."""
+    output_text = output_to_console(True)
+    assert re.search('HELLO NUKESERVERSOCKET', output_text)
