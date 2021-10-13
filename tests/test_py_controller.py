@@ -82,26 +82,27 @@ def test_clear_history(py_controller):
     py_controller._clear_history()
     assert py_controller.history == []
 
-# FIX: when calling set_input_text or execute_code, not having py_controller fixture
-# will break the code.
+
+@pytest.mark.skip()
+def test_clear_output():
+    pass
+
+
+@pytest.mark.skip()
+def test_no_clear_output():
+    pass
 
 
 @pytest.fixture()
-def set_input_text(se_controller, py_controller):
-    """Set input to input widget."""
-    input_widget = se_controller.script_editor.input_widget
-    input_widget.setPlainText(SAMPLE_TEXT)
-
-
-@pytest.fixture()
-def override_input_editor(set_input_text, se_controller, settings, py_controller):
+def override_input_editor(se_controller, settings, py_controller):
     """Override input editor fixture factory."""
 
     def _override_input_editor(value):
         settings.setValue('options/override_input_editor', value)
         py_controller.restore_input()
-        return se_controller.script_editor.input_widget.toPlainText()
+        return se_controller.input()
 
+    se_controller.set_input(SAMPLE_TEXT)
     return _override_input_editor
 
 
@@ -118,24 +119,16 @@ def test_override_input(override_input_editor):
 
 
 @pytest.fixture()
-def execute_code(se_controller, py_controller):
-    """Execute code inside the Script editor.
-
-    Note: py_controller fixtures is needed to avoid a call back to save_save?
-    """
-    input_widget = se_controller.script_editor.input_widget
-    input_widget.setPlainText("print('hello nukeserversocket'.upper())")
-    se_controller.execute()
-
-
-@pytest.fixture()
-def output_to_console(execute_code, se_controller, py_controller, settings):
+def output_to_console(se_controller, py_controller, settings):
     """Restore output fixture factory."""
 
     def _restore_output(value):
         settings.setValue('options/output_to_console', value)
         py_controller.restore_output()
-        return se_controller.script_editor.output_widget.toPlainText()
+        return se_controller.output()
+
+    se_controller.set_input("print('hello nukeserversocket'.upper())")
+    se_controller.execute()
 
     return _restore_output
 
