@@ -49,6 +49,10 @@ class ScriptEditorController():
         """
         self.script_editor.output_widget.setPlainText(text)
 
+    def input(self):  # type: () -> str
+        """Get input from the nuke internal script editor."""
+        return self.script_editor.input_widget.document().toPlainText()
+
     def output(self):  # type: () -> str
         """Get output from the nuke internal script editor."""
         return self.script_editor.output_widget.document().toPlainText()
