@@ -63,7 +63,7 @@ class FakeScriptEditor(QWidget):
     def eventFilter(self, obj, event):
         if isinstance(event, QKeyEvent):
             if event.modifiers() == Qt.CTRL and event.key() == Qt.Key_Return:
-                print('shortcut pressed')
+                # print('shortcut pressed')
                 self.run_code()
                 event.accept()
                 return True
@@ -72,7 +72,8 @@ class FakeScriptEditor(QWidget):
     def run_code(self):
         code = self.input_console.toPlainText()
         if 'nuke.nodePaste' not in code:
-            code = subprocess.check_output(['python', '-c', code], encoding='utf-8')
+            code = subprocess.check_output(
+                ['python', '-c', code], encoding='utf-8')
         self.output_console.setPlainText(code)
 
 
