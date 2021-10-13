@@ -1,5 +1,6 @@
+import re
 import os
-import json
+from collections import namedtuple
 
 from textwrap import dedent
 
