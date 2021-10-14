@@ -10,10 +10,10 @@ from .about_widget import AboutWidget
 
 
 class FloatingDialog(QDialog):
-    def __init__(self, title, object_name, widget, parent=None):
+    def __init__(self, title, obj_name, widget, parent=None):
         QDialog.__init__(self, parent)
         self.setWindowTitle(title)
-        self.setObjectName(object_name)
+        self.setObjectName(obj_name)
 
         _layout = QVBoxLayout()
         _layout.addWidget(widget())
@@ -26,59 +26,59 @@ class FloatingDialog(QDialog):
 
 
 class ToolBar(QToolBar):
-    # TODO: should create a toolbar controller class?
     def __init__(self):
         QToolBar.__init__(self)
         self.setIconSize(QSize(15, 15))
         self.setToolButtonStyle(Qt.ToolButtonTextUnderIcon)
         self.setMovable(False)
 
-        self.setStyleSheet('''color: white;''')
+        self.setStyleSheet('color: white;')
         self._initial_style = self.styleSheet()
 
-        self._open_settings = QAction('Settings', self)
-        self._open_settings.triggered.connect(self._show_settings)
-        self.addAction(self._open_settings)
+        self._setup_settings_action()
+        self._setup_about_action()
 
-        self._open_about = QAction('About', self)
-        self._open_about.triggered.connect(self._show_about)
-        self.addAction(self._open_about)
+    def _setup_settings_action(self):
+        return self._setup_action(
+            title='Settings', obj_name='SettingsDialog', widget=SettingsWidget
+        )
 
-    def _dialog_exists(self, object_name):
+    def _setup_about_action(self):
+        return self._setup_action(
+            title='About', obj_name='AboutDialog', widget=AboutWidget
+        )
+
+    def _setup_action(self, title, obj_name, widget):
+        action = QAction(title, self)
+        self.addAction(action)
+
+        action.triggered.connect(
+            lambda: self._show_dialog(title, obj_name, widget)
+        )
+        return action
+
+    def _dialog_exists(self, obj_name):
         """Check if the widget is already present. If yes then raise the window set focus
 
         Args:
-            object_name (str): objectName of the widget to search for
+            obj_name (str): objectName of the widget to search for
 
         Returns:
             bool: true if found and raised false otherwise
         """
         for widget in self.children():
-            if widget.objectName() == object_name:
+            if widget.objectName() == obj_name:
                 widget.setFocus(Qt.PopupFocusReason)
                 widget.raise_()
                 widget.activateWindow()
                 return True
         return False
 
-    def _show_about(self):
-        obj_name = 'AboutDialog'
+    def _show_dialog(self, title, obj_name, widget):
         if not self._dialog_exists(obj_name):
+            dialog = FloatingDialog(title=title, obj_name=obj_name,
+                                    widget=widget, parent=self)
+            dialog.show()
+            return dialog
 
-            FloatingDialog(
-                title='About',
-                object_name=obj_name,
-                widget=AboutWidget,
-                parent=self
-            ).show()
-
-    def _show_settings(self):
-        obj_name = 'SettingsDialog'
-        if not self._dialog_exists(obj_name):
-
-            FloatingDialog(
-                title='Settings',
-                object_name=obj_name,
-                widget=SettingsWidget,
-                parent=self
-            ).show()
+        return 'Already active'
