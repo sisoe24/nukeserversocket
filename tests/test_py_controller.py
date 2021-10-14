@@ -8,6 +8,8 @@ from src.utils import AppSettings
 
 SAMPLE_TEXT = 'Random Code Result: Hello'
 
+# TODO: test clean_output and append
+
 
 @pytest.fixture()
 def settings(scope='session'):
