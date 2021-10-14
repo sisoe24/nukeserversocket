@@ -29,6 +29,11 @@
             "dependsOn": [
                 "Clean .pyc"
             ]
+        },
+        {
+            "label": "Open coverage report",
+            "type": "shell",
+            "command": "open htmlcov/index.html",
         }
     ]
 }
