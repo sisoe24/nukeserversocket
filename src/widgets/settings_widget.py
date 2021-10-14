@@ -37,6 +37,7 @@ class SettingsWidget(QWidget):
     def __init__(self):
         QWidget.__init__(self)
         # TODO: refactor sections into their own classes
+        # BUG: when reloading the settings, sub settings will always override their original state
 
         self._output_console = CheckBox(
             is_checked=True, title='Output To Console', parent=self,
