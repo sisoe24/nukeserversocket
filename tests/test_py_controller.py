@@ -162,13 +162,13 @@ def clear_output(output_to_console, settings):
     return _clear_output
 
 
-@pytest.mark.rapidtest
+@pytest.mark.quicktest
 def test_no_clear_output(clear_output):
     """Check if output widget was not cleaned and has different lines of text."""
     assert not clear_output(False)
 
 
-@pytest.mark.rapidtest
+@pytest.mark.quicktest
 def test_clear_output(clear_output):
     """Check if output widget was cleaned."""
     assert clear_output(True)

@@ -17,6 +17,7 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     config.addinivalue_line('markers', 'web: validate web link')
+    config.addinivalue_line('markers', 'quicktest: quick test methods')
 
 
 def pytest_collection_modifyitems(config, items):
