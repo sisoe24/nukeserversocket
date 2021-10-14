@@ -3,7 +3,7 @@ import random
 
 from src.main import MainWindowWidget
 
-LOCAL_IP = '192.168.1.%s' % random.randint(10, 99)
+RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 
 
 class GuiApp:
@@ -20,9 +20,9 @@ class GuiApp:
 
     connect_btn_text = None
 
-    status_widget = None
-    received_widget = None
-    output_widget = None
+    status_text = None
+    received_text = None
+    output_text = None
 
     def test_label(self, ui):
         """Test if UI label is properly set."""
@@ -77,9 +77,9 @@ class GuiApp:
         received = log_widgets.received_widget.text_box
         output = log_widgets.output_widget.text_box
 
-        assert self.status_widget in status.toPlainText()
-        assert self.received_widget in received.toPlainText()
-        assert self.output_widget in output.toPlainText()
+        assert self.status_text in status.toPlainText()
+        assert self.received_text in received.toPlainText()
+        assert self.output_text in output.toPlainText()
 
 
 class TestGuiIsIdle(GuiApp):
@@ -100,9 +100,9 @@ class TestGuiIsIdle(GuiApp):
 
         cls.connect_btn_text = 'Connect'
 
-        cls.status_widget = ''
-        cls.received_widget = ''
-        cls.output_widget = ''
+        cls.status_text = ''
+        cls.received_text = ''
+        cls.output_text = ''
 
 
 @pytest.mark.usefixtures('start_connection')
@@ -123,9 +123,9 @@ class TestGuiIsConnected(GuiApp):
 
         cls.connect_btn_text = 'Disconnect'
 
-        cls.status_widget = 'Connected. Server listening to port'
-        cls.received_widget = ''
-        cls.output_widget = ''
+        cls.status_text = 'Connected. Server listening to port'
+        cls.received_text = ''
+        cls.output_text = ''
 
 
 @pytest.mark.usefixtures('activate_sender_mode')
@@ -146,23 +146,20 @@ class TestGuiIsSenderMode(GuiApp):
 
         cls.connect_btn_text = 'Connect'
 
-        cls.status_widget = ''
-        cls.received_widget = ''
-        cls.output_widget = ''
+        cls.status_text = ''
+        cls.received_text = ''
+        cls.output_text = ''
 
     def test_change_ip_entry(self, ui):
         """Check if ip entry can be changed."""
         ip_entry = ui.connections.ip_entry
-
-        text = ip_entry.text()
-        ip_entry.setText(LOCAL_IP)
-
-        assert text != ip_entry.text()
+        ip_entry.setText(RANDOM_IP)
+        assert ip_entry.text() == RANDOM_IP
 
     def test_send_local_ip(self, config_file):
         """Check if `local_ip` is saved correctly in settings.ini when changed."""
         settings_values = config_file['server']['send_to_address']
-        assert settings_values == LOCAL_IP
+        assert settings_values == RANDOM_IP
 
 
 @pytest.mark.skip('not implemented yet. need another open connection')
