@@ -1,6 +1,6 @@
 import os
-import configparser
 from typing import List
+
 import pytest
 from PySide2.QtWidgets import QCheckBox, QWidget
 
@@ -11,15 +11,15 @@ class TestSubStateSettings:
     settings_widget: QWidget
 
     @property
-    def output_console(self) -> QCheckBox:
+    def output_console(self):  # type: () -> QCheckBox
         return self.settings_widget._output_console
 
     @property
-    def format_output(self) -> QCheckBox:
+    def format_output(self):  # type: () -> QCheckBox
         return self.settings_widget._format_output
 
     @property
-    def clear_text(self) -> QCheckBox:
+    def clear_text(self):  # type: () -> QCheckBox
         return self.settings_widget._clear_output
 
     def test_output_console_is_true(self):
@@ -77,8 +77,11 @@ class TestSettingsFile:
     def checkboxes(self):  # type: () -> List[QCheckBox]
         return self.settings_widget.findChildren(QCheckBox)
 
-    def test_no_settings_default_values(self):
+    def test_no_settings_default_values(self, tmp_settings_file):
         """Check if checkbox values are on the default if no ini file is found."""
+        with open(tmp_settings_file, 'w') as _:
+            pass
+
         initial_values = {
             'output_to_console': True,
             'format_text': True,
