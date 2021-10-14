@@ -1,4 +1,5 @@
 import re
+from typing import MutableMapping
 
 import pytest
 from collections import namedtuple
@@ -6,9 +7,14 @@ from collections import namedtuple
 from src.script_editor import nuke_se_controllers as nse
 from src.utils import AppSettings
 
-SAMPLE_TEXT = 'Random Code Result: Hello'
+BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
+END_PATTERN = '\nHello'
+OUTPUT_PATTERN = BEGIN_PATTERN + r'.+?py (↴)?\n'
+
+SAMPLE_TEXT = 'Random Code Result: {}'.format(END_PATTERN.strip())
 
 # TODO: test clean_output and append
+# BUG: something happens when toggling options to clean text
 
 
 @pytest.fixture()
@@ -16,11 +22,11 @@ def settings(scope='session'):
     yield AppSettings()
 
 
-@pytest.fixture(scope='session')
-def se_controller():
-    """Get the ScriptEditorController Class"""
-    controller = nse.ScriptEditorController()
-    yield controller
+# @pytest.fixture(scope='session')
+# def se_controller():
+#     """Get the ScriptEditorController Class"""
+#     controller = nse.ScriptEditorController()
+#     yield controller
 
 
 @pytest.fixture()
@@ -50,14 +56,16 @@ def test_clean_output(py_controller, msg):
 
 
 def output_format_settings():
-    start = r'\[\d\d:\d\d:\d\d\] \[Nuke Tools\]'
-    end = r'\nHello'
-    Output = namedtuple('Output', ['show_file', 'show_unicode', 'pattern'])
+    """UGLY STUFF."""
+    def pattern(s):
+        return BEGIN_PATTERN + s + END_PATTERN
+
+    Format = namedtuple('Format', ['show_file', 'show_unicode', 'pattern'])
     return (
-        Output(True, True, start + r' path/to/file\.py ↴' + end),
-        Output(True, False, start + r' path/to/file\.py ' + end),
-        Output(False, True, start + r' file\.py ↴' + end),
-        Output(False, False, start + r' file\.py ' + end),
+        Format(True, True, pattern(r'path/to/file\.py ↴')),
+        Format(True, False, pattern(r'path/to/file\.py ')),
+        Format(False, True, pattern(r'file\.py ↴')),
+        Format(False, False, pattern(r'file\.py ')),
     )
 
 
@@ -85,33 +93,23 @@ def test_clear_history(py_controller):
     assert py_controller.history == []
 
 
-@pytest.mark.skip()
-def test_clear_output():
-    pass
-
-
-@pytest.mark.skip()
-def test_no_clear_output():
-    pass
-
-
 @pytest.fixture()
-def override_input_editor(se_controller, settings, py_controller):
+def override_input_editor(py_controller, settings):
     """Override input editor fixture factory."""
 
     def _override_input_editor(value):
         settings.setValue('options/override_input_editor', value)
         py_controller.restore_input()
-        return se_controller.input()
+        return py_controller.input()
 
-    se_controller.set_input(SAMPLE_TEXT)
+    py_controller.set_input(SAMPLE_TEXT)
     return _override_input_editor
 
 
-def test_restore_input(override_input_editor, se_controller):
+def test_restore_input(override_input_editor, py_controller):
     """Check if input was restored."""
     input_text = override_input_editor(False)
-    assert input_text == se_controller.initial_input
+    assert input_text == py_controller.initial_input
 
 
 def test_override_input(override_input_editor):
@@ -121,27 +119,56 @@ def test_override_input(override_input_editor):
 
 
 @pytest.fixture()
-def output_to_console(se_controller, py_controller, settings):
+def output_to_console(py_controller, settings):
     """Restore output fixture factory."""
 
     def _restore_output(value):
+        py_controller.set_input("print('nukeserversocket'.upper())")
+        py_controller.execute()
+
         settings.setValue('options/output_to_console', value)
         py_controller.restore_output()
-        return se_controller.output()
 
-    se_controller.set_input("print('hello nukeserversocket'.upper())")
-    se_controller.execute()
+        return py_controller.output()
 
     return _restore_output
 
 
-def test_override_output(output_to_console, se_controller):
+def test_override_output(output_to_console, py_controller):
     """Check if output was not sent to console."""
     output_text = output_to_console(False)
-    assert output_text == se_controller.initial_output
+    assert output_text == py_controller.initial_output
 
 
 def test_restore_output(output_to_console):
     """Check if output was sent to console."""
     output_text = output_to_console(True)
-    assert re.search('HELLO NUKESERVERSOCKET', output_text)
+    assert re.search(OUTPUT_PATTERN + 'NUKESERVERSOCKET', output_text)
+
+
+@pytest.fixture()
+def clear_output(output_to_console, settings):
+    """Execute code a two times to check if based on clear_output settings, the
+    widget will register the clean."""
+
+    def _clear_output(value):
+        """Return True if there is only one Nuke Tools line, False otherwise"""
+        settings.setValue('options/clear_output', value)
+        for _ in range(2):
+            output = output_to_console(True)
+
+        return len(re.findall('Nuke Tools', output)) <= 1
+
+    return _clear_output
+
+
+@pytest.mark.rapidtest
+def test_no_clear_output(clear_output):
+    """Check if output widget was not cleaned and has different lines of text."""
+    assert not clear_output(False)
+
+
+@pytest.mark.rapidtest
+def test_clear_output(clear_output):
+    """Check if output widget was cleaned."""
+    assert clear_output(True)
