@@ -1,5 +1,4 @@
 import re
-from typing import MutableMapping
 
 import pytest
 from collections import namedtuple
@@ -8,25 +7,14 @@ from src.script_editor import nuke_se_controllers as nse
 from src.utils import AppSettings
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
-END_PATTERN = '\nHello'
-OUTPUT_PATTERN = BEGIN_PATTERN + r'.+?py (↴)?\n'
 
-SAMPLE_TEXT = 'Random Code Result: {}'.format(END_PATTERN.strip())
-
-# TODO: test clean_output and append
-# BUG: something happens when toggling options to clean text
+SAMPLE_WORD = 'NukeServerSocket'
+SAMPLE_TEXT = 'Random Code Result: {}'.format(SAMPLE_WORD)
 
 
 @pytest.fixture()
 def settings(scope='session'):
     yield AppSettings()
-
-
-# @pytest.fixture(scope='session')
-# def se_controller():
-#     """Get the ScriptEditorController Class"""
-#     controller = nse.ScriptEditorController()
-#     yield controller
 
 
 @pytest.fixture()
@@ -58,7 +46,7 @@ def test_clean_output(py_controller, msg):
 def output_format_settings():
     """UGLY STUFF."""
     def pattern(s):
-        return BEGIN_PATTERN + s + END_PATTERN
+        return BEGIN_PATTERN + s + '\n' + SAMPLE_WORD
 
     Format = namedtuple('Format', ['show_file', 'show_unicode', 'pattern'])
     return (
@@ -123,7 +111,7 @@ def output_to_console(py_controller, settings):
     """Restore output fixture factory."""
 
     def _restore_output(value):
-        py_controller.set_input("print('nukeserversocket'.upper())")
+        py_controller.set_input("print('{}'.upper())".format(SAMPLE_WORD))
         py_controller.execute()
 
         settings.setValue('options/output_to_console', value)
@@ -134,16 +122,27 @@ def output_to_console(py_controller, settings):
     return _restore_output
 
 
+def test_format_text_settings(output_to_console, settings):
+    """Check if format text options decides if the output will being formatted"""
+    settings.setValue('options/format_text', False)
+    output = output_to_console(True)
+
+    assert output.startswith(SAMPLE_WORD.upper())
+
+    settings.setValue('options/format_text', True)
+
+
+def test_restore_output(output_to_console, settings):
+    """Check if output was sent to console."""
+    output = output_to_console(True)
+    output_pattern = BEGIN_PATTERN + r'.+?py (↴)?\n'
+    assert re.search(output_pattern + SAMPLE_WORD.upper(), output)
+
+
 def test_override_output(output_to_console, py_controller):
     """Check if output was not sent to console."""
-    output_text = output_to_console(False)
-    assert output_text == py_controller.initial_output
-
-
-def test_restore_output(output_to_console):
-    """Check if output was sent to console."""
-    output_text = output_to_console(True)
-    assert re.search(OUTPUT_PATTERN + 'NUKESERVERSOCKET', output_text)
+    output = output_to_console(False)
+    assert output == py_controller.initial_output
 
 
 @pytest.fixture()
@@ -162,13 +161,11 @@ def clear_output(output_to_console, settings):
     return _clear_output
 
 
-@pytest.mark.quicktest
 def test_no_clear_output(clear_output):
     """Check if output widget was not cleaned and has different lines of text."""
     assert not clear_output(False)
 
 
-@pytest.mark.quicktest
 def test_clear_output(clear_output):
     """Check if output widget was cleaned."""
     assert clear_output(True)
