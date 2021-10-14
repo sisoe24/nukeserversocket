@@ -50,7 +50,7 @@ class TestNodesCopyController:
         if os.path.exists(path):
             os.remove(path)
 
-    @pytest.fixture()
+    @pytest.fixture(scope='class')
     def nodes_controller(self):
         """Init node controller class"""
         # TODO this should be scope class
@@ -60,6 +60,8 @@ class TestNodesCopyController:
         controller.set_input(self.file_content)
 
         yield controller
+
+        se.ScriptEditorController().set_input('')
 
     def test_nodes_controller_input_result(self, nodes_controller):
         """Check if set input returns valid Nuke string."""
@@ -114,7 +116,7 @@ class TestBlinkController:
 class TestNukeSe:
     """Test base Nuke Script editor class"""
 
-    @pytest.fixture()
+    @pytest.fixture(scope='class')
     def editor(self):
         """Initialize the editor"""
         se_editor = nuke_se.NukeScriptEditor()
