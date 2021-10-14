@@ -16,7 +16,7 @@ STRING = 'nss test msg'
 TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
 
-
+pytest.skip(allow_module_level=True)
 @pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})])
 def send_data(request):
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
