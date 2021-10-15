@@ -1,6 +1,5 @@
 import os
 import configparser
-from _pytest.outcomes import skip
 
 import pytest
 
@@ -54,12 +53,6 @@ def tmp_settings_file(package):
     yield file
 
     # os.remove(file)
-
-
-@pytest.fixture(autouse=False, scope='session')
-def qapp():
-    app = MyApplication([])
-    yield app
 
 
 @pytest.fixture()
