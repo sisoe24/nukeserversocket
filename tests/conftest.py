@@ -6,7 +6,7 @@ import pytest
 
 from src.utils import settings
 from src.main import MainWindow, MainWindowWidget
-from tests.run_app import MyApplication, _MainWindow, _MainwindowWidgets
+from tests.run_local import MyApplication, _MainWindow, _MainwindowWidgets
 
 
 def pytest_addoption(parser):

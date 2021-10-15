@@ -16,7 +16,7 @@ from src.connection import Server, SendTestClient, SendNodesClient
 from src.main import MainWindow, MainWindowWidget, init_settings
 from src.widgets import ConnectionsWidget
 
-from tests.run_app import MyApplication
+from tests.run_local import MyApplication
 
 TRANSFER_NODES_FILE = """
 set cut_paste_input [stack 0]
