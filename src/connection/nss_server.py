@@ -71,4 +71,4 @@ class Server(QObject):
         msg = "Server did not initiate. Error: %s." % self.server.errorString()
         self.state_changed.emit(msg)
 
-        raise ValueError(msg)
+        raise RuntimeError(msg)
