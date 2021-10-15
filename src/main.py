@@ -22,7 +22,7 @@ from .widgets import (
 )
 
 LOGGER = logging.getLogger('NukeServerSocket.main')
-LOGGER.debug('\nSTART APPLICATION')
+LOGGER.debug(' -*- START APPLICATION -*-')
 
 
 def init_settings():
@@ -45,6 +45,7 @@ def init_settings():
 class MainWindowWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self)
+        LOGGER.debug('Main :: init')
 
         init_settings()
 

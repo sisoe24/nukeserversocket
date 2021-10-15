@@ -50,13 +50,9 @@ class QBaseClient(QObject):
         QObject.__init__(self)
 
         self.tcp_host = hostname
-        LOGGER.debug('client host: %s', self.tcp_host)
-
         self.tcp_port = port
-        LOGGER.debug('client port: %s', self.tcp_port)
 
         self.socket = QTcpSocket()
-        LOGGER.debug('creating socket: %s', self.socket)
 
         self.socket.readyRead.connect(self.read_data)
         self.socket.connected.connect(self.on_connected)
@@ -89,16 +85,16 @@ class QBaseClient(QObject):
 
     def write_data(self, data):
         self.socket.write(validate_output(json.dumps(data)))
-        LOGGER.debug('message sent: %s', data)
 
         self.socket.flush()
         self.socket.disconnectFromHost()
 
     def on_disconnect(self):
-        LOGGER.debug('Disconnected from host')
+        LOGGER.debug('Client :: Disconnected from host')
 
     def connect_to_host(self):
-        LOGGER.debug('Connecting to host: %s %s', self.tcp_host, self.tcp_port)
+        LOGGER.debug('Client :: Connecting to host: %s %s',
+                     self.tcp_host, self.tcp_port)
         self.socket.connectToHost(self.tcp_host, self.tcp_port)
         self.timer.start()
 
@@ -123,7 +119,7 @@ class SendTestClient(QBaseClient):
         QBaseClient.__init__(self, hostname, port)
 
     def on_connected(self):
-        LOGGER.debug('SendTestClient -> Connected to host')
+        LOGGER.debug('SendTestClient :: Connection successful.')
         r = random.randint(1, 50)
 
         output_text = {
@@ -138,6 +134,7 @@ class SendNodesClient(QBaseClient):
     """Send nuke nodes using the Qt client socket."""
 
     def __init__(self, hostname=None, port=None):
+        LOGGER.debug('Client :: Sending nodes...')
 
         addresses = NetworkAddresses()
         hostname = hostname or addresses.send_address
@@ -149,7 +146,7 @@ class SendNodesClient(QBaseClient):
 
     def on_connected(self):
         """When connected, send the content of the transfer file as data to the socket."""
-        LOGGER.debug('SendNodesClient -> Connected to host')
+        LOGGER.debug('Client :: Send nodes connection successful.')
         self.write_data(self.transfer_data)
 
     def transfer_file_content(self):
