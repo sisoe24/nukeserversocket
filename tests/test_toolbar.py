@@ -27,7 +27,7 @@ def test_toolbar_floating_dialog_already_on(toolbar_obj):
     assert dialog == 'Already active'
 
 
-def test_toolbar_floating_dialog_already_on(toolbar_obj):
+def test_toolbar_floating_is_deleted(toolbar_obj):
     """Check if dialog gets closed."""
     dialog = toolbar_obj._show_dialog(*DIALOG)
     dialog.close()
