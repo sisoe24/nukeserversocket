@@ -6,7 +6,7 @@ import pytest
 
 from src.utils import settings
 from src.main import MainWindow, MainWindowWidget
-from tests.run_local import MyApplication, _MainWindow, _MainWindowWidgets
+from tests.run_local import MyApplication, _MainWindow, _MainWindowWidget
 
 
 def pytest_addoption(parser):
@@ -80,7 +80,7 @@ def patch_settings(tmp_settings_file, monkeypatch):
 @pytest.fixture()
 def ui(qtbot):
     """Main UI Widget"""
-    widget = _MainWindowWidgets()
+    widget = _MainWindowWidget()
     qtbot.addWidget(widget)
     # widget.show()
     yield widget.main_app

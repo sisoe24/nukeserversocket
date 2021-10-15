@@ -7,7 +7,7 @@ from subprocess import check_output
 import pytest
 from PySide2.QtWidgets import QPushButton
 
-from .run_local import _MainWindowWidgets
+from .run_local import _MainWindowWidget
 
 from src.utils import AppSettings
 from src.main import init_settings
