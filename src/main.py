@@ -51,7 +51,7 @@ class MainWindowWidget(QWidget):
         self.connections = ConnectionsWidget(parent=self)
 
         self.connect_btn = self.connections.buttons.connect_btn
-        self.connect_btn.toggled.connect(self._connection)
+        self.connect_btn.toggled.connect(self.toggle_connection)
 
         self.send_btn = self.connections.buttons.send_btn
         self.send_btn.clicked.connect(self._send_nodes)
@@ -108,7 +108,7 @@ class MainWindowWidget(QWidget):
 
         return _server
 
-    def _connection(self, state):  # type: (bool) -> None
+    def toggle_connection(self, state):  # type: (bool) -> None
         """When connect button is toggled start connection, otherwise close it."""
 
         def _start_connection():
@@ -117,19 +117,27 @@ class MainWindowWidget(QWidget):
 
             try:
                 status = self._server.start_server()
-            except ValueError as err:
+            except RuntimeError as err:
                 LOGGER.error('server did not connect: %s', err)
                 self.connect_btn.disconnect()
                 self.connections.set_disconnected()
+                return False
             else:
                 LOGGER.debug('server is connected: %s', status)
                 self._enable_connection_mod(False)
 
+            return bool(status)
+
         if state:
-            _start_connection()
-        else:
+            return _start_connection()
+        try:
             self._server.close_server()
-            self._enable_connection_mod(True)
+        except AttributeError:
+            # connection has never started but function could receive a False argument
+            # causing a AttributeError because _server hasn't been declared yet
+            pass
+
+        self._enable_connection_mod(True)
 
     def _send_nodes(self):
         """Send the selected Nuke Nodes using the internal client."""
