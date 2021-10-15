@@ -56,7 +56,7 @@ def tmp_settings_file(package):
     # os.remove(file)
 
 
-@pytest.fixture(autouse=True, scope='session')
+@pytest.fixture(autouse=False, scope='session')
 def qapp():
     app = MyApplication([])
     yield app
