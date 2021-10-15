@@ -1,6 +1,7 @@
 import os
 import requests
 import platform
+
 import pytest
 
 from src import about
@@ -37,48 +38,53 @@ def test_about_to_string():
     assert 'Machine' not in keys
 
 
+LINKS = about.about_links()
+
+
 class TestAboutWidget:
 
-    @classmethod
-    def setup_class(cls):
-        cls.widget = about_widget.AboutWidget()
-        cls._form_layout = cls.widget._form_layout
-        cls._grid_layout = cls.widget._grid_layout
-
-    def test_about_form(self):
+    def test_about_form(self, qtbot):
         """Test if the form layout has the proper about information."""
+        widget = about_widget.AboutWidget()
+        qtbot.addWidget(widget)
+
         about_list = []
-        for i in about.about():
-            about_list.append(i.label)
-            about_list.append(i.repr)
+        for label in about.about():
+            about_list.append(label.label)
+            about_list.append(label.repr)
 
         for index, item in enumerate(about_list):
-            widget = self._form_layout.itemAt(index).widget()
-            assert item == widget.text()
+            _widget = widget._form_layout.itemAt(index).widget()
+            assert item == _widget.text()
 
-    def test_about_grid(self):
+    def test_about_grid(self, qtbot):
         """Test if grid layout has the proper about information."""
-        for index, link in enumerate(about.about_links()):
-            widget = self._grid_layout.itemAt(index).widget()
-            assert widget.text() == link.label
-            assert widget.property('link') == link.repr
+        widget = about_widget.AboutWidget()
+        qtbot.addWidget(widget)
 
-    def test_about_buttons(self):
+        for index, link in enumerate(LINKS):
+            _widget = widget._grid_layout.itemAt(index).widget()
+            assert _widget.text() == link.label
+            assert _widget.property('link') == link.repr
+
+    def test_about_buttons(self, qtbot):
         """Test if about buttons are enabled"""
-        for index, _ in enumerate(about.about_links()):
-            widget = self._grid_layout.itemAt(index).widget()
-            assert widget.isEnabled()
+        widget = about_widget.AboutWidget()
+        qtbot.addWidget(widget)
+
+        for index, _ in enumerate(LINKS):
+            _widget = widget._grid_layout.itemAt(index).widget()
+            assert _widget.isEnabled()
 
 
 @pytest.mark.web
-def test_about_links():
-    """Test if about links are reachable."""
-    for link in about.about_links():
+@pytest.mark.parametrize('link', LINKS, ids=[i.label for i in LINKS])
+def test_about_links(link):
+    """Test if about link are reachable."""
 
-        # Logs is a system path
-        if link.label == 'Logs':
-            assert os.path.exists(link.repr.replace('file:///', ''))
-            continue
-
+    # Logs is a system path
+    if link.label == 'Logs':
+        assert os.path.exists(link.repr.replace('file:///', ''))
+    else:
         # TODO: would like to use only included modules
         assert requests.get(link.repr, allow_redirects=True).status_code == 200
