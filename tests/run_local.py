@@ -15,15 +15,9 @@ from PySide2.QtWidgets import (
 )
 
 from src.widgets import FakeScriptEditor, ToolBar, ErrorDialog
-from src.main import MainWindowWidget
+from src.main import MainWindowWidget, MainWindow
 
-# personal monitor loc screen for rapid testing
-screen_loc = {
-    'hp': {
-        'x': -1077.296875,
-        'y': -5.31640625
-    }
-}
+
 LOGGER = logging.getLogger('NukeServerSocket.runapp')
 
 
@@ -47,13 +41,13 @@ class SecondFakeScriptEditor(QWidget):
         self.se1.deleteLater()
 
 
-class _MainwindowWidgets(QWidget):
+class _MainWindowWidget(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self)
         LOGGER.debug('RUN APP :: INIT')
 
-        self.script_editor = FakeScriptEditor(
-            'uk.co.thefoundry.scripteditor.1')
+        se_name = 'uk.co.thefoundry.scripteditor.1'
+        self.script_editor = FakeScriptEditor(se_name)
         self.main_app = MainWindowWidget(parent)
 
         _layout = QVBoxLayout()
@@ -62,32 +56,25 @@ class _MainwindowWidgets(QWidget):
         # _layout.addWidget(SecondFakeScriptEditor(self.script_editor))
         self.setLayout(_layout)
 
-        # self.main_app.connect_btn.click()
-        # self.script_editor.run_btn.click()
-        # self.main_app.test_btn.click()
+    def _auto_test(self):
+        """Auto run simple test"""
+        self.main_app.connect_btn.click()
+        self.script_editor.run_btn.click()
+        self.main_app.test_btn.click()
 
 
-class _MainWindow(QMainWindow):
+class _MainWindow(MainWindow):
     def __init__(self, *args, **kwargs):
-        QMainWindow.__init__(self)
+        MainWindow.__init__(self, main_widget=_MainWindowWidget)
         self.setWindowTitle('NukeServerSocket Test')
+
+        # personal monitor loc for rapid testing
+        screen_loc = {
+            'hp': {'x': -1077.296875, 'y': -5.31640625}
+        }
         self.setGeometry(screen_loc['hp']['x'],
                          screen_loc['hp']['y'],
                          1080, 1980)
-
-        toolbar = ToolBar()
-        self.addToolBar(toolbar)
-
-        self.status_bar = QStatusBar(self)
-        self.setStatusBar(self.status_bar)
-
-        try:
-            self.main_widgets = _MainwindowWidgets(self)
-        except Exception as err:
-            print("err :", err, traceback.format_exc())
-            ErrorDialog(err, self).show()
-        else:
-            self.setCentralWidget(self.main_widgets)
 
 
 class MyApplication(QApplication):
