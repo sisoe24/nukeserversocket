@@ -53,7 +53,6 @@ class TestNodesCopyController:
     @pytest.fixture(scope='class')
     def nodes_controller(self):
         """Init node controller class"""
-        # TODO this should be scope class
         init_settings()
 
         controller = se._CopyNodesController()
@@ -84,11 +83,24 @@ class TestNodesCopyController:
 
 
 class TestBlinkController:
+    wrapper = dedent("""
+    nodes = [n for n in nuke.allNodes() if "tmp.cpp" == n.name()]
+    try:
+        node = nodes[0]
+    except IndexError:
+        node = nuke.createNode('BlinkScript', 'name tmp.cpp')
+    finally:
+        knobs = node.knobs()
+        knobs['kernelSourceFile'].setValue('file/to/tmp.cpp')
+        knobs['kernelSource'].setText("TEST CODE")
+        knobs['recompile'].execute()
+    """).strip()
 
-    @pytest.fixture()
+    @pytest.fixture(scope='class')
     def blink_controller(self):
         controller = se._BlinkController('file/to/tmp.cpp')
         yield controller
+        se.ScriptEditorController().set_input('')
 
     def test_blink_output(self, blink_controller):
         """Check that the output method was overridden."""
@@ -96,21 +108,12 @@ class TestBlinkController:
 
     def test_blink_wrapper(self, blink_controller):
         """Check the blink wrapper nuke commands."""
-        expected = dedent("""
-        nodes = [n for n in nuke.allNodes() if "tmp.cpp" == n.name()]
-        try:
-            node = nodes[0]
-        except IndexError:
-            node = nuke.createNode('BlinkScript', 'name tmp.cpp')
-        finally:
-            knobs = node.knobs()
-            knobs['kernelSourceFile'].setValue('file/to/tmp.cpp')
-            knobs['kernelSource'].setText("TEST CODE")
-            knobs['recompile'].execute()
-        """).strip()
-
         wrapper = blink_controller._blink_wrapper("TEST CODE")
-        assert expected == wrapper
+        assert self.wrapper == wrapper
+
+    def test_set_input(self, blink_controller):
+        blink_controller.set_input('TEST CODE')
+        assert blink_controller.input() == self.wrapper
 
 
 class TestNukeSe:
