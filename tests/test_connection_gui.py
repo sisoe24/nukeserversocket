@@ -1,7 +1,9 @@
-import pytest
 import random
 
+import pytest
+
 from src.main import MainWindowWidget
+from src.connection import Server
 
 RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 
@@ -127,6 +129,12 @@ class TestGuiIsConnected(GuiApp):
         cls.received_text = ''
         cls.output_text = ''
 
+    def test_raise_error_if_connected(self, ui):
+        """Check if RuntimeError is raised when address is already connected."""
+        with pytest.raises(RuntimeError, match='.+The bound address is already in use'):
+            s = Server()
+            s.start_server()
+
 
 @pytest.mark.usefixtures('activate_sender_mode')
 class TestGuiIsSenderMode(GuiApp):
@@ -152,18 +160,21 @@ class TestGuiIsSenderMode(GuiApp):
 
     def test_change_ip_entry(self, ui):
         """Check if ip entry can be changed."""
+        # TODO: this doesnt need to a be a test but it help writing the setting file
         ip_entry = ui.connections.ip_entry
         ip_entry.setText(RANDOM_IP)
         assert ip_entry.text() == RANDOM_IP
 
-    def test_send_local_ip(self, config_file):
+    def test_send_local_ip(self, ui, config_file):
         """Check if `local_ip` is saved correctly in settings.ini when changed."""
         settings_values = config_file['server']['send_to_address']
         assert settings_values == RANDOM_IP
 
 
-@pytest.mark.skip('not implemented yet. need another open connection')
-class TestGuiIsNotConnected(GuiApp):
-    @classmethod
-    def setup_class(cls):
-        pass
+def test_not_connected_label(ui):
+    """Check if RuntimeError is raised when address is already connected."""
+    s = Server()
+    s.start_server()
+
+    ui.toggle_connection(True)
+    assert ui.connections._is_connected.text() == 'Not Connected'
