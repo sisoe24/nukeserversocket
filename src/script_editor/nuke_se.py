@@ -90,7 +90,7 @@ class NukeScriptEditor(BaseScriptEditor):
         # XXX: can the script editor not exists?
         # TODO: don't like the traceback but probably will never be called anyway
         raise RuntimeWarning(
-            'NukeServerSocket: Script Editor panel not found!'
+            'NukeServerSocket: Script Editor panel not found! '
             'Please create one and reload the panel.'
         )
 
