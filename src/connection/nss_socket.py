@@ -19,6 +19,7 @@ class Socket(QObject):
 
     def __init__(self, socket):
         QObject.__init__(self)
+        LOGGER.debug('Socket :: listening...')
 
         self.socket = socket
         self.socket.connected.connect(self.on_connected)
@@ -30,8 +31,7 @@ class Socket(QObject):
         self.state_changed.emit("Client Connected Event")
 
     def on_disconnected(self):
-        LOGGER.debug('-*- Client disconnect event -*-')
-        self.state_changed.emit("Message received.")
+        LOGGER.debug('Socket :: Disconnected.')
 
     def _get_message(self):
         """Get the socket message.
@@ -48,25 +48,26 @@ class Socket(QObject):
             ValueError: if fails to deserialize json data.
         """
         msg = self.socket.readAll()
+        self.state_changed.emit("Message received.")
 
         # startsWith is a method of QByteArray
         if not msg.startsWith('{'):
-            LOGGER.debug('Message is simple string. Converting into dict')
+            LOGGER.debug('Socket :: Message is simple string.')
             return {'text': msg.data().decode('utf-8')}
 
         try:
-            LOGGER.debug('Message is stringified array.')
+            LOGGER.debug('Socket :: Message is stringified array.')
             msg_data = json.loads(msg.data())
         except Exception as err:
             LOGGER.critical("Invalid Json Deserialization: %s",
                             err, exc_info=True)
             raise ValueError('Json Deserialization error')
         else:
-            LOGGER.debug('msg_data: %s', msg_data)
+            LOGGER.debug('Socket :: Message received: %s', msg_data)
             return msg_data
 
     def on_readyRead(self):
-        LOGGER.debug('Socket message ready')
+        LOGGER.debug('Socket :: Message ready')
 
         try:
             msg_data = self._get_message()
@@ -86,11 +87,10 @@ class Socket(QObject):
 
         editor.controller.restore_state()
 
-        LOGGER.debug('Sending message back')
+        LOGGER.debug('Socket :: sending message back.')
         self.socket.write(validate_output(output_text))
 
         self.socket.close()
-        LOGGER.debug('Closing socket')
 
         self.received_text.emit(msg_text)
         self.output_text.emit(output_text)

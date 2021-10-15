@@ -14,9 +14,16 @@ LOGGER = logging.getLogger('NukeServerSocket')
 LOGGER.propagate = False
 LOGGER.setLevel(logging.DEBUG)
 
+DEBUG_FILE = os.path.join(LOG_PATH, 'debug.log')
+
 BASE_FORMAT = logging.Formatter(
-    '[%(asctime)s]  %(levelname)-10s %(filename)-20s %(funcName)-25s :: %(message)s',
+    '[%(asctime)s]  %(levelname)-10s %(filename)-25s %(funcName)-25s :: %(message)s',
     "%m-%d %I:%M%p")
+
+
+def empty_line():
+    with open(DEBUG_FILE, 'a+') as file:
+        file.write('\n')
 
 
 def set_critical():
@@ -28,7 +35,9 @@ def set_critical():
 
 
 def set_debug():
-    debug = logging.FileHandler(os.path.join(LOG_PATH, 'debug.log'), 'w')
+    empty_line()
+    debug = logging.FileHandler(DEBUG_FILE, 'w')
+    debug.set_name('Debug')
     debug.setLevel(logging.DEBUG)
     debug.setFormatter(BASE_FORMAT)
     return debug

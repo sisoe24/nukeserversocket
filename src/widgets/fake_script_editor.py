@@ -4,8 +4,8 @@ from __future__ import print_function
 
 import sys
 import random
+import logging
 import subprocess
-
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QKeySequence, QKeyEvent
@@ -20,23 +20,36 @@ from PySide2.QtWidgets import (
     QApplication, QMainWindow
 )
 
+from src.script_editor.nuke_se_controllers import LOGGER
+
+LOGGER = logging.getLogger('NukeServerSocket.fakescripteditor')
+
 
 class OutputEditor(QTextEdit):
     def __init__(self):
         QTextEdit.__init__(self)
+        LOGGER.debug('OutputEditor :: init')
         self.setReadOnly(True)
+
+    def __del__(self):
+        LOGGER.debug('OutputEditor :: delete')
 
 
 class InputEditor(QPlainTextEdit):
     def __init__(self):
         QPlainTextEdit.__init__(self)
+        LOGGER.debug('InputEditor :: init')
         r = random.randint(1, 50)
         self.setPlainText("print('Hello From Internal SE %s')" % r)
+
+    def __del__(self):
+        LOGGER.debug('InputEditor :: delete')
 
 
 class FakeScriptEditor(QWidget):
     def __init__(self, object_name='uk.co.thefoundry.scripteditor.1'):
         QWidget.__init__(self)
+        LOGGER.debug('FakeScriptEditor :: init')
         self.setObjectName(object_name)
 
         self.run_btn = QPushButton('Run')
@@ -59,6 +72,9 @@ class FakeScriptEditor(QWidget):
         self.setLayout(_layout)
 
         self.installEventFilter(self)
+
+    def __del__(self):
+        LOGGER.debug('FakeScriptEditor :: delete')
 
     def eventFilter(self, obj, event):
         if isinstance(event, QKeyEvent):

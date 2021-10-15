@@ -2,9 +2,9 @@
 from __future__ import print_function
 
 import sys
+import logging
 import traceback
 
-from PySide2 import QtTest
 from PySide2.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -24,6 +24,7 @@ screen_loc = {
         'y': -5.31640625
     }
 }
+LOGGER = logging.getLogger('NukeServerSocket.runapp')
 
 
 class SecondFakeScriptEditor(QWidget):
@@ -49,6 +50,7 @@ class SecondFakeScriptEditor(QWidget):
 class _MainwindowWidgets(QWidget):
     def __init__(self, parent=None):
         QWidget.__init__(self)
+        LOGGER.debug('RUN APP :: INIT')
 
         self.script_editor = FakeScriptEditor(
             'uk.co.thefoundry.scripteditor.1')

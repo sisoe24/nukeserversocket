@@ -22,7 +22,7 @@ class Server(QObject):
         self.settings = AppSettings()
 
         self.tcp_port = int(self.settings.value('server/port', '54321'))
-        LOGGER.debug('server tcp port: %s', self.tcp_port)
+        LOGGER.debug('-> Server :: Starting...')
 
         self.server = QTcpServer()
         self.server.newConnection.connect(self._create_connection)
@@ -44,7 +44,7 @@ class Server(QObject):
         self.server.close()
         self.timer.stop()
         self.state_changed.emit('Disconnected\n----')
-        LOGGER.debug('Disconnected')
+        LOGGER.debug('Server :: Closing <-')
 
     def _create_connection(self):
         while self.server.hasPendingConnections():
@@ -53,7 +53,6 @@ class Server(QObject):
 
             self.socket = Socket(socket)
             self.socket_ready.emit(self.socket)
-            LOGGER.debug('socket: %s', self.socket)
 
     def start_server(self):
         """Start server connection.
