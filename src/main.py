@@ -37,6 +37,7 @@ def init_settings():
         os.mkdir(tmp_folder)
 
     settings = AppSettings()
+    LOGGER.debug('Main :: settings file : %s', settings.fileName())
     settings.validate_port_settings()
     settings.setValue('path/transfer_file',
                       os.path.join(tmp_folder, 'transfer_nodes.tmp'))
