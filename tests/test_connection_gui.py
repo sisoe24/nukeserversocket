@@ -161,6 +161,7 @@ class TestGuiIsSenderMode(GuiApp):
     def test_change_ip_entry(self, ui):
         """Check if ip entry can be changed."""
         # TODO: this doesnt need to a be a test but it help writing the setting file
+        # TODO: when changing port to the same default port will not write to config file
         ip_entry = ui.connections.ip_entry
         ip_entry.setText(RANDOM_IP)
         assert ip_entry.text() == RANDOM_IP
