@@ -2,9 +2,9 @@
 from __future__ import print_function
 
 import sys
+import logging
 import traceback
 
-from PySide2 import QtTest
 from PySide2.QtWidgets import (
     QApplication,
     QMainWindow,
@@ -24,6 +24,7 @@ screen_loc = {
         'y': -5.31640625
     }
 }
+LOGGER = logging.getLogger('NukeServerSocket.runapp')
 
 
 class SecondFakeScriptEditor(QWidget):
@@ -46,11 +47,13 @@ class SecondFakeScriptEditor(QWidget):
         self.se1.deleteLater()
 
 
-class TestMainwindowWidgets(QWidget):
-    def __init__(self, parent):
+class _MainwindowWidgets(QWidget):
+    def __init__(self, parent=None):
         QWidget.__init__(self)
+        LOGGER.debug('RUN APP :: INIT')
 
-        self.script_editor = FakeScriptEditor('uk.co.thefoundry.scripteditor.1')
+        self.script_editor = FakeScriptEditor(
+            'uk.co.thefoundry.scripteditor.1')
         self.main_app = MainWindowWidget(parent)
 
         _layout = QVBoxLayout()
@@ -59,12 +62,12 @@ class TestMainwindowWidgets(QWidget):
         # _layout.addWidget(SecondFakeScriptEditor(self.script_editor))
         self.setLayout(_layout)
 
-        self.main_app.connect_btn.click()
-        self.script_editor.run_btn.click()
-        self.main_app.test_btn.click()
+        # self.main_app.connect_btn.click()
+        # self.script_editor.run_btn.click()
+        # self.main_app.test_btn.click()
 
 
-class TestMainWindow(QMainWindow):
+class _MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
         QMainWindow.__init__(self)
         self.setWindowTitle('NukeServerSocket Test')
@@ -79,17 +82,22 @@ class TestMainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         try:
-            main_window = TestMainwindowWidgets(self)
+            self.main_widgets = _MainwindowWidgets(self)
         except Exception as err:
             print("err :", err, traceback.format_exc())
             ErrorDialog(err, self).show()
         else:
-            self.setCentralWidget(main_window)
+            self.setCentralWidget(self.main_widgets)
+
+
+class MyApplication(QApplication):
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.window = _MainWindow()
+        self.window.show()
 
 
 if __name__ == '__main__':
 
-    app = QApplication(sys.argv)
-    window = TestMainWindow()
-    window.show()
+    app = MyApplication(sys.argv)
     app.exec_()
