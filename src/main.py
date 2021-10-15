@@ -156,9 +156,8 @@ class MainWindowWidget(QWidget):
 
 
 class MainWindow(QMainWindow):
-    def __init__(self):
+    def __init__(self, main_widget=MainWindowWidget):
         QMainWindow.__init__(self)
-
         self.setWindowTitle("NukeServerSocket")
 
         toolbar = ToolBar()
@@ -168,7 +167,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         try:
-            main_widgets = MainWindowWidget(self)
+            main_widgets = main_widget(self)
         except Exception as err:
             ErrorDialog(err, self).show()
             LOGGER.critical(err, exc_info=True)
