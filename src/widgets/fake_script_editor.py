@@ -79,8 +79,12 @@ class FakeScriptEditor(QWidget):
     def run_code(self):
         code = self.input_console.toPlainText()
         if 'nuke.nodePaste' not in code:
-            code = subprocess.check_output(
-                ['python', '-c', code], encoding='utf-8')
+            try:
+                code = subprocess.check_output(
+                    ['python', '-c', code], encoding='utf-8')
+            except subprocess.CalledProcessError:
+                LOGGER.error('Error executing code: -> %s <-', code)
+                return
         self.output_console.setPlainText(code)
 
 
