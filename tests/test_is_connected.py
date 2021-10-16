@@ -10,6 +10,43 @@ TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
 
 
+@pytest.fixture()
+def send_json_error():
+    """Simple client to send misspelled array data via TCP."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    s.connect(('127.0.0.1', 54321))
+    s.sendall(bytearray('{text":"print("hello")"} ', encoding='utf-8'))
+    s.close()
+
+
+@pytest.mark.quicktest
+def test_data_has_json_error(start_connection, ui, qtbot, send_json_error):
+    """Check if status log has right text."""
+    def check_status():
+        assert 'Error json deserialization.' in ui.log_widgets.status_text
+
+    qtbot.waitUntil(check_status)
+
+
+@pytest.fixture(params=[' ', '{"name": true}'])
+def send_invalid_data(request):
+    """Simple client to send data via TCP."""
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    s.connect(('127.0.0.1', 54321))
+    s.sendall(bytearray(request.param, encoding='utf-8'))
+    s.close()
+
+
+def test_data_is_invalid(start_connection, ui, qtbot, send_invalid_data):
+    """Check if status log has right text."""
+    def check_status():
+        assert 'Error. Invalid data:' in ui.log_widgets.status_text
+
+    qtbot.waitUntil(check_status)
+
+
 @pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})])
 def send_data(request):
     """Simple client to send data via TCP."""
