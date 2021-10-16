@@ -1,22 +1,14 @@
 import os
-import time
 import logging
-import threading
 import configparser
 
 from shutil import rmtree
-from textwrap import dedent
 
 import pytest
 
-from PySide2.QtCore import QRunnable, QThreadPool, Slot
+from src.connection import Server, SendNodesClient
+from src.main import init_settings
 
-from src.connection.nss_client import QBaseClient
-from src.connection import Server, SendTestClient, SendNodesClient
-from src.main import MainWindow, MainWindowWidget, init_settings
-from src.widgets import ConnectionsWidget
-
-from tests.run_local import MyApplication
 
 LOGGER = logging.getLogger('NukeServerSocket.main')
 

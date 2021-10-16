@@ -1,10 +1,11 @@
 import os
-import configparser
 
 import pytest
 
 from src.utils import settings
-from src.main import MainWindow, MainWindowWidget
+from src.script_editor import nuke_se
+from src.script_editor.nuke_se import editors_widgets
+
 from tests.run_local import MyApplication, _MainWindow, _MainWindowWidget
 
 
@@ -55,19 +56,11 @@ def tmp_settings_file(package):
     # os.remove(file)
 
 
-@pytest.fixture()
-def config_file(tmp_settings_file):
-    """Return the config file object."""
-    config = configparser.ConfigParser()
-    config.read(tmp_settings_file)
-
-    yield config
-
-
 @pytest.fixture(autouse=True)
 def patch_settings(tmp_settings_file, monkeypatch):
     """Patch CONFIG_FILE path with new fake settings file."""
     monkeypatch.setattr(settings, 'CONFIG_FILE', tmp_settings_file)
+    monkeypatch.setattr(nuke_se, 'editors_widgets', {})
 
 
 @pytest.fixture()

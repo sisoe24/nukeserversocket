@@ -1,4 +1,3 @@
-from PySide2.QtWidgets import QDialog
 import pytest
 
 from src.widgets import toolbar, settings_widget
@@ -7,8 +6,11 @@ DIALOG = ('test', 'test', settings_widget.SettingsWidget)
 
 
 @pytest.fixture()
-def toolbar_obj(scope='module'):
-    yield toolbar.ToolBar()
+def toolbar_obj(qtbot):
+    widget = toolbar.ToolBar()
+    qtbot.addWidget(widget)
+
+    yield widget
 
 
 def test_toolbar_floating_dialog(toolbar_obj):

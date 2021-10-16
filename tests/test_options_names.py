@@ -1,10 +1,13 @@
 import os
 import re
 
+import pytest
+
 from src.widgets import settings_widget
 
 
-def options_name():
+@pytest.fixture()
+def options_name(qtbot):
     settings = settings_widget.SettingsWidget()
     checkboxes = settings.findChildren(settings_widget.CheckBox)
     return [x.text().lower().replace(' ', '_') for x in checkboxes]
@@ -18,7 +21,9 @@ def travers_dir(package):
                 yield fp
 
 
-def test_options_names(package):
+# TODO: make this parametrized
+
+def test_options_names(package, options_name):
     """Search for all of the files that are using the settings system, and confirm
     that the options name are valid.
 
@@ -26,7 +31,6 @@ def test_options_names(package):
     found, will be replaced with a default value, is handy to check if names are
     in line with the default checkboxes text.
     """
-    options = options_name()
 
     for file in travers_dir(package):
         with open(file) as f:
@@ -35,4 +39,4 @@ def test_options_names(package):
                 opts = re.findall(r'(?<=options/)\w+', content)
                 for opt in opts:
                     msg = 'Option name was not update in file: {}'.format(file)
-                    assert opt in options, msg
+                    assert opt in options_name, msg

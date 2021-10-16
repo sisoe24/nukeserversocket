@@ -1,8 +1,8 @@
 import random
+import configparser
 
 import pytest
 
-from src.main import MainWindowWidget
 from src.connection import Server
 
 RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
@@ -158,17 +158,22 @@ class TestGuiIsSenderMode(GuiApp):
         cls.received_text = ''
         cls.output_text = ''
 
-    def test_change_ip_entry(self, ui):
+    @pytest.fixture()
+    def change_ip_entry(self, ui):
         """Check if ip entry can be changed."""
-        # TODO: this doesnt need to a be a test but it help writing the setting file
         # TODO: when changing port to the same default port will not write to config file
+
         ip_entry = ui.connections.ip_entry
         ip_entry.setText(RANDOM_IP)
-        assert ip_entry.text() == RANDOM_IP
 
-    def test_send_local_ip(self, ui, config_file):
+    def test_send_local_ip(self, change_ip_entry,  tmp_settings_file):
         """Check if `local_ip` is saved correctly in settings.ini when changed."""
-        settings_values = config_file['server']['send_to_address']
+
+        config = configparser.ConfigParser()
+        config.read(tmp_settings_file)
+
+        settings_values = config['server']['send_to_address']
+
         assert settings_values == RANDOM_IP
 
 

@@ -4,10 +4,6 @@ import socket
 
 import pytest
 
-from src.connection import SendNodesClient, SendTestClient
-from src.connection.nss_client import NetworkAddresses
-
-
 # TODO: should connect to a different port in case the usual port is already busy
 # TODO: need second instance to test if already connected
 # TODO: send empty data
@@ -17,6 +13,7 @@ TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
 
 # pytest.skip(allow_module_level=True)
+
 
 @pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})])
 def send_data(request):

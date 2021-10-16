@@ -8,9 +8,11 @@ from src.widgets import LogWidgets
 
 
 @pytest.fixture()
-def log_obj():
+def log_obj(qtbot):
+
     logs = LogWidgets()
-    print("➡ logs :", logs)
+    qtbot.addWidget(logs)
+
     yield logs
 
     for box in logs.findChildren(QGroupBox):
