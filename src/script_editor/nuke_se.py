@@ -153,13 +153,14 @@ class NukeScriptEditor(BaseScriptEditor):
             (QPushButton | None): Return the QPushButton otherwise None
         """
         # TODO: if fail tooltip search for list position
-        for button in self.get_output_widget().findChildren(QPushButton):
+        for button in self.get_script_editor().findChildren(QPushButton):
             # The only output_widget identifier of the button is a tooltip or
             # a fix position in list: n
             if tooltip in button.toolTip():
                 return button
 
         # XXX: can the button not be found?
+        # XXX: what happens if we cache None?
         return None
 
     def _execute_shortcut(self):
@@ -178,6 +179,6 @@ class NukeScriptEditor(BaseScriptEditor):
         Check if run_button exists otherwise simulate shortcut press.
         """
         try:
-            self.run_button.click()
+            self._run_button.click()
         except AttributeError:
             self._execute_shortcut()
