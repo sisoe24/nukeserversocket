@@ -28,7 +28,7 @@ def test_data_has_json_error(start_connection, ui, qtbot, send_json_error):
     qtbot.waitUntil(check_status)
 
 
-@pytest.fixture(params=[' ', '{"name": true}'])
+@pytest.fixture(params=[' ', '{"name": true}', '{"text":""}'])
 def send_invalid_data(request):
     """Simple client to send data via TCP."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
