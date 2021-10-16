@@ -2,9 +2,11 @@
 from __future__ import print_function
 
 import logging
+from functools import wraps
 
 from abc import abstractmethod, ABCMeta, abstractproperty
 
+import shiboken2
 from PySide2.QtCore import Qt
 from PySide2.QtTest import QTest
 
@@ -44,6 +46,34 @@ class BaseScriptEditor(object):
         pass
 
 
+editors_widgets = {}
+
+
+def editor_cache(func):
+    """Cache nuke script editor widgets.
+
+    If object becomes invalid (eg. gets out of scope and deleted), will search
+    for it again and re add it to the cache.
+    """
+
+    @wraps(func)
+    def widget():
+        """This wrapper is for the get widget method"""
+        return func()
+
+    def inner(*args, **kwargs):
+
+        if (
+            widget not in editors_widgets or
+            not shiboken2.isValid(editors_widgets[widget])
+        ):
+            editors_widgets[widget] = func(*args, **kwargs)
+
+        return editors_widgets[widget]
+
+    return inner
+
+
 class NukeScriptEditor(BaseScriptEditor):
     """Nuke Internal Script Editor widget.
 
@@ -52,26 +82,35 @@ class NukeScriptEditor(BaseScriptEditor):
     so it can get called later without having to search each widget again.
 
     Note: This could break anytime if Foundry changes something.
-    """
     # TODO: Should invest some time to find a better way.
-    script_editor = QWidget
-    run_button = QPushButton
-    console = QSplitter
-    input_widget = QWidget
-    output_widget = QWidget
+    """
 
-    @classmethod
-    def init_editor(cls):
+    def __init__(self):
         """Initialize NukeScriptEditor properties"""
-        LOGGER.debug('Initialize getting Nuke Script Editor')
-        cls.script_editor = cls.get_script_editor()
-        cls.run_button = cls.get_run_button()
-        cls.console = cls.script_editor.findChild(QSplitter)
-        cls.output_widget = cls.console.findChild(QTextEdit)
-        cls.input_widget = cls.console.findChild(QPlainTextEdit)
+        LOGGER.debug('Initialize Nuke Script Editor')
 
-    @classmethod
-    def get_script_editor(cls, editor='scripteditor.1'):  # type: (str) -> QWidget
+        self._script_editor = self.get_script_editor()
+
+        self._console = self.get_console()
+        self._output_widget = self.get_output_widget()
+        self._input_widget = self.get_input_widget()
+
+        self._run_button = self.get_run_button()
+
+    @property
+    def script_editor(self):
+        return self._script_editor
+
+    @property
+    def input_widget(self):
+        return self._input_widget
+
+    @property
+    def output_widget(self):
+        return self._output_widget
+
+    @editor_cache
+    def get_script_editor(self, editor='scripteditor.1'):  # type: (str) -> QWidget
         """Get script editor widget.
 
         Returns:
@@ -94,39 +133,51 @@ class NukeScriptEditor(BaseScriptEditor):
             'Please create one and reload the panel.'
         )
 
-    @classmethod
-    def get_run_button(cls, tooltip='Run'):  # type: (str) -> QPushButton | None
+    @editor_cache
+    def get_console(self):
+        return self.get_script_editor().findChild(QSplitter)
+
+    @editor_cache
+    def get_output_widget(self):
+        return self.get_console().findChild(QTextEdit)
+
+    @editor_cache
+    def get_input_widget(self):
+        return self.get_console().findChild(QPlainTextEdit)
+
+    @editor_cache
+    def get_run_button(self, tooltip='Run'):  # type: (str) -> QPushButton | None
         """Get the run button from the script editor.
 
         Returns:
             (QPushButton | None): Return the QPushButton otherwise None
         """
-        for button in cls.script_editor.findChildren(QPushButton):
-            # The only apparent identifier of the button is a tooltip. Risky
+        # TODO: if fail tooltip search for list position
+        for button in self.get_output_widget().findChildren(QPushButton):
+            # The only output_widget identifier of the button is a tooltip or
+            # a fix position in list: n
             if tooltip in button.toolTip():
                 return button
 
         # XXX: can the button not be found?
         return None
 
-    @classmethod
-    def _execute_shortcut(cls):
+    def _execute_shortcut(self):
         """Simulate shortcut CTRL + Return for running script.
 
         This method is currently used as a fallback in case the execute button
         couldn't be found.
         """
         # XXX: could the user change the shortcut? if yes then what?
-        QTest.keyPress(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
-        QTest.keyRelease(cls.input_widget, Qt.Key_Return, Qt.ControlModifier)
+        QTest.keyPress(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
+        QTest.keyRelease(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
 
-    @classmethod
-    def execute(cls):
+    def execute(self):
         """Execute code inside Nuke Script Editor.
 
         Check if run_button exists otherwise simulate shortcut press.
         """
         try:
-            cls.run_button.click()
+            self.run_button.click()
         except AttributeError:
-            cls._execute_shortcut()
+            self._execute_shortcut()

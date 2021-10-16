@@ -12,7 +12,6 @@ from PySide2.QtWidgets import (
 )
 
 from .utils import AppSettings
-from .script_editor import NukeScriptEditor
 from .connection import Server, SendTestClient, SendNodesClient
 from .widgets import (
     LogWidgets,
@@ -73,7 +72,6 @@ class MainWindowWidget(QWidget):
         self._test_client = None
         self._node_client = None
 
-        NukeScriptEditor.init_editor()
 
     def _enable_connection_mod(self, state):  # type: (bool) -> None
         """Enable/disable connection widgets modification.
