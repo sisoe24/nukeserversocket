@@ -3,8 +3,9 @@ import re
 import pytest
 from collections import namedtuple
 
-from src.script_editor import nuke_se_controllers as nse
 from src.utils import AppSettings
+from src.widgets import FakeScriptEditor
+from src.script_editor import nuke_se_controllers as nse
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
 
@@ -18,7 +19,14 @@ def settings(scope='session'):
 
 
 @pytest.fixture()
-def py_controller():
+def init_fake_editor(qtbot):
+    widget = FakeScriptEditor()
+    qtbot.addWidget(widget)
+    yield widget
+
+
+@pytest.fixture()
+def py_controller(init_fake_editor):
     """Get the PyController Class"""
     controller = nse._PyController('path/to/file.py')
     yield controller

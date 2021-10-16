@@ -124,7 +124,6 @@ class TestBlinkController:
         assert blink_controller.input() == self.wrapper
 
 
-@pytest.mark.quicktest
 class TestNukeSe:
     """Test base Nuke Script editor class"""
 
