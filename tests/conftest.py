@@ -61,6 +61,7 @@ def patch_settings(tmp_settings_file, monkeypatch):
     """Patch CONFIG_FILE path with new fake settings file."""
     monkeypatch.setattr(settings, 'CONFIG_FILE', tmp_settings_file)
     monkeypatch.setattr(nuke_se, 'editors_widgets', {})
+    yield
 
 
 @pytest.fixture()
