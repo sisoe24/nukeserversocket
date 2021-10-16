@@ -84,7 +84,6 @@ class Socket(QObject):
     @staticmethod
     def _is_valid_data(msg_text):
         """Check if data received is a valid string."""
-        # TODO: should investigate this further if. what happens when msg_text is None?
         msg_text = pyEncoder(msg_text)
         return bool(msg_text and isinstance(msg_text, str) and not msg_text.isspace())
 
