@@ -120,6 +120,27 @@ def test_transfer_file_is_valid(transfer_node_file):
         assert TRANSFER_NODES_FILE == f.read()
 
 
-@ pytest.mark.skip
-def test_send_was_not_successful():
-    pass
+def test_send_was_not_successful(qtbot, ui):
+    """Check connection timeout."""
+
+    ui._send_nodes()
+    ui._node_client._connection_timeout()
+
+    def check_status():
+        """Wait for the status to register the transfer"""
+        assert 'Connection timeout.' in ui.log_widgets.status_text
+
+    qtbot.waitUntil(check_status, timeout=10000)
+
+
+def test_send_was_error(qtbot, ui):
+    """Check connection error."""
+
+    ui._send_nodes()
+    ui._node_client.on_error('test error')
+
+    def check_status():
+        """Wait for the status to register the transfer"""
+        assert 'Error: ' in ui.log_widgets.status_text
+
+    qtbot.waitUntil(check_status, timeout=10000)
