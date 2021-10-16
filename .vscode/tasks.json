@@ -38,7 +38,7 @@
         {
             "label": "Create coverage report",
             "type": "shell",
-            "command": "pytest --cov=src --cov-report html --cov-report term:skip-covered",
+            "command": "${config:python.defaultInterpreterPath} -m pytest --cov=src --cov-report html --cov-report term:skip-covered",
         }
     ]
 }
