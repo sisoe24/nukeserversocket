@@ -71,8 +71,7 @@ class GuiApp:
 
     def test_log_widgets(self, ui):
         """Test if logs widgets are empty."""
-        # TODO: maybe this is not necessary at this point
-        # also should test clear log button
+        # XXX: maybe this is not necessary at this point
         log_widgets = ui.log_widgets
 
         status = log_widgets.status_widget.text_box

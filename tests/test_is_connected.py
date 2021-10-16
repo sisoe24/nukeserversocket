@@ -4,15 +4,10 @@ import socket
 
 import pytest
 
-# TODO: should connect to a different port in case the usual port is already busy
-# TODO: need second instance to test if already connected
-# TODO: send empty data
 
 STRING = 'nss test msg'
 TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
-
-# pytest.skip(allow_module_level=True)
 
 
 @pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})])
