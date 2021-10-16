@@ -1,3 +1,4 @@
+from enum import auto
 import os
 import subprocess
 
@@ -16,7 +17,13 @@ from src.widgets import fake_script_editor as fake_se
 from src.script_editor import nuke_se_controllers as se
 
 
-@pytest.mark.usefixtures('qtbot')
+@pytest.fixture(autouse=True)
+def init_fake_editor(qtbot):
+    widget = fake_se.FakeScriptEditor()
+    qtbot.addWidget(widget)
+    yield widget
+
+
 class TestCodeEditor:
     """Test the Code Editor class initialization"""
 
@@ -117,28 +124,21 @@ class TestBlinkController:
         assert blink_controller.input() == self.wrapper
 
 
+@pytest.mark.quicktest
 class TestNukeSe:
     """Test base Nuke Script editor class"""
 
     @pytest.fixture()
-    def editor(self):
+    def editor(self, monkeypatch):
         """Initialize the editor"""
         se_editor = nuke_se.NukeScriptEditor()
-        # se_editor.init_editor()
+        monkeypatch.setattr(nuke_se, 'editors_widgets', {})
+
         yield se_editor
-
-    def test_get_script_editor(self, editor):
-        """Check if script editor was found."""
-        assert isinstance(editor.script_editor, fake_se.FakeScriptEditor)
-
-    def test_script_editor_not_found(self, editor):
-        """Check if script editor was not found."""
-        with pytest.raises(RuntimeWarning, match='NukeServerSocket: Script Editor panel not found.+'):
-            editor.get_script_editor('scripteditor.3')
 
     def test_get_run_button(self, editor):
         """Check if run button was found."""
-        assert isinstance(editor._run_button, QPushButton)
+        assert isinstance(editor.get_run_button('Run'), QPushButton)
 
     def test_run_button_not_found(self, editor):
         """Check if run button was not found."""
@@ -149,8 +149,17 @@ class TestNukeSe:
         se_controller = se.ScriptEditorController()
         input_text = se_controller.input()
 
-        nuke_se.NukeScriptEditor._run_button = None
+        editor._run_button = None
         editor.execute()
 
         assert se_controller.output() == subprocess.check_output(
             ['python', '-c', input_text], encoding='utf-8')
+
+    def test_get_script_editor(self, editor):
+        """Check if script editor was found."""
+        assert isinstance(editor.script_editor, fake_se.FakeScriptEditor)
+
+    def test_script_editor_not_found(self, editor):
+        """Check if script editor was not found."""
+        with pytest.raises(RuntimeWarning, match='NukeServerSocket: Script Editor panel not found.+'):
+            editor.get_script_editor('scripteditor.3')
