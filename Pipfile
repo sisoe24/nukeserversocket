@@ -11,6 +11,6 @@ python_version = "2.7"
 
 [dev-packages]
 nukeserversocket = {editable = true, path = "."}
-pytest = "*"
-requests = "*"
-pytest-qt = "*"
+pytest = "==4.6.11"
+requests = "==2.26.0"
+pytest-qt = "==3.3.0"
