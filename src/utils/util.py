@@ -63,6 +63,37 @@ def validate_output(data):  # type: (str) -> bytearray | QByteArray
     return data
 
 
+def pyDecoder(text):
+    '''Python 2/3 `utf-8` decoder.
+
+    The return will depend on which version of python is being used. With py2
+    will return a `unicode` and py3 a `str`. If wrong type is passed will do nothing.
+
+    Args:
+        (str) text: text to be decoded.
+
+    Returns:
+        (str|unicode): decoded utf-8 unicode text
+    '''
+    if sys.version_info > (3, 0):
+        if isinstance(text, bytes):
+            return text.decode('utf-8')
+        return text
+
+    if isinstance(text, str):
+        return text.decode('utf-8')
+    return text
+
+
+def pyEncoder(text):
+    if sys.version_info > (3, 0):
+        return text
+
+    if isinstance(text, unicode):
+        return text.encode('utf-8')
+    return text
+
+
 def get_ip():
     def _get_ip_qt():
         """Doesn't work on Nuke 11 as QNetworkInterface doesn't not have .isglobal()"""

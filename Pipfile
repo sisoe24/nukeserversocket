@@ -10,5 +10,7 @@ pyside2 = "==5.12.2"
 python_version = "2.7"
 
 [dev-packages]
-pytest = "==4.6.11"
 nukeserversocket = {editable = true, path = "."}
+pytest = "*"
+requests = "*"
+pytest-qt = "*"
