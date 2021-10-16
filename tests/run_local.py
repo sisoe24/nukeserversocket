@@ -79,7 +79,7 @@ class _MainWindow(MainWindow):
 
 class MyApplication(QApplication):
     def __init__(self, *args):
-        super().__init__(*args)
+        super(MyApplication, self).__init__(*args)
         self.window = _MainWindow()
         self.window.show()
 

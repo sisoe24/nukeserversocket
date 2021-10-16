@@ -20,7 +20,7 @@ from PySide2.QtWidgets import (
     QApplication, QMainWindow
 )
 
-from src.script_editor.nuke_se_controllers import LOGGER
+from ..utils import pyDecoder
 
 LOGGER = logging.getLogger('NukeServerSocket.fakescripteditor')
 
@@ -80,8 +80,8 @@ class FakeScriptEditor(QWidget):
         code = self.input_console.toPlainText()
         if 'nuke.nodePaste' not in code:
             try:
-                code = subprocess.check_output(
-                    ['python', '-c', code], encoding='utf-8')
+                code = subprocess.check_output(['python', '-c', code])
+                code = pyDecoder(code)
             except subprocess.CalledProcessError:
                 LOGGER.error('Error executing code: -> %s <-', code)
                 return

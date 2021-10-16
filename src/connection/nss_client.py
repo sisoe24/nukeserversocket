@@ -41,7 +41,8 @@ class NetworkAddresses(object):
 
 
 class QBaseClient(QObject):
-    __metaclass__ = ABCMeta
+    # TODO: would have liked to have this class as an abstract class but
+    # will complain in python 2 because its not a base object
 
     timeout = Signal()
     state_changed = Signal(str)
@@ -63,7 +64,6 @@ class QBaseClient(QObject):
         self.timer = connection_timer(10)
         self.timer.timeout.connect(self._connection_timeout)
 
-    @abstractmethod
     def on_connected(self):
         # TODO: docstring not accurate anymore
         """Method needs to return a string with the text to send write"""
