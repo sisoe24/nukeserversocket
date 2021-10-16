@@ -64,7 +64,6 @@ def test_transfer_dir_exists(transfer_node_file):
     assert os.path.exists(os.path.dirname(transfer_node_file))
 
 
-@pytest.mark.quicktest
 def test_send_was_successful(ui, qtbot):
     """Check if nodes were sent with success.
 

@@ -20,7 +20,6 @@ def send_json_error():
     s.close()
 
 
-@pytest.mark.quicktest
 def test_data_has_json_error(start_connection, ui, qtbot, send_json_error):
     """Check if status log has right text."""
     def check_status():
