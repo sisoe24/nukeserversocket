@@ -1,6 +1,5 @@
 import os
 import configparser
-from typing import List
 
 import pytest
 from PySide2.QtWidgets import QCheckBox, QWidget
@@ -26,7 +25,7 @@ def settings(qtbot, tmp_settings_file):
 
 
 class TestSubStateSettings:
-    settings_widget: QWidget
+    settings_widget = None  # type:  QWidget
 
     @property
     def output_console(self):  # type: () -> QCheckBox
@@ -94,7 +93,6 @@ class TestSettingsFile:
     def toggle_options(self, settings):
         """Toggle all options to True state."""
 
-        checkbox: QCheckBox
         for checkbox in settings.findChildren(QCheckBox):
             checkbox.toggle()
             checkbox.setChecked(True)
@@ -126,7 +124,6 @@ class TestSettingsFile:
             'show_unicode': True,
         }
 
-        checkbox: QCheckBox
         for checkbox in settings.findChildren(QCheckBox):
             value = initial_values[checkbox.objectName()]
             assert checkbox.isChecked() == value

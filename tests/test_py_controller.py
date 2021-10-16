@@ -57,10 +57,11 @@ def output_format_settings():
         return BEGIN_PATTERN + s + '\n' + SAMPLE_WORD
 
     Format = namedtuple('Format', ['show_file', 'show_unicode', 'pattern'])
+    unicode = u'\u21B4'
     return (
-        Format(True, True, pattern(r'path/to/file\.py ↴')),
+        Format(True, True, pattern(r'path/to/file\.py ' + unicode)),
         Format(True, False, pattern(r'path/to/file\.py ')),
-        Format(False, True, pattern(r'file\.py ↴')),
+        Format(False, True, pattern(r'file\.py ' + unicode)),
         Format(False, False, pattern(r'file\.py ')),
     )
 
@@ -143,7 +144,8 @@ def test_format_text_settings(output_to_console, settings):
 def test_restore_output(output_to_console, settings):
     """Check if output was sent to console."""
     output = output_to_console(True)
-    output_pattern = BEGIN_PATTERN + r'.+?py (↴)?\n'
+    unicode = u'\u21B4'
+    output_pattern = BEGIN_PATTERN + r'.+?py (' + unicode + r')?\n'
     assert re.search(output_pattern + SAMPLE_WORD.upper(), output)
 
 
@@ -153,7 +155,7 @@ def test_override_output(output_to_console, py_controller):
     assert output == py_controller.initial_output
 
 
-@pytest.fixture()
+@ pytest.fixture()
 def clear_output(output_to_console, settings):
     """Execute code a two times to check if based on clear_output settings, the
     widget will register the clean."""

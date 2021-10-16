@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "nukeserversocket"
-version = "1.0.0"
+version = "0.2.0"
 description = ""
-authors = ["virgilsisoe <sisoe24@gmail.com>"]
+authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=2.7.16, ^3.7"
+python = "^3.7"
 PySide2 = "5.12.2"
 
 [tool.poetry.dev-dependencies]

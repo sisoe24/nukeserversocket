@@ -44,7 +44,8 @@ def tmp_settings_file(package):
     """Temporary settings file path"""
     tmp_dir = os.path.join(package, 'tests', 'tmp')
 
-    os.makedirs(tmp_dir, exist_ok=True)
+    if not os.path.exists(tmp_dir):
+        os.mkdir(tmp_dir)
 
     file = os.path.join(tmp_dir, 'fake_ini.ini')
 

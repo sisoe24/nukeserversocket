@@ -1,18 +1,14 @@
-from enum import auto
 import os
 import subprocess
 
 from textwrap import dedent
-from subprocess import check_output
 
 import pytest
 from PySide2.QtWidgets import QPushButton
 
-from .run_local import _MainWindowWidget
-
-from src.utils import AppSettings
 from src.main import init_settings
 from src.script_editor import nuke_se
+from src.utils import AppSettings, pyDecoder
 from src.widgets import fake_script_editor as fake_se
 from src.script_editor import nuke_se_controllers as se
 
@@ -151,8 +147,8 @@ class TestNukeSe:
         editor._run_button = None
         editor.execute()
 
-        assert se_controller.output() == subprocess.check_output(
-            ['python', '-c', input_text], encoding='utf-8')
+        code = subprocess.check_output(['python', '-c', input_text])
+        assert se_controller.output() == pyDecoder(code)
 
     def test_get_script_editor(self, editor):
         """Check if script editor was found."""
