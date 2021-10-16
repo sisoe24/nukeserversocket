@@ -31,9 +31,6 @@ class OutputEditor(QTextEdit):
         LOGGER.debug('OutputEditor :: init')
         self.setReadOnly(True)
 
-    def __del__(self):
-        LOGGER.debug('OutputEditor :: delete')
-
 
 class InputEditor(QPlainTextEdit):
     def __init__(self):
@@ -41,9 +38,6 @@ class InputEditor(QPlainTextEdit):
         LOGGER.debug('InputEditor :: init')
         r = random.randint(1, 50)
         self.setPlainText("print('Hello From Internal SE %s')" % r)
-
-    def __del__(self):
-        LOGGER.debug('InputEditor :: delete')
 
 
 class FakeScriptEditor(QWidget):
@@ -72,9 +66,6 @@ class FakeScriptEditor(QWidget):
         self.setLayout(_layout)
 
         self.installEventFilter(self)
-
-    def __del__(self):
-        LOGGER.debug('FakeScriptEditor :: delete')
 
     def eventFilter(self, obj, event):
         if isinstance(event, QKeyEvent):
