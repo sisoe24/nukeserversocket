@@ -31,8 +31,6 @@ class BaseScriptEditor(object):
     """
     __metaclass__ = ABCMeta
 
-    # TODO: input/output widget should be a method ?
-
     @abstractmethod
     def execute(self):
         pass
@@ -166,7 +164,6 @@ class NukeScriptEditor(BaseScriptEditor):
                 return button
 
         # XXX: can the button not be found?
-        # XXX: what happens if we cache None?
         return None
 
     def _execute_shortcut(self):

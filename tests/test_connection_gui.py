@@ -71,7 +71,6 @@ class GuiApp:
 
     def test_log_widgets(self, ui):
         """Test if logs widgets are empty."""
-        # XXX: maybe this is not necessary at this point
         log_widgets = ui.log_widgets
 
         status = log_widgets.status_widget.text_box
@@ -159,7 +158,6 @@ class TestGuiIsSenderMode(GuiApp):
     @pytest.fixture(autouse=True)
     def activate_sender_mode(self, ui):
         """Click the connect button of the UI and enter in the connected state."""
-        # TODO: probably should be inside test_connections.py
         ui.connections.sender_mode.toggle()
         yield
         ui.connections.receiver_mode.toggle()

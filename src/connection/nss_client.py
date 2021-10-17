@@ -65,8 +65,9 @@ class QBaseClient(QObject):
         self.timer.timeout.connect(self._connection_timeout)
 
     def on_connected(self):
-        # TODO: docstring not accurate anymore
-        """Method needs to return a string with the text to send write"""
+        """This should be considered as an abstract method that child class needs
+        to implement.
+        """
 
     def connection_state(self, socket_state):
         if socket_state == QAbstractSocket.ConnectingState:

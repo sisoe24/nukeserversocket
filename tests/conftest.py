@@ -77,7 +77,6 @@ def ui(qtbot):
 @pytest.fixture()
 def start_connection(ui):
     """Click the connect button of the UI and enter in the connected state."""
-    # TODO: probably should be inside test_connections.py
     ui.connect_btn.setChecked(True)
     yield
     ui.connect_btn.setChecked(False)
