@@ -81,12 +81,3 @@ def start_connection(ui):
     ui.connect_btn.setChecked(True)
     yield
     ui.connect_btn.setChecked(False)
-
-
-@pytest.fixture()
-def activate_sender_mode(ui):
-    """Click the connect button of the UI and enter in the connected state."""
-    # TODO: probably should be inside test_connections.py
-    ui.connections.sender_mode.toggle()
-    yield
-    ui.connections.receiver_mode.toggle()

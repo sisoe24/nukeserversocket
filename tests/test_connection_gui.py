@@ -135,7 +135,6 @@ class TestGuiIsConnected(GuiApp):
             s.start_server()
 
 
-@pytest.mark.usefixtures('activate_sender_mode')
 class TestGuiIsSenderMode(GuiApp):
 
     @classmethod
@@ -156,6 +155,14 @@ class TestGuiIsSenderMode(GuiApp):
         cls.status_text = ''
         cls.received_text = ''
         cls.output_text = ''
+
+    @pytest.fixture(autouse=True)
+    def activate_sender_mode(self, ui):
+        """Click the connect button of the UI and enter in the connected state."""
+        # TODO: probably should be inside test_connections.py
+        ui.connections.sender_mode.toggle()
+        yield
+        ui.connections.receiver_mode.toggle()
 
     @pytest.fixture()
     def change_ip_entry(self, ui):
