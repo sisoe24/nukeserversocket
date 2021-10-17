@@ -29,6 +29,16 @@
             "dependsOn": [
                 "Clean .pyc"
             ]
+        },
+        {
+            "label": "Open coverage report",
+            "type": "shell",
+            "command": "open htmlcov/index.html",
+        },
+        {
+            "label": "Create coverage report",
+            "type": "shell",
+            "command": "${config:python.defaultInterpreterPath} -m pytest --cov=src --cov-report html --cov-report term:skip-covered",
         }
     ]
 }
