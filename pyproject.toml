@@ -3,6 +3,9 @@ name = "nukeserversocket"
 version = "0.2.0"
 description = ""
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
+packages = [
+    { include = "src" },
+]
 
 [tool.poetry.dependencies]
 python = "~3.7.7"
