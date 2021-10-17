@@ -19,13 +19,6 @@ def settings(scope='session'):
 
 
 @pytest.fixture()
-def init_fake_editor(qtbot):
-    widget = FakeScriptEditor()
-    qtbot.addWidget(widget)
-    yield widget
-
-
-@pytest.fixture()
 def py_controller(init_fake_editor):
     """Get the PyController Class"""
     controller = nse._PyController('path/to/file.py')

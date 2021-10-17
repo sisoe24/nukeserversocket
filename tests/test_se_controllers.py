@@ -15,6 +15,7 @@ from src.script_editor import nuke_se_controllers as se
 
 @pytest.fixture(autouse=True)
 def init_fake_editor(qtbot):
+    # TODO why is this auto use
     widget = fake_se.FakeScriptEditor()
     qtbot.addWidget(widget)
     yield widget
@@ -45,16 +46,13 @@ class TestNodesCopyController:
     """Test the NodeCopyEditor class."""
 
     file_content = 'Test Msg'
-    transfer_file = AppSettings().value('path/transfer_file')
 
-    @pytest.fixture(autouse=True, scope='class')
-    def clean_file(self):
-        """Clean transfer file nodes."""
-        path = self.transfer_file
-        if os.path.exists(path):
-            os.remove(path)
+    @pytest.fixture()
+    def transfer_file(self):
+        settings = AppSettings()
+        yield settings.value('path/transfer_file')
 
-    @pytest.fixture(scope='class')
+    @pytest.fixture()
     def nodes_controller(self):
         """Init node controller class"""
         init_settings()
@@ -66,23 +64,26 @@ class TestNodesCopyController:
 
         se.ScriptEditorController().set_input('')
 
-    def test_nodes_controller_input_result(self, nodes_controller):
+    def test_nodes_controller_input_result(self, nodes_controller, transfer_file):
         """Check if set input returns valid Nuke string."""
-        expected = "nuke.nodePaste('{}')".format(self.transfer_file)
-        result = nodes_controller._paste_nodes_wrapper(self.transfer_file)
+        if os.path.exists(transfer_file):
+            os.remove(transfer_file)
+
+        expected = "nuke.nodePaste('{}')".format(transfer_file)
+        result = nodes_controller._paste_nodes_wrapper(transfer_file)
         assert result == expected
 
     def test_nodes_controller_output(self, nodes_controller):
         """Check that the output method was overridden."""
         assert nodes_controller.output() == 'Nodes received.'
 
-    def test_transfer_file_created(self):
+    def test_transfer_file_created(self, transfer_file):
         """Check if file gets created."""
-        assert os.path.exists(self.transfer_file)
+        assert os.path.exists(transfer_file)
 
-    def test_nodes_controller_file_content(self):
+    def test_nodes_controller_file_content(self, transfer_file):
         """Check if file has the right content."""
-        with open(self.transfer_file) as file:
+        with open(transfer_file) as file:
             assert self.file_content in file.read()
 
 

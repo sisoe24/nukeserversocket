@@ -4,6 +4,7 @@ import pytest
 
 from src.utils import settings
 from src.script_editor import nuke_se
+from src.widgets import FakeScriptEditor
 from src.script_editor.nuke_se import editors_widgets
 
 from tests.run_local import MyApplication, _MainWindow, _MainWindowWidget
@@ -80,3 +81,10 @@ def start_connection(ui):
     ui.connect_btn.setChecked(True)
     yield
     ui.connect_btn.setChecked(False)
+
+
+@pytest.fixture()
+def init_fake_editor(qtbot):
+    widget = FakeScriptEditor()
+    qtbot.addWidget(widget)
+    yield widget
