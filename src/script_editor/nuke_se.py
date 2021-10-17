@@ -67,7 +67,13 @@ def editor_cache(func):
             widget not in editors_widgets or
             not shiboken2.isValid(editors_widgets[widget])
         ):
-            editors_widgets[widget] = func(*args, **kwargs)
+            result = func(*args, **kwargs)
+
+            # if result is empty do not add to cache and search again next time
+            if not result:
+                return result
+
+            editors_widgets[widget] = result
 
         return editors_widgets[widget]
 
