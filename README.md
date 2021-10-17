@@ -1,5 +1,25 @@
 # 1. NukeServerSocket README
 
+
+![x](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)
+![x](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket)
+
+![x](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&include_prereleases)
+![x](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket/0.2.0)
+
+
+![x](https://img.shields.io/github/issues/sisoe24/NukeServerSocket)
+![x](https://img.shields.io/github/issues-pr/sisoe24/NukeServerSocket)
+
+
+![x](https://img.shields.io/github/license/sisoe24/NukeServerSocket)
+
+![x](https://img.shields.io/badge/Python-2.7.16_|_3.7.7-success)
+![x](https://img.shields.io/badge/Nuke11-success)
+![x](https://img.shields.io/badge/Nuke12-success)
+![x](https://img.shields.io/badge/Nuke13-success)
+
+
 A Nuke plugin that will allow code execution from the local network and more.
 
 > This is primarily a companion plugin for [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools).
