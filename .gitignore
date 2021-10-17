@@ -16,3 +16,4 @@ dist
 # tests
 .coverage
 coverage
+.tox
