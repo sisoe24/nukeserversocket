@@ -16,4 +16,5 @@ dist
 # tests
 .coverage
 coverage
+.coveralls.yml
 .tox
