@@ -1,24 +1,22 @@
 # 1. NukeServerSocket README
 
 
-![x](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)
-![x](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket)
+[![Main Build](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)](https://github.com/sisoe24/NukeServerSocket/releases)
+![Last commit](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket)
 
-![x](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&include_prereleases)
-![x](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket/0.2.0)
+[![Pre Release](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&include_prereleases)](https://github.com/sisoe24/NukeServerSocket/releases)
+![Last commit](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket/0.2.0)
 
+[![issues](https://img.shields.io/github/issues/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/issues)
+[![pull-request](https://img.shields.io/github/issues-pr/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/pulls)
+[![Coverage Status](https://coveralls.io/repos/github/sisoe24/NukeServerSocket/badge.svg?branch=0.2.0-dev)](https://coveralls.io/github/sisoe24/NukeServerSocket?branch=0.2.0-dev)
 
-![x](https://img.shields.io/github/issues/sisoe24/NukeServerSocket)
-![x](https://img.shields.io/github/issues-pr/sisoe24/NukeServerSocket)
-
-
-![x](https://img.shields.io/github/license/sisoe24/NukeServerSocket)
+[![license](https://img.shields.io/github/license/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE)
 
 ![x](https://img.shields.io/badge/Python-2.7.16_|_3.7.7-success)
 ![x](https://img.shields.io/badge/Nuke11-success)
 ![x](https://img.shields.io/badge/Nuke12-success)
 ![x](https://img.shields.io/badge/Nuke13-success)
-
 
 A Nuke plugin that will allow code execution from the local network and more.
 
