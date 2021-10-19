@@ -67,6 +67,7 @@ class QBaseClient(QObject):
         self.tcp_host = hostname
         self.tcp_port = port
 
+        # TODO should make a custom tcp class
         self.socket = QTcpSocket()
 
         self.socket.readyRead.connect(self.read_data)
@@ -119,7 +120,6 @@ class QBaseClient(QObject):
             data (dict): valid dict type that is used from the socket class to
             initialize the code execution.
         """
-        # TODO: should create a class for the data
         self.socket.write(validate_output(json.dumps(data)))
 
         self.socket.flush()

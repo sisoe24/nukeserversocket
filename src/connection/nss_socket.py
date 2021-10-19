@@ -2,11 +2,11 @@
 # coding: utf-8
 from __future__ import print_function
 
-import json
 import logging
 
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import QObject, Signal, QByteArray
 
+from .data_to_code import DataCode, InvalidData
 from ..utils import validate_output, connection_timer, pyEncoder
 from ..script_editor import CodeEditor
 
@@ -56,52 +56,21 @@ class Socket(QObject):
         self.socket.close()
         self.timer.stop()
 
-    def _get_message(self):
-        """Get the socket message.
+    def _invalid_data(self, err):
+        """Close socket when data is invalid.
 
-        If the message is a simple string then add it to a dictionary,
-        else return deserialized array.
+        If data is invalid the socket connection will be blocked and the signal
+        `state_changed` will emit a message: 'Error. Invalid data:...'
 
-        Returns:
-            dict - dictionary data with the following keys:
-                'text': code to execute
-                'file': optional file name
-
-        Raises:
-            RuntimeError: if fails to deserialize json data.
+        Args:
+            err (DataCode): err obj to be shown in log status.
         """
-        msg = self.socket.readAll()
-        self.state_changed.emit("Message received.")
+        msg = 'Error. Invalid data: %s' % err
 
-        # startsWith is a method of QByteArray
-        if not msg.startsWith('{'):
-            LOGGER.debug('Socket :: Message is simple string.')
-            return {'text': msg.data().decode('utf-8')}
+        LOGGER.warning('Socket :: %s', msg)
+        self.state_changed.emit(msg)
 
-        try:
-            LOGGER.debug('Socket :: Message is stringified array.')
-            msg_data = json.loads(msg.data())
-
-        # could raise json.decoder.JSONDecodeError when decoding problems
-        # but if other errors happens will break the script, and I would like
-        # to just "ignore" and not execute any code
-        except Exception as err:
-            msg = "Error json deserialization. %s: %s" % (err, msg.data())
-
-            LOGGER.critical(msg)
-            self.state_changed.emit(msg)
-
-            raise RuntimeError('Json Deserialization error')
-
-        else:
-            LOGGER.debug('Socket :: Message received: %s', msg_data)
-            return msg_data
-
-    @staticmethod
-    def _is_valid_data(msg_text):
-        """Check if data received is a valid string."""
-        msg_text = pyEncoder(msg_text)
-        return bool(msg_text and isinstance(msg_text, str) and not msg_text.isspace())
+        self.close_socket()
 
     def on_readyRead(self):
         """Execute the received data.
@@ -109,39 +78,24 @@ class Socket(QObject):
         When data received is ready, method will pass the job to the CodeEditor
         class that will execute the received code.
         """
+        self.state_changed.emit("Message received.")
         LOGGER.debug('Socket :: Message ready')
         self.timer.start()
 
         try:
-            msg_data = self._get_message()
-        except RuntimeError:
-            self.close_socket()
+            data = self.socket.readAll().data().decode('utf-8')
+            msg_data = DataCode(data)
+        except InvalidData as err:
+            self._invalid_data(err)
             return
 
-        msg_text = msg_data.get('text')  # type: str
-
-        if not self._is_valid_data(msg_text):
-            msg = 'Error. Invalid data: %s' % msg_data
-
-            LOGGER.warning('Socket :: %s', msg)
-            self.state_changed.emit(msg)
-
-            self.close_socket()
-            return
-
-        # TODO: refactor the message logic into the code editor class
-        editor = CodeEditor(msg_data.get('file', ''))
-        editor.controller.set_input(msg_text)
-        editor.controller.execute()
-
-        output_text = editor.controller.output()
-
-        editor.controller.restore_state()
+        editor = CodeEditor(msg_data)
+        output_text = editor.execute()
 
         LOGGER.debug('Socket :: sending message back.')
         self.socket.write(validate_output(output_text))
 
         self.close_socket()
 
-        self.received_text.emit(msg_text)
+        self.received_text.emit(msg_data.text)
         self.output_text.emit(output_text)

@@ -10,6 +10,8 @@ import logging
 from sys import getsizeof
 from textwrap import dedent
 
+from PySide2.QtCore import QObject
+
 from ..utils import AppSettings, insert_time
 from ..script_editor import NukeScriptEditor
 
@@ -299,10 +301,10 @@ class _CopyNodesController(ScriptEditorController, object):
         return "nuke.nodePaste('{}')".format(transfer_file)
 
 
-class CodeEditor(object):
+class CodeEditor(QObject):
     """Abstract facade for the script editor controller."""
 
-    def __init__(self, file):  # type: (str) -> None
+    def __init__(self, msg_data):  # type: (str) -> None
         """Init method for the CodeEditor class.
 
         Initialize the controller class base on the type of file received.
@@ -311,6 +313,10 @@ class CodeEditor(object):
             file (str): file name that is used by the class to know which
             controller class to create.
         """
+
+        self.data = msg_data
+
+        file = msg_data.file
         _, file_ext = os.path.splitext(file)
 
         if file_ext in {'.cpp', '.blink'}:
@@ -326,3 +332,12 @@ class CodeEditor(object):
     def controller(self):
         """Get the script editor controller class."""
         return self._controller
+
+    def execute(self):
+        self._controller.set_input(self.data.text)
+        self._controller.execute()
+
+        output = self._controller.output()
+        self._controller.restore_state()
+
+        return output
