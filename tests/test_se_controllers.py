@@ -4,7 +4,13 @@ import subprocess
 from textwrap import dedent
 
 import pytest
-from PySide2.QtWidgets import QPushButton
+from PySide2.QtWidgets import (
+    QPushButton,
+    QPlainTextEdit,
+    QTextEdit,
+    QSplitter,
+    QWidget
+)
 
 from src.main import init_settings
 from src.script_editor import nuke_se
@@ -133,12 +139,28 @@ class TestNukeSe:
         yield se_editor
 
     def test_get_run_button(self, editor):
+        """Check if script editor was found."""
+        assert isinstance(editor._find_script_editor(), QWidget)
+
+    def test_get_run_button(self, editor):
         """Check if run button was found."""
-        assert isinstance(editor.get_run_button('Run'), QPushButton)
+        assert isinstance(editor._find_run_button('Run'), QPushButton)
+
+    def _find_input_widget(self, editor):
+        """Check if input editor widget was found."""
+        assert isinstance(editor._find_input_widget(), QPlainTextEdit)
+
+    def _find_output_widget(self, editor):
+        """Check if output editor widget was found."""
+        assert isinstance(editor._find_output_widget(), QTextEdit)
+
+    def _find_console(self, editor):
+        """Check if run button was found."""
+        assert isinstance(editor._find_console(), QSplitter)
 
     def test_run_button_not_found(self, editor):
         """Check if run button was not found."""
-        assert editor.get_run_button('test') is None
+        assert editor._find_run_button('test') is None
 
     def test_execute_shortcut(self, editor):
         """Check if execute shortcut is working when run button is not found."""
@@ -158,4 +180,4 @@ class TestNukeSe:
     def test_script_editor_not_found(self, editor):
         """Check if script editor was not found."""
         with pytest.raises(RuntimeWarning, match='NukeServerSocket: Script Editor panel not found.+'):
-            editor.get_script_editor('scripteditor.3')
+            editor._find_script_editor('scripteditor.3')
