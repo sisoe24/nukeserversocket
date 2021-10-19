@@ -59,7 +59,7 @@ def _clean_empty(_list):
         AboutData: a namedtuple with the key `label` and `repr`.
     """
     AboutData = namedtuple('AboutData', ['label', 'repr'])
-    return [AboutData(k, v) for k, v in _list if v]
+    return [AboutData(k, v.strip()) for k, v in _list if v]
 
 
 def about():
