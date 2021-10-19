@@ -78,7 +78,7 @@ class AboutWidget(QWidget):
             link (str): web link to be assigned for the button.
 
         Returns:
-            [type]: [description]
+            QPushButton: A QPushButton object.
         """
         btn = QPushButton(name)
         btn.setToolTip('Open ' + link)
