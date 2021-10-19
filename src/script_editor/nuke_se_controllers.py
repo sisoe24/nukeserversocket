@@ -12,6 +12,7 @@ from textwrap import dedent
 
 from PySide2.QtCore import QObject
 
+from ..connection import DataCode
 from ..utils import AppSettings, insert_time
 from ..script_editor import NukeScriptEditor
 
@@ -139,7 +140,6 @@ class _PyController(ScriptEditorController, object):
         Returns:
             (str) file - file path of the file that is being executed.
         """
-        # TODO: does this really work when no file is passed?
         return self._file if self.settings.get_bool(
             'options/show_file_path') else os.path.basename(self._file)
 
@@ -304,19 +304,17 @@ class _CopyNodesController(ScriptEditorController, object):
 class CodeEditor(QObject):
     """Abstract facade for the script editor controller."""
 
-    def __init__(self, msg_data):  # type: (str) -> None
+    def __init__(self, data):  # type: (DataCode) -> None
         """Init method for the CodeEditor class.
 
-        Initialize the controller class base on the type of file received.
+        Initialize the controller class based on the type of data received.
 
         Args:
-            file (str): file name that is used by the class to know which
-            controller class to create.
+            data (DataCode): DataCode object.
         """
+        self.data = data
 
-        self.data = msg_data
-
-        file = msg_data.file
+        file = data.file
         _, file_ext = os.path.splitext(file)
 
         if file_ext in {'.cpp', '.blink'}:
@@ -328,12 +326,12 @@ class CodeEditor(QObject):
         else:
             self._controller = _PyController(file)
 
-    @property
-    def controller(self):
-        """Get the script editor controller class."""
-        return self._controller
-
     def execute(self):
+        """Higher level facade of the execute code function.
+
+        Set the input, execute the code, return the output and restore the 
+        editor state.
+        """
         self._controller.set_input(self.data.text)
         self._controller.execute()
 

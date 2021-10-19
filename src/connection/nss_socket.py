@@ -59,11 +59,11 @@ class Socket(QObject):
     def _invalid_data(self, err):
         """Close socket when data is invalid.
 
-        If data is invalid the socket connection will be blocked and the signal
+        If data is invalid, the socket connection will be stop and the signal
         `state_changed` will emit a message: 'Error. Invalid data:...'
 
         Args:
-            err (DataCode): err obj to be shown in log status.
+            err (Any): exception message.
         """
         msg = 'Error. Invalid data: %s' % err
 
@@ -78,8 +78,8 @@ class Socket(QObject):
         When data received is ready, method will pass the job to the CodeEditor
         class that will execute the received code.
         """
-        self.state_changed.emit("Message received.")
         LOGGER.debug('Socket :: Message ready')
+        self.state_changed.emit("Message received.")
         self.timer.start()
 
         try:
