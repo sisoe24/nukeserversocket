@@ -60,6 +60,7 @@ class SettingsWidget(QWidget):
     def __init__(self):
         """Init method for the SettingsWidget class."""
         QWidget.__init__(self)
+        self.setObjectName('SettingsWidget')
         # TODO: refactor sections into their own classes?
 
         # BUG: when reloading the settings widget, checkboxes that depend on

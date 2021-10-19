@@ -26,6 +26,7 @@ class AboutWidget(QWidget):
     def __init__(self,):
         """Init method for the AboutWidget class."""
         QWidget.__init__(self)
+        self.setObjectName('AboutWidget')
 
         self._form_layout = QFormLayout()
         self._fill_form_layout()
