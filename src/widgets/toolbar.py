@@ -103,7 +103,13 @@ class ToolBar(QToolBar):
             QDialog | str: QDialog if widget doesn't exists, str if if does.
         """
         widget = widget()
-        if not self._dialog_exists(widget.objectName()):
+
+        obj_name = widget.objectName()
+        if not obj_name:
+            raise RuntimeWarning(
+                'Widget must have an object name before spawning the QDialog')
+
+        if not self._dialog_exists(obj_name):
             dialog = FloatingDialog(widget, parent=self)
             dialog.show()
             return dialog
