@@ -49,7 +49,7 @@ class DataCode:
         """Convert the data into a valid dictionary type."""
         if self.data_is_array():
             return self._convert_with_json()
-        return {'text', self._raw_data}
+        return {'text': self._raw_data}
 
     def is_valid_data(self):
         """Check if data text is valid.
