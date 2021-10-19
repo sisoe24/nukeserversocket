@@ -21,7 +21,7 @@ from PySide2.QtWidgets import (
 )
 
 
-LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
+LOGGER = logging.getLogger('NukeServerSocket._find_script_editor')
 
 
 class BaseScriptEditor(object):
@@ -105,17 +105,15 @@ class NukeScriptEditor(BaseScriptEditor):
         Method will start searching for the appropriate widgets and save them
         inside its attribute.
         """
-        # TODO: this should be splitted into two classes; one for the search
-        # and one for the input and output widget
         LOGGER.debug('Initialize Nuke Script Editor')
 
-        self._script_editor = self.get_script_editor()
+        self._script_editor = self._find_script_editor()
 
-        self._console = self.get_console()
-        self._output_widget = self.get_output_widget()
-        self._input_widget = self.get_input_widget()
+        self._console = self._find_console()
+        self._output_widget = self._find_output_widget()
+        self._input_widget = self._find_input_widget()
 
-        self._run_button = self.get_run_button()
+        self._run_button = self._find_run_button()
 
     @property
     def script_editor(self):  # type: () -> QWidget
@@ -132,8 +130,18 @@ class NukeScriptEditor(BaseScriptEditor):
         """Get the output widget (QTextEdit) object."""
         return self._output_widget
 
+    def execute(self):
+        """Execute code inside Nuke Script Editor.
+
+        Check if run_button exists otherwise simulate shortcut press.
+        """
+        try:
+            self._run_button.click()
+        except AttributeError:
+            self._execute_shortcut()
+
     @editor_cache
-    def get_script_editor(self, editor='scripteditor.1'):  # type: (str) -> QWidget
+    def _find_script_editor(self, editor='scripteditor.1'):  # type: (str) -> QWidget
         """Get script editor widget.
 
         Returns:
@@ -157,22 +165,22 @@ class NukeScriptEditor(BaseScriptEditor):
         )
 
     @editor_cache
-    def get_console(self):
+    def _find_console(self):
         """Find the console widget from its parent widget."""
-        return self.get_script_editor().findChild(QSplitter)
+        return self._find_script_editor().findChild(QSplitter)
 
     @editor_cache
-    def get_output_widget(self):
+    def _find_output_widget(self):
         """Find the output editor widget from its parent widget."""
-        return self.get_console().findChild(QTextEdit)
+        return self._find_console().findChild(QTextEdit)
 
     @editor_cache
-    def get_input_widget(self):
+    def _find_input_widget(self):
         """Find the input editor widget from its parent widget."""
-        return self.get_console().findChild(QPlainTextEdit)
+        return self._find_console().findChild(QPlainTextEdit)
 
     @editor_cache
-    def get_run_button(self, tooltip='Run'):  # type: (str) -> QPushButton | None
+    def _find_run_button(self, tooltip='Run'):  # type: (str) -> QPushButton | None
         """Find the run button from the script editor.
 
         The only way to grab the button is by searching its tooltip or by its
@@ -185,7 +193,7 @@ class NukeScriptEditor(BaseScriptEditor):
             (QPushButton | None): Return the QPushButton otherwise None
         """
         # TODO: if fail tooltip search for list position
-        for button in self.get_script_editor().findChildren(QPushButton):
+        for button in self._find_script_editor().findChildren(QPushButton):
             if tooltip in button.toolTip():
                 return button
 
@@ -201,13 +209,3 @@ class NukeScriptEditor(BaseScriptEditor):
         # XXX: could the user change the shortcut? if yes then what?
         QTest.keyPress(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
         QTest.keyRelease(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
-
-    def execute(self):
-        """Execute code inside Nuke Script Editor.
-
-        Check if run_button exists otherwise simulate shortcut press.
-        """
-        try:
-            self._run_button.click()
-        except AttributeError:
-            self._execute_shortcut()
