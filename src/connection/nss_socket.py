@@ -1,3 +1,4 @@
+"""Socket modules that deals with the incoming data."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -13,11 +14,23 @@ LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
 class Socket(QObject):
+    """QObject Socket class that deals with the incoming data.
+
+    Class will also verify its type before calling a CodeEditor to execute it.
+    Custom signals will emit when connection status has changed.
+
+    Signal:
+        (str) state_changed: emits when the connection state has changed.
+        (str) received_text: emits the received text when ready.
+        (str) output_text: emits the output text after code executing happened.
+    """
+
     state_changed = Signal(str)
     received_text = Signal(str)
     output_text = Signal(str)
 
     def __init__(self, socket):
+        """Init method for the socket class."""
         QObject.__init__(self)
         LOGGER.debug('Socket :: Listening...')
 
@@ -31,12 +44,15 @@ class Socket(QObject):
         self.timer.start()
 
     def on_connected(self):
-        LOGGER.debug('Client connect event')
+        """Connect event."""
+        LOGGER.debug('Socket :: Connected.')
 
     def on_disconnected(self):
+        """Disconnect event."""
         LOGGER.debug('Socket :: Disconnected.')
 
     def close_socket(self):
+        """Close the socket and stop the timeout timer."""
         self.socket.close()
         self.timer.stop()
 
@@ -52,7 +68,7 @@ class Socket(QObject):
                 'file': optional file name
 
         Raises:
-            ValueError: if fails to deserialize json data.
+            RuntimeError: if fails to deserialize json data.
         """
         msg = self.socket.readAll()
         self.state_changed.emit("Message received.")
@@ -88,6 +104,11 @@ class Socket(QObject):
         return bool(msg_text and isinstance(msg_text, str) and not msg_text.isspace())
 
     def on_readyRead(self):
+        """Execute the received data.
+
+        When data received is ready, method will pass the job to the CodeEditor
+        class that will execute the received code.
+        """
         LOGGER.debug('Socket :: Message ready')
         self.timer.start()
 
@@ -108,6 +129,7 @@ class Socket(QObject):
             self.close_socket()
             return
 
+        # TODO: refactor the message logic into the code editor class
         editor = CodeEditor(msg_data.get('file', ''))
         editor.controller.set_input(msg_text)
         editor.controller.execute()

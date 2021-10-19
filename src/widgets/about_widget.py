@@ -1,3 +1,4 @@
+"""About widget with various app information and links."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -10,7 +11,6 @@ from PySide2.QtWidgets import (
     QGridLayout,
     QLabel,
     QPushButton,
-    QSizePolicy,
     QVBoxLayout,
     QWidget
 )
@@ -21,10 +21,11 @@ LOGGER = logging.getLogger('ProfileInspector.about_widget')
 
 
 class AboutWidget(QWidget):
+    """About widget with various app information and links."""
+
     def __init__(self,):
+        """Init method for the AboutWidget class."""
         QWidget.__init__(self)
-        # TODO: cant figure out how to keep the layout in center
-        # self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
 
         self._form_layout = QFormLayout()
         self._fill_form_layout()
@@ -36,25 +37,26 @@ class AboutWidget(QWidget):
         self._layout.addLayout(self._form_layout, Qt.AlignCenter)
         self._layout.addLayout(self._grid_layout, Qt.AlignCenter)
 
-        # arbitrary magic number to push the bottom layout at the top
-        # self._layout.addStretch(5000)
-
         self.setLayout(self._layout)
 
     def _fill_form_layout(self):
-        """fill the form layout with the information from about.py"""
+        """Fill the form layout with the information from about.py."""
         self._form_layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
 
         for key, value in about():
             self._form_layout.addRow(QLabel(key), QLabel(value))
 
     def _fill_grid_buttons(self, columns=2):
-        """Fill the grid layout with the buttons. By default will change row every 2 columns"""
+        """Fill the grid layout with the buttons.
+
+        Args:
+            columns (int, optional): Number of columns to show. Defaults to 2.
+        """
         row = 0
         column = 0
 
-        for key, value in about_links():
-            btn = self._create_btn(key, value)
+        for name, link in about_links():
+            btn = self._create_btn(name, link)
             self._grid_layout.addWidget(btn, row, column)
 
             column += 1
@@ -63,10 +65,22 @@ class AboutWidget(QWidget):
                 column = 0
 
     @staticmethod
-    def _create_btn(key, value):
-        """Template to create buttons and assign them the signal to open an url."""
-        btn = QPushButton(key)
-        btn.setToolTip('Open ' + value)
-        btn.setProperty('link', value)
-        btn.clicked.connect(lambda: QDesktopServices.openUrl(value))
+    def _create_btn(name, link):
+        """Create buttons with some default values.
+
+        Create a QPushButton adding the tooltip, the property and setting up
+        the clicked signal. The property is needed to test that the link
+        assigned to the signal is correct.
+
+        Args:
+            name (str): title of the button.
+            link (str): web link to be assigned for the button.
+
+        Returns:
+            [type]: [description]
+        """
+        btn = QPushButton(name)
+        btn.setToolTip('Open ' + link)
+        btn.setProperty('link', link)
+        btn.clicked.connect(lambda: QDesktopServices.openUrl(link))
         return btn

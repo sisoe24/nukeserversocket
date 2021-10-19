@@ -1,3 +1,4 @@
+"""Fake nuke module to test some functionality when launch app locally."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -13,8 +14,8 @@ env = {
 }
 
 
-def nodeCopy(s):
-    """internal implementation of nuke.nodeCopy for testing purpose."""
+def nodeCopy(string):
+    """Copy nodes implementation of equivalent Nukes method."""
     copy_tmp = dedent("""
     set cut_paste_input [stack 0]
     version 13.0 v1
@@ -34,9 +35,9 @@ def nodeCopy(s):
     ypos -301
     }
     """).strip()
-    if re.match(r'^%.+%$', s):
+    if re.match(r'^%.+%$', string):
         clipboard = QClipboard()
         clipboard.setText(copy_tmp)
     else:
-        with open(s, 'w') as file:
+        with open(string, 'w') as file:
             file.write(copy_tmp)

@@ -1,10 +1,10 @@
+"""Module that deals with the ui connection logic."""
 # coding: utf-8
 from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject, Qt, Signal
-from PySide2.QtNetwork import QHostInfo
+from PySide2.QtCore import QObject, Qt
 
 from PySide2.QtWidgets import (
     QFormLayout,
@@ -28,6 +28,11 @@ class ConnectButton(QPushButton):
     """Custom QPushButton class for quick Connect/Disconnect setup."""
 
     def __init__(self, parent=None):
+        """Init method for the ConnectButton class.
+
+        Args:
+            (QWidget | None): QWidget to set as a parent. Defaults to: None.
+        """
         QPushButton.__init__(self, parent)
         self.setText('Connect')
         self.setCheckable(True)
@@ -35,15 +40,15 @@ class ConnectButton(QPushButton):
         self.toggled.connect(self.toggle_state)
 
     def disconnect(self):
-        """Force disconnect and uncheck toggle state of button."""
+        """Disconnect and uncheck toggle state of button."""
         self.setText('Connect')
         self.setChecked(False)
 
     def toggle_state(self, state):
         """Toggle state of button.
 
-        When a button is toggled (True) the button text will be changed to Disconnect,
-        otherwise when the button not toggled (False) will be changed to Connect.
+        When button is toggled (True), text will be changed to Disconnect,
+        otherwise when toggled (False) will be changed to Connect.
 
         Args:
             state (bool): state of the button
@@ -55,9 +60,14 @@ class ConnectButton(QPushButton):
 
 
 class ConnectionButtons(QObject):
-    """Button section of the connection widgets"""
+    """Button section of the connection widgets."""
 
     def __init__(self, parent=None):
+        """Init method for the ConnectionButtons class.
+
+        Args:
+            (QWidget | None): QWidget to set as a parent. Defaults to: None.
+        """
         QObject.__init__(self, parent)
 
         self.connect_btn = ConnectButton(parent)
@@ -100,9 +110,14 @@ class ConnectionButtons(QObject):
 
 
 class TcpPort(QSpinBox):
-    """Tcp port object"""
+    """Custom QSpinBox class for the tcp port."""
 
     def __init__(self, port_id='port'):  # type: (str) -> None
+        """Init method for the TcpPort class.
+
+        Args:
+            (str): config file id key to be used for the port.
+        """
         QSpinBox.__init__(self)
 
         self.port_id = 'server/%s' % port_id
@@ -114,7 +129,12 @@ class TcpPort(QSpinBox):
         self._setup_port()
 
     def _setup_port(self):
-        """Setup the port entry field widget."""
+        """Set up the port entry field widget.
+
+        Method grab the value from the config file if any and assign it to the
+        port value. After that will connect the signal `valueChanged` to update
+        the config key.
+        """
         port = self.settings.value(self.port_id, 54321)
 
         self.setValue(int(port))
@@ -124,14 +144,23 @@ class TcpPort(QSpinBox):
         """Write port id to configuration file is port is valid.
 
         The method will convert the port value into text before writing it.
+        This is because when settings are first initialized will read the value
+        as a string, so is better to assume that port is always a string.
         """
         if 49152 <= port <= 65535:
             self.settings.setValue(self.port_id, self.textFromValue(port))
 
 
 class ConnectionsWidget(QWidget):
+    """Class that deals with the ui connection logic."""
 
     def __init__(self, parent=None):
+        """Init method for the ConnectionsWidget class.
+
+        Args:
+            (QWidget | None): QWidget to set as a parent. Defaults to: None.
+        """
+        # TODO: this class should be refactored.
         QWidget.__init__(self, parent)
 
         self.settings = AppSettings()
@@ -169,7 +198,7 @@ class ConnectionsWidget(QWidget):
         self._set_tooltips()
 
     def _set_tooltips(self):
-        """Setup the various tooltips so to clean the init method."""
+        """Set up the various tooltips to clean the init method."""
         self._is_connected.setToolTip(
             'State of the server when listening for incoming requests.'
         )
@@ -220,6 +249,7 @@ class ConnectionsWidget(QWidget):
         _update_ip_text(state)
 
     def _add_switch_layout(self):
+        """Set up the radiobuttons layout."""
         switch_layout = QHBoxLayout()
         switch_layout.addWidget(self.receiver_mode)
         switch_layout.addWidget(self.sender_mode)
@@ -227,21 +257,17 @@ class ConnectionsWidget(QWidget):
         self._layout.addLayout(switch_layout)
 
     def _add_form_layout(self):
-        """Setup the form layout for the labels."""
-
+        """Set up the form layout for the labels."""
         _form_layout = QFormLayout()
         _form_layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
         _form_layout.addRow(QLabel('Status'), self._is_connected)
         _form_layout.addRow(self.ip_address_label, self.ip_entry)
-        # _form_layout.addRow(
-        #     QLabel('Local Host Address'), QLabel(QHostInfo().localHostName()))
         _form_layout.addRow(QLabel('Port'), self.server_port)
 
         self._layout.addLayout(_form_layout)
 
     def _add_grid_layout(self):
-        """Setup the grid layout for the buttons."""
-
+        """Set up the grid layout for the buttons."""
         _grid_layout = QGridLayout()
         _grid_layout.addWidget(self.buttons.connect_btn, 0, 0, 1, 2)
         _grid_layout.addWidget(self.buttons.test_btn, 1, 0)

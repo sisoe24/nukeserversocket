@@ -1,3 +1,4 @@
+"""Main application logic. This is where main window and widget are created."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -25,7 +26,12 @@ LOGGER.debug(' -*- START APPLICATION -*-')
 
 
 def init_settings():
-    """Setup settings file."""
+    """Set up some settings in the config file.
+
+    Function will create the tmp folder if doesn't exists already, and write
+    the path to the application settings file. Function will also validate the
+    port configuration.
+    """
     # TODO: need to think this better
 
     tmp_folder = os.path.join(
@@ -43,9 +49,17 @@ def init_settings():
 
 
 class MainWindowWidget(QWidget):
+    """Main window widgets and logic.
+
+    This is were all of the main widgets are laid out. Class also deals with
+    a higher level logic of user interaction when clicking the various buttons.
+    """
+
     def __init__(self, parent=None):
+        """Init method for MainWindowWidget."""
         QWidget.__init__(self)
         LOGGER.debug('Main :: init')
+        # TODO: class need refactoring
 
         init_settings()
 
@@ -72,7 +86,6 @@ class MainWindowWidget(QWidget):
         self._test_client = None
         self._node_client = None
 
-
     def _enable_connection_mod(self, state):  # type: (bool) -> None
         """Enable/disable connection widgets modification.
 
@@ -89,13 +102,13 @@ class MainWindowWidget(QWidget):
         self.connect_btn.setChecked(False)
 
     def setup_server(self):
-        """Setup server class and log signals.
+        """Set up the server class and its custom signals.
 
         Returns:
             Server: the server object.
         """
         def _setup_socket_log(socket):
-            """Setup socket log signals."""
+            """Set up socket log signals."""
             socket.state_changed.connect(self.log_widgets.set_status_text)
             socket.received_text.connect(self.log_widgets.set_received_text)
             socket.output_text.connect(self.log_widgets.set_output_text)
@@ -109,10 +122,9 @@ class MainWindowWidget(QWidget):
         return _server
 
     def toggle_connection(self, state):  # type: (bool) -> None
-        """When connect button is toggled start connection, otherwise close it."""
-
+        """Toggle connection state."""
         def _start_connection():
-            """Setup connection to server."""
+            """Start connection to server."""
             self._server = self.setup_server()
 
             try:
@@ -133,8 +145,9 @@ class MainWindowWidget(QWidget):
         try:
             self._server.close_server()
         except AttributeError:
-            # connection has never started but function could receive a False argument
-            # causing a AttributeError because _server hasn't been declared yet
+            # if function is called with False as an argument when connection
+            # has never started, will cause a AttributeError  because _server
+            # hasn't been declared yet
             pass
 
         self._enable_connection_mod(True)
@@ -155,7 +168,17 @@ class MainWindowWidget(QWidget):
 
 
 class MainWindow(QMainWindow):
+    """Custom QMainWindow class.
+
+    A toolbar and a status bar will be added in the main app together with the
+    main widgets.
+
+    If app has an exception loading the main widget, will spawn an ErrorDialog
+    class.
+    """
+
     def __init__(self, main_widget=MainWindowWidget):
+        """Init method for main window widget."""
         QMainWindow.__init__(self)
         self.setWindowTitle("NukeServerSocket")
 
@@ -176,7 +199,7 @@ class MainWindow(QMainWindow):
 
 try:
     import nukescripts
-except ImportError as error:
+except ImportError:
     pass
 else:
     nukescripts.panels.registerWidgetAsPanel(

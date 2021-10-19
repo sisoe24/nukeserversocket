@@ -1,3 +1,4 @@
+"""Logging module."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -22,11 +23,13 @@ BASE_FORMAT = logging.Formatter(
 
 
 def empty_line():
+    """Append an empty line in the debug.log fie."""
     with open(DEBUG_FILE, 'a+') as file:
         file.write('\n')
 
 
 def set_critical():
+    """Init function for the critical handler logger."""
     critical = logging.FileHandler(os.path.join(LOG_PATH, 'errors.log'), 'w')
     critical.setLevel(logging.ERROR)
     critical.setFormatter(BASE_FORMAT)
@@ -35,6 +38,7 @@ def set_critical():
 
 
 def set_debug():
+    """Init function for the debug handler logger."""
     empty_line()
     debug = logging.FileHandler(DEBUG_FILE, 'w')
     debug.set_name('Debug')
@@ -44,6 +48,7 @@ def set_debug():
 
 
 def set_console():
+    """Init function for the console handler logger."""
     console_format = logging.Formatter(
         '%(name)s %(levelname)-8s %(module)-10s%(funcName)-15sL:%(lineno)-5d :: %(message)s')
     console = logging.StreamHandler(stream=sys.stdout)

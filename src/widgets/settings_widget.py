@@ -1,3 +1,4 @@
+"""Settings widget module."""
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
@@ -16,8 +17,24 @@ LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
 
 
 class CheckBox(QCheckBox):
+    """Custom QCheckBox class.
+
+    CheckBox is a custom QCheckBox class that initializes a checkbox obj and
+    assigns them some default values based on the arguments. Class will also
+    connect the toggle signal to update the configuration setting value.
+    """
+
     def __init__(self, title, is_checked, tooltip, parent=None):
         # type: (str, bool, str, QWidget | None) -> None
+        """Init method for the CheckBox class.
+
+        Args:
+            title (str): title of the checkbox.
+            is_checked (bool): initial state of the checkbox if does not have
+            already a setting value in the config file.
+            tooltip (str): checkbox tooltip.
+            parent (str, optional): QWidget to set as parent. Defaults to None.
+        """
         QCheckBox.__init__(self, title, parent)
         self.setToolTip(tooltip)
 
@@ -34,10 +51,19 @@ class CheckBox(QCheckBox):
 
 
 class SettingsWidget(QWidget):
+    """Settings Widget.
+
+    Class that deals mostly with showing the checkbox ui and enabling/disabling
+    certain checkboxs state.
+    """
+
     def __init__(self):
+        """Init method for the SettingsWidget class."""
         QWidget.__init__(self)
-        # TODO: refactor sections into their own classes
-        # BUG: when reloading the settings, sub settings will always override their original state
+        # TODO: refactor sections into their own classes?
+
+        # BUG: when reloading the settings widget, checkboxes that depend on
+        # `output_console` will override their original state
 
         self._output_console = CheckBox(
             is_checked=True, title='Output To Console', parent=self,
@@ -49,7 +75,7 @@ class SettingsWidget(QWidget):
 
         self._clear_output = CheckBox(
             is_checked=True, title='Clear Output', parent=self,
-            tooltip='Clear previous output in console. Works only if format text is enabled')
+            tooltip='Clear previous output in console. Works only if Format Text is enabled')
 
         self._override_input = CheckBox(
             is_checked=False, title='Override Input Editor', parent=self,
@@ -79,17 +105,19 @@ class SettingsWidget(QWidget):
         self._format_output.toggled.connect(self._enable_clear_console)
 
     def _enable_clear_console(self, state):  # type: (bool) -> None
-        """Set state of format output option."""
+        """Set checkbox state of Clear Console option."""
         self._clear_output.setEnabled(state)
         self._clear_output.setChecked(state)
 
     def _enable_format_output(self, state):  # type: (bool) -> None
-        """Set state of format output option."""
+        """Set checkbox state of Format Output option."""
         self._format_output.setEnabled(state)
         self._format_output.setChecked(state)
 
     def _enable_sub_options(self):
-        """Set sub options that should be enabled only if output console is True.
+        """Set chcekboxes sub options state.
+
+        Sub options should be enabled only if Output Console is True.
 
         Args:
             state (bool): state of output_console attribute
