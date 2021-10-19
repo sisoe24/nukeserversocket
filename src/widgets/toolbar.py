@@ -55,6 +55,18 @@ class ToolBar(QToolBar):
         self._setup_action(title='About', widget=AboutWidget)
 
     def _setup_action(self, title, widget):
+        """Set up action for toolbar.
+
+        Method will set up a QAction and connect its trigger signal to spawn
+        the floating dialog.
+
+        Args:
+            title (str): name of the action.
+            widget (QWidget): QWidget to use as a floating dialog.
+
+        Returns:
+            QAction: The QAction created.
+        """
         action = QAction(title, self)
         action.triggered.connect(lambda: self._show_dialog(widget))
         self.addAction(action)
