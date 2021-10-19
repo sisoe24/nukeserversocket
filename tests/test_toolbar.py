@@ -1,8 +1,16 @@
 import pytest
+from collections import namedtuple
 
-from src.widgets import toolbar, settings_widget
+from src.widgets import toolbar, settings_widget, about_widget
 
-DIALOG = ('test', 'test', settings_widget.SettingsWidget)
+SETTINGS_WIDGET = settings_widget.SettingsWidget
+
+Widgets = namedtuple('Widgets', ['widget', 'title', 'object_name'])
+
+FLOATING_WIDGETS = (
+    Widgets(about_widget.AboutWidget, 'About', 'AboutWidget'),
+    Widgets(SETTINGS_WIDGET, 'Settings', 'SettingsWidget'),
+)
 
 
 @pytest.fixture()
@@ -13,24 +21,25 @@ def toolbar_obj(qtbot):
     yield widget
 
 
-def test_toolbar_floating_dialog(toolbar_obj):
+@pytest.mark.parametrize('widgets', FLOATING_WIDGETS, ids=['About', 'Settings'])
+def test_toolbar_floating_dialog(toolbar_obj, widgets):
     """Create a Floating Dialog Widget"""
-    dialog = toolbar_obj._show_dialog(*DIALOG)
+    dialog = toolbar_obj._show_dialog(widgets.widget)
 
-    assert dialog.objectName() == 'test'
-    assert dialog.windowTitle() == 'test'
-    assert dialog.findChild(settings_widget.SettingsWidget)
+    assert dialog.objectName() == widgets.object_name
+    assert dialog.windowTitle() == widgets.title
+    assert dialog.findChild(widgets.widget)
 
 
 def test_toolbar_floating_dialog_already_on(toolbar_obj):
     """Check if dialog gets only once instance."""
-    toolbar_obj._show_dialog(*DIALOG)
-    dialog = toolbar_obj._show_dialog(*DIALOG)
+    toolbar_obj._show_dialog(SETTINGS_WIDGET)
+    dialog = toolbar_obj._show_dialog(SETTINGS_WIDGET)
     assert dialog == 'Already active'
 
 
 def test_toolbar_floating_is_deleted(toolbar_obj):
     """Check if dialog gets closed."""
-    dialog = toolbar_obj._show_dialog(*DIALOG)
+    dialog = toolbar_obj._show_dialog(SETTINGS_WIDGET)
     dialog.close()
     assert dialog.isVisible() is False
