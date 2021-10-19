@@ -1,4 +1,4 @@
-
+"""Test sending messages via TCP when app is connected."""
 import json
 import socket
 
@@ -19,7 +19,6 @@ def send_json_error():
     s.sendall(bytearray('{text":"print("hello")"} ', encoding='utf-8'))
     s.close()
 
-
 def test_data_has_json_error(start_connection, ui, qtbot, send_json_error):
     """Check if status log has right text."""
     def check_status():
@@ -38,6 +37,7 @@ def send_invalid_data(request):
     s.close()
 
 
+@pytest.mark.quicktest
 def test_data_is_invalid(start_connection, ui, qtbot, send_invalid_data):
     """Check if status log has right text."""
     def check_status():
@@ -58,7 +58,7 @@ def send_data(request):
 
 @pytest.mark.usefixtures('start_connection', 'send_data')
 class TestConnectionSuccessfulLogs:
-    """When connection is successful, check for various log widget text returns"""
+    """When connection is successful, check for various log widget text."""
 
     def test_message_status(self, qtbot, ui):
         """Check if status log has right text."""

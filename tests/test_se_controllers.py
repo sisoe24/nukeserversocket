@@ -1,4 +1,6 @@
+"""Test the Nuke Script Editor controller classes."""
 import os
+import json
 import subprocess
 
 from textwrap import dedent
@@ -13,6 +15,7 @@ from PySide2.QtWidgets import (
 )
 
 from src.main import init_settings
+from src.connection import DataCode
 from src.script_editor import nuke_se
 from src.utils import AppSettings, pyDecoder
 from src.widgets import fake_script_editor as fake_se
@@ -21,31 +24,41 @@ from src.script_editor import nuke_se_controllers as se
 
 @pytest.fixture(autouse=True)
 def init_fake_editor(qtbot):
+    """Initialize the Fake Script Editor."""
     # TODO why is this auto use
     widget = fake_se.FakeScriptEditor()
     qtbot.addWidget(widget)
     yield widget
 
 
+def code(file):
+    return DataCode(json.dumps({'text': 'test', 'file': file}))
+
+
 class TestCodeEditor:
-    """Test the Code Editor class initialization"""
+    """Test the Code Editor class initialization.
+
+    Each Editor must be initialized with a DataCode object.
+    """
 
     @pytest.mark.parametrize('file', ['file.py', ''])
     def test_is_python_controller(self, file):
-        """Check if is a valid PyController when passed a .py or no file"""
-        editor = se.CodeEditor(file)
-        assert isinstance(editor.controller, se._PyController)
+        """Check if is a valid PyController when file ends .py or none."""
+        editor = se.CodeEditor(code(file))
+        assert isinstance(editor._controller, se._PyController)
 
     @pytest.mark.parametrize('file', ['file.cpp', 'file.blink'])
     def test_is_blink_controller(self, file):
-        """Check if is a valid BlinkController when passed a .cpp|.blink file"""
-        editor = se.CodeEditor(file)
-        assert isinstance(editor.controller, se._BlinkController)
+        """Check if is a valid BlinkController when file ends .cpp|.blink."""
+        editor = se.CodeEditor(code(file))
+
+        assert isinstance(editor._controller, se._BlinkController)
 
     def test_is_nodes_controller(self):
-        """Check if is a valid CopyNodesController when passed a .tmp file"""
-        editor = se.CodeEditor('file.tmp')
-        assert isinstance(editor.controller, se._CopyNodesController)
+        """Check if is a valid CopyNodesController when file ends .tmp."""
+        editor = se.CodeEditor(code('file.tmp'))
+
+        assert isinstance(editor._controller, se._CopyNodesController)
 
 
 class TestNodesCopyController:
@@ -55,12 +68,13 @@ class TestNodesCopyController:
 
     @pytest.fixture()
     def transfer_file(self):
+        """Get the transfer file path from the settings."""
         settings = AppSettings()
         yield settings.value('path/transfer_file')
 
     @pytest.fixture()
     def nodes_controller(self):
-        """Init node controller class"""
+        """Init node controller class."""
         init_settings()
 
         controller = se._CopyNodesController()
@@ -94,6 +108,8 @@ class TestNodesCopyController:
 
 
 class TestBlinkController:
+    """Test the blink controller class."""
+
     wrapper = dedent("""
     nodes = [n for n in nuke.allNodes() if "tmp.cpp" == n.name()]
     try:
@@ -109,6 +125,7 @@ class TestBlinkController:
 
     @pytest.fixture(scope='class')
     def blink_controller(self):
+        """Get the blink controller class."""
         controller = se._BlinkController('file/to/tmp.cpp')
         yield controller
         se.ScriptEditorController().set_input('')
@@ -123,16 +140,20 @@ class TestBlinkController:
         assert self.wrapper == wrapper
 
     def test_set_input(self, blink_controller):
+        """Check if input was set correctly."""
         blink_controller.set_input('TEST CODE')
         assert blink_controller.input() == self.wrapper
 
 
 class TestNukeSe:
-    """Test base Nuke Script editor class"""
+    """Test base Nuke Script editor class."""
 
     @pytest.fixture()
     def editor(self, monkeypatch):
-        """Initialize the editor"""
+        """Initialize the editor.
+
+        Tests in this class need to clean the editor cache each time.
+        """
         se_editor = nuke_se.NukeScriptEditor()
         monkeypatch.setattr(nuke_se, 'editors_widgets', {})
 
@@ -163,7 +184,7 @@ class TestNukeSe:
         assert editor._find_run_button('test') is None
 
     def test_execute_shortcut(self, editor):
-        """Check if execute shortcut is working when run button is not found."""
+        """Check if shortcut is working when run button is not found."""
         se_controller = se.ScriptEditorController()
         input_text = se_controller.input()
 
