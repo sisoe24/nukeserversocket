@@ -1,3 +1,4 @@
+"""Module that deals with the Nuke Script Editor widget."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -29,19 +30,20 @@ class BaseScriptEditor(object):
     This could potentially be used for base interface when implementing other
     application scripts editors like Maya.
     """
+
     __metaclass__ = ABCMeta
 
     @abstractmethod
     def execute(self):
-        pass
+        """Execute code from the input editor."""
 
     @abstractproperty
     def input_widget(self):
-        pass
+        """Input Editor widget."""
 
     @abstractproperty
     def output_widget(self):
-        pass
+        """Output Editor widget."""
 
 
 editors_widgets = {}
@@ -56,7 +58,7 @@ def editor_cache(func):
 
     @wraps(func)
     def widget():
-        """This wrapper is for the get widget method"""
+        """Widget wrapper to call when validating cache."""
         return func()
 
     def inner(*args, **kwargs):
@@ -81,16 +83,30 @@ def editor_cache(func):
 class NukeScriptEditor(BaseScriptEditor):
     """Nuke Internal Script Editor widget.
 
-    The class get initialized when The NukeServerSocket gets first created. Then
-    will save all of the Nuke internal script editor widgets inside class properties
-    so it can get called later without having to search each widget again.
+    When class is initialized will automatically search for the script editors
+    widget and cache them, to avoid searching for them at each code execution.
+
+    Properties:
+        script_editor (QWidget): the script editor QWidget.
+        output_editor (QTextEdit): the output editor from the script editor.
+        input_editor (QTextEdit): the input editor from the script editor.
+
+    Methods:
+        execute: execute the code.
+
 
     Note: This could break anytime if Foundry changes something.
     # TODO: Should invest some time to find a better way.
     """
 
     def __init__(self):
-        """Initialize NukeScriptEditor properties"""
+        """Init method for the NukeScriptEditor class.
+
+        Method will start searching for the appropriate widgets and save them
+        inside its attribute.
+        """
+        # TODO: this should be splitted into two classes; one for the search
+        # and one for the input and output widget
         LOGGER.debug('Initialize Nuke Script Editor')
 
         self._script_editor = self.get_script_editor()
@@ -102,15 +118,18 @@ class NukeScriptEditor(BaseScriptEditor):
         self._run_button = self.get_run_button()
 
     @property
-    def script_editor(self):
+    def script_editor(self):  # type: () -> QWidget
+        """Get the script editor widget."""
         return self._script_editor
 
     @property
-    def input_widget(self):
+    def input_widget(self):  # type: () -> QPlainTextEdit
+        """Get the input widget (QPlainTextEdit) object."""
         return self._input_widget
 
     @property
-    def output_widget(self):
+    def output_widget(self):  # type: () -> QTextEdit
+        """Get the output widget (QTextEdit) object."""
         return self._output_widget
 
     @editor_cache
@@ -126,12 +145,12 @@ class NukeScriptEditor(BaseScriptEditor):
         # .topLevelWidgets() is a smaller list but SE is not always there
         for widget in QApplication.allWidgets():
 
-            # TODO: user should be able to decide which SE to use
+            # TODO: user should be able to decide which SE to use?
             if editor in widget.objectName():
                 return widget
 
         # XXX: can the script editor not exists?
-        # TODO: don't like the traceback but probably will never be called anyway
+        # TODO: don't like traceback but probably will never be called anyway
         raise RuntimeWarning(
             'NukeServerSocket: Script Editor panel not found! '
             'Please create one and reload the panel.'
@@ -139,27 +158,34 @@ class NukeScriptEditor(BaseScriptEditor):
 
     @editor_cache
     def get_console(self):
+        """Find the console widget from its parent widget."""
         return self.get_script_editor().findChild(QSplitter)
 
     @editor_cache
     def get_output_widget(self):
+        """Find the output editor widget from its parent widget."""
         return self.get_console().findChild(QTextEdit)
 
     @editor_cache
     def get_input_widget(self):
+        """Find the input editor widget from its parent widget."""
         return self.get_console().findChild(QPlainTextEdit)
 
     @editor_cache
     def get_run_button(self, tooltip='Run'):  # type: (str) -> QPushButton | None
-        """Get the run button from the script editor.
+        """Find the run button from the script editor.
+
+        The only way to grab the button is by searching its tooltip or by its
+        position in the list of buttons from the parent widget.
+
+        Args:
+            tooltip (str): button tooltip to search for. Default to: 'Run'.
 
         Returns:
             (QPushButton | None): Return the QPushButton otherwise None
         """
         # TODO: if fail tooltip search for list position
         for button in self.get_script_editor().findChildren(QPushButton):
-            # The only output_widget identifier of the button is a tooltip or
-            # a fix position in list: n
             if tooltip in button.toolTip():
                 return button
 

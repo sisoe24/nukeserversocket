@@ -1,9 +1,10 @@
+"""Server module that deals with creates a socket when connection is valid."""
 # coding: utf-8
 from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject, QTimer, Signal
+from PySide2.QtCore import QObject, Signal
 from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
 from .nss_socket import Socket
@@ -13,16 +14,28 @@ LOGGER = logging.getLogger('NukeServerSocket.server')
 
 
 class Server(QObject):
+    """QObject Server class that deals with the connection.
+
+    Class will also emit signal when connection status has changed.
+
+    Signal:
+        (None) timeout: emit when the timeout event has been triggered.
+        (str) state_changed: emits when the connection state has changed
+        (Socket) socket_ready: emits the socket class that has been created
+        when connection is successful.
+    """
+
     timeout = Signal()
     state_changed = Signal(str)
     socket_ready = Signal(object)
 
     def __init__(self):
+        """Init method for the Server class."""
         QObject.__init__(self)
+        LOGGER.debug('-> Server :: Starting...')
         self.settings = AppSettings()
 
         self.tcp_port = int(self.settings.value('server/port', '54321'))
-        LOGGER.debug('-> Server :: Starting...')
 
         self.server = QTcpServer()
         self.server.newConnection.connect(self._create_connection)
@@ -36,17 +49,29 @@ class Server(QObject):
         self.timer.timeout.connect(self.timeout.emit)
 
     def connection_state(self, state):
+        """Check if connection state.
+
+        If connection state is unconnected, start the timeout timer.
+        """
         if state == QAbstractSocket.UnconnectedState:
             self.timer.start()
 
     def close_server(self):
-        """Close server connection."""
+        """Close server connection.
+
+        Method will also stop the timer and emit the 'Disconnected' state.
+        """
         self.server.close()
         self.timer.stop()
         self.state_changed.emit('Disconnected\n----')
         LOGGER.debug('Server :: Closing <-')
 
     def _create_connection(self):
+        """Establish connection and create a new socket.
+
+        When connection is successful, will create a socket and emit
+        `socket_ready` signal.
+        """
         while self.server.hasPendingConnections():
             socket = self.server.nextPendingConnection()
             socket.stateChanged.connect(self.connection_state)
@@ -57,8 +82,11 @@ class Server(QObject):
     def start_server(self):
         """Start server connection.
 
+        Server will listen on Any host address and the tcp port specified in
+        the config file.
+
         Raises:
-            ValueError: if connection cannot be made.
+            RuntimeError: if connection cannot be made.
 
         """
         if self.server.listen(QHostAddress.Any, self.tcp_port):

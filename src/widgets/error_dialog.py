@@ -1,10 +1,9 @@
+"""Error dialog widget that shows when app had an exception at launch."""
 # coding: utf-8
-from __future__ import print_function, with_statement
+from __future__ import print_function
 
-import os
 import logging
 import traceback
-
 
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
@@ -16,8 +15,11 @@ LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
 
 
 def _get_critical_logger():
-    """Search for logger named Critical if any and return it."""
+    """Search the logger named Critical.
 
+    Returns:
+        (Handler|None): the logger handler if found or None if not found.
+    """
     for logger in LOGGER.parent.handlers:
         if logger.name == 'Critical':
             return logger
@@ -26,10 +28,13 @@ def _get_critical_logger():
 
 
 def _prepare_report():
-    """Prepare report when user wants to report bug to github and
-    insert 'about' information to log critical file.
-    """
+    """Prepare report when user wants to report bug.
 
+    Will also insert the 'about' information inside the errors.log file.
+
+    Returns:
+        (str): a string contaning the about information with the traceback err.
+    """
     critical_logger = _get_critical_logger()
 
     if not critical_logger:
@@ -46,7 +51,21 @@ def _prepare_report():
 
 
 class ErrorDialog(QMessageBox):
+    """Error dialog widget."""
+
     def __init__(self, msg, parent=None):
+        """Init method for the ErrorDialog class.
+
+        Create a custom QMessageBox widget to be shown when an error happens.
+        Widget will have link to the github issues and the path to the logs.
+
+        Traceback will be shown in the "see more details" section.
+
+        Args:
+            msg (str): message to be shown
+            parent (QWidget, optional): QWidget to be set as a parent. This is
+            needed when launch the widget in non modal mode. Defaults to None.
+        """
         QMessageBox.__init__(self, parent)
         self.setWindowTitle('NukeServerSocket')
         self.setIcon(QMessageBox.Warning)
@@ -61,7 +80,7 @@ class ErrorDialog(QMessageBox):
         self.buttonClicked.connect(self.click_event)
 
         _info = (
-            'Traceback will be copied into your clipboard when clicking Report Bug.\n---\n'
+            'Traceback will be copied into the clipboard when clicking Report Bug.\n---\n'
         )
 
         self._traceback = traceback.format_exc()
@@ -86,7 +105,7 @@ class ErrorDialog(QMessageBox):
         return get_about_key('Logs')
 
     def click_event(self, button):
-        """After the click event prepare the link to open."""
+        """After the click event, get the link to open."""
         if button.text() == 'Report bug':
             to_open = self.prepare_report()
 

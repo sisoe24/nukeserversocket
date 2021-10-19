@@ -1,3 +1,4 @@
+"""Generate about information for the user or bug reports."""
 # coding: utf-8
 from __future__ import print_function, with_statement
 
@@ -38,7 +39,7 @@ def _get_package_name():
 
 
 def _get_package_version():
-    """Get package version. If no file return empty"""
+    """Get package version. If no file return empty string."""
     file = join(_get_root(), 'VERSION')
 
     if exists(file):
@@ -52,12 +53,21 @@ PACKAGE = _get_package_name()
 
 
 def _clean_empty(_list):
-    """Don't include key if value is empty"""
+    """Clean dict from empty keys.
+
+    Returns:
+        AboutData: a namedtuple with the key `label` and `repr`.
+    """
     AboutData = namedtuple('AboutData', ['label', 'repr'])
     return [AboutData(k, v) for k, v in _list if v]
 
 
 def about():
+    """Generate about information with various app versions.
+
+    Returns:
+        (tuple): a tuple containing tuple(str, str) with about information
+    """
     _about = (
         (PACKAGE, _get_package_version()),
         ('PySide2', PySide2_Version),
@@ -72,6 +82,11 @@ def about():
 
 
 def about_links():
+    """Generate About web link information.
+
+    Returns:
+        (tuple): a tuple containing tuple(str, str) with about information
+    """
     github_web = 'https://github.com/sisoe24/' + PACKAGE
 
     _about_links = (
@@ -101,15 +116,11 @@ def about_to_string(exclude=None):
     """Get about dict and convert it into a multi line string.
 
     Args:
-        exclude (list | str): list of str keys from the about dict to exclude in the return.
+        exclude (list | str): A key to exclude in the return.
+        could be a list of str keys or a simple string.
     """
-    about_str = ''
-    for key, value in about():
-
-        if exclude:
-            if key in exclude:
-                continue
-
-        about_str += '%s: %s\n' % (key, value)
-
-    return about_str
+    return ''.join(
+        '%s: %s\n' % (key, value)
+        for key, value in about()
+        if not exclude or key not in exclude
+    )
