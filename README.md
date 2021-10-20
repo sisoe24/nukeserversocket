@@ -1,6 +1,5 @@
 # 1. NukeServerSocket README
 
-
 [![Main Build](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)](https://github.com/sisoe24/NukeServerSocket/releases)
 ![Last commit](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket)
 
@@ -40,7 +39,6 @@ A Nuke plugin that will allow code execution from the local network and more.
   - [1.8. Compatibility](#18-compatibility)
   - [1.9. Test plugin locally](#19-test-plugin-locally)
   - [1.10. Overview](#110-overview)
-
 
 ## 1.1. Tools
 
