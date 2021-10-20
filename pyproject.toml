@@ -20,6 +20,7 @@ tox = "~3.24.4"
 coveralls = "^3.2.0"
 PyYAML = "^6.0"
 codecov = "^2.1.12"
+vulture = "^2.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
