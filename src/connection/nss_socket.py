@@ -4,10 +4,10 @@ from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject, Signal, QByteArray
+from PySide2.QtCore import QObject, Signal
 
 from .data_to_code import DataCode, InvalidData
-from ..utils import validate_output, connection_timer, pyEncoder
+from ..utils import validate_output, connection_timer
 from ..script_editor import CodeEditor
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
@@ -43,11 +43,13 @@ class Socket(QObject):
         self.timer.timeout.connect(self.close_socket)
         self.timer.start()
 
-    def on_connected(self):
+    @staticmethod
+    def on_connected():
         """Connect event."""
         LOGGER.debug('Socket :: Connected.')
 
-    def on_disconnected(self):
+    @staticmethod
+    def on_disconnected():
         """Disconnect event."""
         LOGGER.debug('Socket :: Disconnected.')
 

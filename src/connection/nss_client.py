@@ -125,7 +125,8 @@ class QBaseClient(QObject):
         self.socket.flush()
         self.socket.disconnectFromHost()
 
-    def on_disconnect(self):
+    @staticmethod
+    def on_disconnect():
         """Disconnect event."""
         LOGGER.debug('Client :: Disconnected from host')
 
@@ -218,7 +219,8 @@ class SendNodesClient(QBaseClient):
         LOGGER.debug('Client :: Send nodes connection successful.')
         self.write_data(self.transfer_data)
 
-    def transfer_file_content(self):
+    @staticmethod
+    def transfer_file_content():
         """Get the transfer file content to be sent.
 
         Returns:

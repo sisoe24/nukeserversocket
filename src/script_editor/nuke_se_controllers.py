@@ -291,7 +291,8 @@ class _CopyNodesController(ScriptEditorController, object):
         text = self._paste_nodes_wrapper(transfer_file)
         super(_CopyNodesController, self).set_input(text)
 
-    def _paste_nodes_wrapper(self, transfer_file):
+    @staticmethod
+    def _paste_nodes_wrapper(transfer_file):
         """Wrap the file with a nuke nodePaste command.
 
         Args:
@@ -328,7 +329,7 @@ class CodeEditor(QObject):
     def execute(self):
         """Higher level facade of the execute code function.
 
-        Set the input, execute the code, return the output and restore the 
+        Set the input, execute the code, return the output and restore the
         editor state.
         """
         self._controller.set_input(self.data.text)

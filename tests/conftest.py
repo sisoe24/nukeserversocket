@@ -7,7 +7,7 @@ from src.script_editor import nuke_se
 from src.widgets import FakeScriptEditor
 from src.script_editor.nuke_se import editors_widgets
 
-from tests.run_local import MyApplication, _MainWindow, _MainWindowWidget
+from tests.run_local import _MainWindowWidget
 
 
 def pytest_addoption(parser):

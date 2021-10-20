@@ -1,7 +1,6 @@
 import re
 from PySide2.QtWidgets import QGroupBox
 
-from collections import namedtuple
 import pytest
 
 from src.widgets import LogWidgets
