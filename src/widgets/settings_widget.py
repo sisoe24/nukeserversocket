@@ -78,17 +78,14 @@ class SettingsWidget(QWidget):
             is_checked=True, title='Clear Output', parent=self,
             tooltip='Clear previous output in console. Works only if Format Text is enabled')
 
-        self._override_input = CheckBox(
-            is_checked=False, title='Override Input Editor', parent=self,
-            tooltip='Override internal input text editor',)
+        CheckBox(is_checked=False, title='Override Input Editor', parent=self,
+                 tooltip='Override internal input text editor',)
 
-        self._include_path = CheckBox(
-            is_checked=False, title='Show File Path', parent=self,
-            tooltip='Include full path of the executed file')
+        CheckBox(is_checked=False, title='Show File Path', parent=self,
+                 tooltip='Include full path of the executed file')
 
-        self._include_unicode = CheckBox(
-            is_checked=True, title='Show Unicode', parent=self,
-            tooltip='include unicode character in output text')
+        CheckBox(is_checked=True, title='Show Unicode', parent=self,
+                 tooltip='include unicode character in output text')
 
         _layout = QFormLayout()
         _layout.setVerticalSpacing(10)

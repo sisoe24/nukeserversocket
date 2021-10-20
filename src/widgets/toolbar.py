@@ -49,7 +49,6 @@ class ToolBar(QToolBar):
         self.setMovable(False)
 
         self.setStyleSheet('color: white;')
-        self._initial_style = self.styleSheet()
 
         self._setup_action(title='Settings', widget=SettingsWidget)
         self._setup_action(title='About', widget=AboutWidget)

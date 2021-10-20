@@ -7,12 +7,6 @@ from textwrap import dedent
 
 from PySide2.QtGui import QClipboard
 
-NUKE_VERSION_STRING = '13.0v1'
-
-env = {
-    'NukeVersionMajor': 13
-}
-
 
 def nodeCopy(string):
     """Copy nodes implementation of equivalent Nukes method."""

@@ -90,16 +90,6 @@ class ConnectionButtons(QObject):
         """
         self._enable_test(state)
 
-    def _enable_send(self, state):
-        """Enable or disable send_btn.
-
-        The state will always be mutually exclusive with the connect_btn.
-
-        Args:
-            state (bool): state of the connect button
-        """
-        self.send_btn.setEnabled(not state)
-
     def _enable_test(self, state):
         """Enable or disable test_btn.
 

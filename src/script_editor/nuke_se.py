@@ -109,7 +109,6 @@ class NukeScriptEditor(BaseScriptEditor):
 
         self._script_editor = self._find_script_editor()
 
-        self._console = self._find_console()
         self._output_widget = self._find_output_widget()
         self._input_widget = self._find_input_widget()
 
