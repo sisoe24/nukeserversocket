@@ -36,14 +36,19 @@ class BaseScriptEditor(object):
     @abstractmethod
     def execute(self):
         """Execute code from the input editor."""
+        raise NotImplementedError
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def input_widget(self):
         """Input Editor widget."""
+        raise NotImplementedError
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def output_widget(self):
         """Output Editor widget."""
+        raise NotImplementedError
 
 
 editors_widgets = {}
