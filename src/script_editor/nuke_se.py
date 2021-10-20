@@ -140,8 +140,9 @@ class NukeScriptEditor(BaseScriptEditor):
         except AttributeError:
             self._execute_shortcut()
 
+    @staticmethod
     @editor_cache
-    def _find_script_editor(self, editor='scripteditor.1'):  # type: (str) -> QWidget
+    def _find_script_editor(editor='scripteditor.1'):  # type: (str) -> QWidget
         """Get script editor widget.
 
         Returns:
