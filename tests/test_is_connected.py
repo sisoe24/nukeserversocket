@@ -22,6 +22,7 @@ def send_json_error():
 def test_data_has_json_error(start_connection, ui, qtbot, send_json_error):
     """Check if status log has right text."""
     def check_status():
+        """Test status of log widget."""
         assert 'Error json deserialization.' in ui.log_widgets.status_text
 
     qtbot.waitUntil(check_status)
@@ -40,6 +41,7 @@ def send_invalid_data(request):
 def test_data_is_invalid(start_connection, ui, qtbot, send_invalid_data):
     """Check if status log has right text."""
     def check_status():
+        """Test status of log widget."""
         assert 'Error. Invalid data:' in ui.log_widgets.status_text
 
     qtbot.waitUntil(check_status)
@@ -62,6 +64,7 @@ class TestConnectionSuccessfulLogs:
     def test_message_status(self, qtbot, ui):
         """Check if status log has right text."""
         def check_status():
+            """Test status of log widget."""
             assert 'Message received' in ui.log_widgets.status_text
 
         qtbot.waitUntil(check_status)
@@ -69,6 +72,7 @@ class TestConnectionSuccessfulLogs:
     def test_message_received(self, qtbot, ui):
         """Check if received log has right text."""
         def check_status():
+            """Test status of log widget."""
             assert TEXT in ui.log_widgets.received_text
 
         qtbot.waitUntil(check_status)
@@ -76,6 +80,7 @@ class TestConnectionSuccessfulLogs:
     def test_message_output(self, qtbot, ui):
         """Check if output log has right text."""
         def check_status():
+            """Test status of log widget."""
             assert STRING.upper() in ui.log_widgets.output_text
 
         qtbot.waitUntil(check_status)
@@ -90,6 +95,7 @@ class TestSendTestMsg:
         ui._send_test()
 
         def check_status():
+            """Test status of log widget."""
             assert 'Connection successful' in ui.log_widgets.status_text
 
         qtbot.waitUntil(check_status)
@@ -99,6 +105,7 @@ class TestSendTestMsg:
         ui._send_test()
 
         def check_status():
+            """Test status of log widget."""
             msg = "from __future__ import print_function; print('Hello from Test Client'"
             assert msg in ui.log_widgets.received_text
 
@@ -109,6 +116,7 @@ class TestSendTestMsg:
         ui._send_test()
 
         def check_status():
+            """Test status of log widget."""
             msg = "Hello from Test Client"
             assert msg in ui.log_widgets.output_text
 

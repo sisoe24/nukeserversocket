@@ -67,6 +67,7 @@ def editor_cache(func):
         return func()
 
     def inner(*args, **kwargs):
+        """Check if widget is already cached and if is a valid qt object."""
 
         if (
             widget not in editors_widgets or

@@ -49,8 +49,9 @@ def test_clean_output(py_controller, msg):
 
 
 def output_format_settings():
-    """UGLY STUFF."""
+    """Create a series of settings to test the output format."""
     def pattern(s):
+        """Generate a pattern."""
         return BEGIN_PATTERN + s + '\n' + SAMPLE_WORD
 
     Format = namedtuple('Format', ['show_file', 'show_unicode', 'pattern'])
@@ -92,6 +93,7 @@ def override_input_editor(py_controller, settings):
     """Override input editor fixture factory."""
 
     def _override_input_editor(value):
+        """Set input editor to initial state."""
         settings.setValue('options/override_input_editor', value)
         py_controller.restore_input()
         return py_controller.input()
@@ -117,6 +119,7 @@ def output_to_console(py_controller, settings):
     """Restore output fixture factory."""
 
     def _restore_output(value):
+        """Set output editor to initial state."""
         py_controller.set_input("print('{}'.upper())".format(SAMPLE_WORD))
         py_controller.execute()
 
