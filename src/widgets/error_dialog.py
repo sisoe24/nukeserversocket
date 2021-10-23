@@ -79,12 +79,11 @@ class ErrorDialog(QMessageBox):
 
         self.buttonClicked.connect(self.click_event)
 
-        _info = (
-            'Traceback will be copied into the clipboard when clicking Report Bug.\n---\n'
-        )
-
         self._traceback = traceback.format_exc()
-        self.setDetailedText(_info + self._traceback)
+        self.setDetailedText(
+            'Traceback will be copied to clipboard when clicking Report Bug.'
+            '\n---\n' + self._traceback
+        )
 
     def prepare_report(self):
         """Prepare the error report and copy it to the clipboard.
@@ -99,7 +98,7 @@ class ErrorDialog(QMessageBox):
 
         return get_about_key('Issues')
 
-    @staticmethod
+    @ staticmethod
     def open_logs_path():
         """Return the log directory path."""
         return get_about_key('Logs')
