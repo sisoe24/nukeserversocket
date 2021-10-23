@@ -24,13 +24,22 @@ def test_get_ip():
         (127\.0\.0\.1)?''', ip, re.X)
 
 
-def test_validate_output():
-    """Check if validate output method.
+def test_validate_output_py3():
+    """Check validate output method.
 
-    If python version is 3 or higher should be bytearray otherwise QByteArray.
+    If python version is 3 or higher should be bytearray.
     """
-    output = validate_output('test message')
     if sys.version_info > (3, 0):
+        output = validate_output('test message')
         assert isinstance(output, bytearray)
-    else:
+
+
+def test_validate_output_py2(monkeypatch):
+    """Check validate output method.
+
+    If python version is 2 be QByteArray.
+    """
+    monkeypatch.setattr(sys, 'version_info', (2, 7, 16))
+    if sys.version_info < (3, 0):
+        output = validate_output('test message')
         assert isinstance(output, QByteArray)
