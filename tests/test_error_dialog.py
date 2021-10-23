@@ -11,38 +11,52 @@ from src.about import about_to_string
 
 
 @pytest.fixture()
-def log_path(package):
+def error_log_path(package):
     """Get the log directory path."""
-    yield os.path.join(package, 'src', 'log')
+    yield os.path.join(package, 'src', 'log', 'errors.log')
 
 
-def test_error_dialog_prepare_report(qtbot):
-    """Check if error dialog returns the issues link when clicking Report."""
+@pytest.fixture(name='report')
+def create_report(qtbot, error_log_path):
+    """Initialize the ErrorDialog class and create an error report.
+
+    After tests, will clean the error.logs file.
+
+    Yields:
+        Report: a namedtuple with the link and the port attributes.
+    """
     widget = error_dialog.ErrorDialog('Test Error')
     qtbot.addWidget(widget)
 
-    to_open = widget.prepare_report()
-    assert to_open == 'https://github.com/sisoe24/NukeServerSocket/issues'
+    yield widget.prepare_report()
+
+    with open(error_log_path, 'w') as _:
+        pass
+
+
+def test_report_return_value(report):
+    """Check if prepare report return is a tuple."""
+    assert isinstance(report, tuple)
+
+
+def test_prepare_report_link(report):
+    """Check if error dialog returns the issues link when clicking Report."""
+    assert report.link == 'https://github.com/sisoe24/NukeServerSocket/issues'
+
+
+def test_prepare_report_clipboard(report):
+    """Check if report gets copied into clipboard."""
     assert 'NukeServerSocket' in QClipboard().text()
 
 
-def test_prepare_port(log_path):
-    """Check if the report has the about to string information."""
-    with open(os.path.join(log_path, 'errors.log')) as file:
+def test_prepare_report_file(report, error_log_path):
+    """Check if the report file has the about to string information."""
+    with open(error_log_path) as file:
         assert about_to_string() in file.read()
 
 
-def test_error_dialog_open_logs(qtbot, log_path):
-    """Check if error dialog returns the log path when clicking Logs."""
-    widget = error_dialog.ErrorDialog('Test Error')
-    qtbot.addWidget(widget)
-
-    to_open = widget.open_logs_path()
-    assert log_path in to_open
-
-
 def test_get_critical_logger():
-    """Get the critical logger."""
+    """Check if method returns the critical logger file handler."""
     logger = error_dialog._get_critical_logger()
     assert logger.name == 'Critical'
     assert isinstance(logger, logging.FileHandler)

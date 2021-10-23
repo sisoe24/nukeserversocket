@@ -5,6 +5,8 @@ from __future__ import print_function
 import logging
 import traceback
 
+from collections import namedtuple
+
 from PySide2.QtWidgets import QMessageBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
@@ -85,31 +87,27 @@ class ErrorDialog(QMessageBox):
             '\n---\n' + self._traceback
         )
 
-    def prepare_report(self):
-        """Prepare the error report and copy it to the clipboard.
+    def prepare_report(self):  # type() -> Report
+        """Prepare the error report and copies it to the clipboard.
 
         Returns:
-            str: github issues weblink.
+            Report: a namedtuple with the link and the port attributes.
         """
         report = _prepare_report() or self._traceback
 
         clipboard = QClipboard()
         clipboard.setText(report)
 
-        return get_about_key('Issues')
-
-    @ staticmethod
-    def open_logs_path():
-        """Return the log directory path."""
-        return get_about_key('Logs')
+        Report = namedtuple('Report', 'report link')
+        return Report(report, get_about_key('Issues'))
 
     def click_event(self, button):
         """After the click event, get the link to open."""
         if button.text() == 'Report bug':
-            to_open = self.prepare_report()
+            to_open = self.prepare_report().link
 
         elif button.text() == 'Open logs':
-            to_open = self.open_logs_path()
+            to_open = get_about_key('Logs')
 
         elif button.text() in ['OK', 'Cancel']:
             return
