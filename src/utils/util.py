@@ -95,7 +95,9 @@ def pyEncoder(text):
     if sys.version_info > (3, 0):
         return text
 
-    if isinstance(text, unicode):
+    # check for unicode python2. u''.__class_ will not create confusion for py3
+    # linters as `unicode` keyword does not exists
+    if isinstance(text, u''.__class__):
         return text.encode('utf-8')
     return text
 
