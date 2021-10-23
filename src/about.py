@@ -7,9 +7,6 @@ import re
 import platform
 
 from collections import namedtuple
-from os.path import (
-    basename, join, exists, dirname, abspath
-)
 
 
 from PySide2 import __version__ as PySide2_Version
@@ -31,12 +28,14 @@ def _get_git_branch():
 
 def _get_root():
     """Get root (package) absolute path."""
-    return dirname(dirname(abspath(__file__)))
+    return os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))
+    )
 
 
 def _get_package_name():
     """Get package name."""
-    return basename(_get_root())
+    return os.path.basename(_get_root())
 
 
 def _get_package_version():
