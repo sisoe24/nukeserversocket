@@ -2,11 +2,15 @@
 # coding: utf-8
 from __future__ import print_function
 
+import logging
+
 from PySide2.QtCore import QSize, Qt
 from PySide2.QtWidgets import QAction, QDialog, QToolBar, QVBoxLayout, QWidget
 
 from .settings_widget import SettingsWidget
 from .about_widget import AboutWidget
+
+LOGGER = logging.getLogger('NukeServerSocket.toolbar')
 
 
 class FloatingDialog(QDialog):
@@ -35,6 +39,7 @@ class FloatingDialog(QDialog):
 
     def closeEvent(self, event):
         """When close event triggers destroy the widget."""
+        LOGGER.debug('FloatingDialog :: delete widget. %s', event)
         self.deleteLater()
 
 
