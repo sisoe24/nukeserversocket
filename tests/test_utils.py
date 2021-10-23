@@ -2,10 +2,11 @@
 import re
 import sys
 
+import pytest
 from PySide2.QtCore import QByteArray
 
 from src.utils import get_ip
-from src.utils.util import validate_output
+from src.utils.util import pyDecoder, pyEncoder, validate_output
 
 
 def test_get_ip():
@@ -34,12 +35,74 @@ def test_validate_output_py3():
         assert isinstance(output, bytearray)
 
 
-def test_validate_output_py2(monkeypatch):
+@pytest.fixture()
+def _py2_env(monkeypatch):
+    """Simulate python 2 environment."""
+    monkeypatch.setattr(sys, 'version_info', (2, 7, 16))
+
+
+def test_validate_output_py2(_py2_env):
     """Check validate output method.
 
     If python version is 2 be QByteArray.
     """
-    monkeypatch.setattr(sys, 'version_info', (2, 7, 16))
     if sys.version_info < (3, 0):
         output = validate_output('test message')
         assert isinstance(output, QByteArray)
+
+
+def test_py3_decoder():
+    """Test py decoder method.
+
+    If python3 method should return a str if a str is passed.
+    """
+    if sys.version_info > (3, 0):
+        assert isinstance(pyDecoder('hello'), str)
+
+
+@pytest.mark.skipif(sys.version_info > (3, 0), reason='only for python2')
+def test_py2_decoder(_py2_env):
+    """Test py decoder method.
+
+    If python2, method should return a unicode if a str is passed.
+
+    Note: u''.__class_ will not create confusion for py3 linters as `unicode`
+    keyword does not exists in newer python.
+    """
+    if sys.version_info < (3, 0):
+        assert isinstance(pyDecoder('hello'), u''.__class__)
+
+
+def test_py_no_decoder():
+    """Test py decoder method.
+
+    If argument is not a text type, should do nothing and return the same type.
+    """
+    assert isinstance(pyDecoder(1), int)
+
+
+def test_py3_encoder():
+    """Test py encoder method.
+
+    If python3 method should return a str if a str is passed.
+    """
+    if sys.version_info > (3, 0):
+        assert isinstance(pyEncoder('hello'), str)
+
+
+@pytest.mark.skipif(sys.version_info > (3, 0), reason='only for python2')
+def test_py2_encoder(_py2_env):
+    """Test py encoder method.
+
+    If python2 method should return a str (bytes for py3) if a str is passed.
+    """
+    if sys.version_info < (3, 0):
+        assert isinstance(pyEncoder('hello'), str)
+
+
+def test_py_no_encoder():
+    """Test py decoder method.
+
+    If argument is not a text type, should do nothing and return the same type.
+    """
+    assert isinstance(pyEncoder(1), int)
