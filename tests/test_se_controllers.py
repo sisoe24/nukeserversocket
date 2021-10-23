@@ -201,5 +201,5 @@ class TestNukeSe:
         editor._run_button = None
         editor.execute()
 
-        code = subprocess.check_output(['python', '-c', input_text])
+        code = subprocess.check_output(['/usr/bin/python', '-c', input_text])
         assert se_controller.output() == pyDecoder(code)
