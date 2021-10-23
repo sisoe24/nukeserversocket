@@ -13,7 +13,7 @@ from ..utils import AppSettings, connection_timer
 LOGGER = logging.getLogger('NukeServerSocket.server')
 
 
-class Server(QObject):
+class QServer(QObject):
     """QObject Server class that deals with the connection.
 
     Class will also emit signal when connection status has changed.
@@ -30,9 +30,9 @@ class Server(QObject):
     socket_ready = Signal(object)
 
     def __init__(self):
-        """Init method for the Server class."""
+        """Init method for the QServer class."""
         QObject.__init__(self)
-        LOGGER.debug('-> Server :: Starting...')
+        LOGGER.debug('-> QServer :: Starting...')
         self.settings = AppSettings()
 
         self.tcp_port = int(self.settings.value('server/port', '54321'))
@@ -40,7 +40,7 @@ class Server(QObject):
         self.server = QTcpServer()
         self.server.newConnection.connect(self._create_connection)
         self.server.acceptError.connect(
-            lambda err: LOGGER.error('Server error: %s', err)
+            lambda err: LOGGER.error('QServer error: %s', err)
         )
 
         self.socket = None
@@ -64,7 +64,7 @@ class Server(QObject):
         self.server.close()
         self.timer.stop()
         self.state_changed.emit('Disconnected\n----')
-        LOGGER.debug('Server :: Closing <-')
+        LOGGER.debug('QServer :: Closing <-')
 
     def _create_connection(self):
         """Establish connection and create a new socket.
@@ -82,7 +82,7 @@ class Server(QObject):
     def start_server(self):
         """Start server connection.
 
-        Server will listen on Any host address and the tcp port specified in
+        QServer will listen on Any host address and the tcp port specified in
         the config file.
 
         Raises:

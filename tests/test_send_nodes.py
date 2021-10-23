@@ -7,7 +7,7 @@ from shutil import rmtree
 
 import pytest
 
-from src.connection import Server, SendNodesClient
+from src.connection import QServer, SendNodesClient
 from src.main import init_settings
 
 
@@ -72,7 +72,7 @@ def test_send_was_successful(ui, qtbot):
 
     This will only work if there is another instance connected.
     """
-    s = Server()
+    s = QServer()
     s.start_server()
 
     port = 54321

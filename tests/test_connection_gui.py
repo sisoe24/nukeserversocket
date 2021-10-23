@@ -4,7 +4,7 @@ import configparser
 
 import pytest
 
-from src.connection import Server
+from src.connection import QServer
 
 RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 
@@ -136,7 +136,7 @@ class TestGuiIsConnected(GuiApp):
     def test_raise_error_if_connected(self, ui):
         """Check if RuntimeError is raised when address is in use."""
         with pytest.raises(RuntimeError, match='.+The bound address is already in use'):
-            s = Server()
+            s = QServer()
             s.start_server()
 
 
@@ -190,7 +190,7 @@ class TestGuiIsSenderMode(GuiApp):
 
 def test_not_connected_label(ui):
     """Check if RuntimeError is raised when address is already connected."""
-    s = Server()
+    s = QServer()
     s.start_server()
 
     ui.toggle_connection(True)

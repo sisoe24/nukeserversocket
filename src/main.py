@@ -13,7 +13,7 @@ from PySide2.QtWidgets import (
 )
 
 from .utils import AppSettings
-from .connection import Server, SendTestClient, SendNodesClient
+from .connection import QServer, SendTestClient, SendNodesClient
 from .widgets import (
     LogWidgets,
     ConnectionsWidget,
@@ -105,7 +105,7 @@ class MainWindowWidget(QWidget):
         """Set up the server class and its custom signals.
 
         Returns:
-            Server: the server object.
+            QServer: the server object.
         """
         def _setup_socket_log(socket):
             """Set up socket log signals."""
@@ -113,7 +113,7 @@ class MainWindowWidget(QWidget):
             socket.received_text.connect(self.log_widgets.set_received_text)
             socket.output_text.connect(self.log_widgets.set_output_text)
 
-        _server = Server()
+        _server = QServer()
 
         _server.timeout.connect(self._disconnect)
         _server.state_changed.connect(self.log_widgets.set_status_text)

@@ -3,7 +3,7 @@ import configparser
 
 import pytest
 
-from src.connection import Server, nss_client
+from src.connection import QServer, nss_client
 from src.widgets.connections_widget import TcpPort
 from src.utils import AppSettings
 
@@ -15,7 +15,7 @@ def port_range(value):
 
 def test_default_value_server(qtbot):
     """Test port default value if no settings.ini is found."""
-    server_port = Server().tcp_port
+    server_port = QServer().tcp_port
     assert server_port == 54321
 
 
