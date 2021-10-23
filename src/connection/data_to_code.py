@@ -74,7 +74,7 @@ class DataCode:
         """
         data = self._raw_data
         try:
-            LOGGER.debug('Socket :: Message is stringified array.')
+            LOGGER.debug('DataCode :: Message is stringified array.')
             data = json.loads(data)
 
         # could raise json.decoder.JSONDecodeError when decoding problems
@@ -86,5 +86,5 @@ class DataCode:
             raise InvalidData(msg)
 
         else:
-            LOGGER.debug('Socket :: Message is valid data: %s', data)
+            LOGGER.debug('DataCode :: Message is valid data: %s', data)
             return data
