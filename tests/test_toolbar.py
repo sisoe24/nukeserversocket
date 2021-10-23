@@ -3,6 +3,7 @@ from collections import namedtuple
 
 import pytest
 
+import shiboken2
 from PySide2.QtWidgets import QWidget
 from src.widgets import toolbar, settings_widget, about_widget
 
@@ -17,7 +18,7 @@ FLOATING_WIDGETS = (
 
 
 @pytest.fixture()
-def toolbar_obj(qtbot):
+def _toolbar(qtbot):
     """Initiate the ToolBar class."""
     widget = toolbar.ToolBar()
     qtbot.addWidget(widget)
@@ -25,32 +26,39 @@ def toolbar_obj(qtbot):
     yield widget
 
 
-def test_widget_no_obj_name(toolbar_obj):
+def test_widget_no_obj_name(_toolbar):
     """Raise error if widget used for floating dialog has no object name."""
     with pytest.raises(RuntimeWarning):
-        toolbar_obj._show_dialog(QWidget)
+        _toolbar._show_dialog(QWidget)
 
 
 @pytest.mark.parametrize('widgets', FLOATING_WIDGETS,
                          ids=['About', 'Settings'])
-def test_toolbar_floating_dialog(toolbar_obj, widgets):
+def test_floating_dialog(_toolbar, widgets):
     """Create a Floating Dialog Widget."""
-    dialog = toolbar_obj._show_dialog(widgets.widget)
+    dialog = _toolbar._show_dialog(widgets.widget)
 
     assert dialog.objectName() == widgets.object_name
     assert dialog.windowTitle() == widgets.title
     assert dialog.findChild(widgets.widget)
 
 
-def test_toolbar_floating_dialog_already_on(toolbar_obj):
-    """Check if ToolBar class creates only once instance."""
-    toolbar_obj._show_dialog(SETTINGS_WIDGET)
-    dialog = toolbar_obj._show_dialog(SETTINGS_WIDGET)
+def test_is_floating_widget(_toolbar):
+    """Check if dialog is a FloatingDialog instance."""
+    dialog = _toolbar._show_dialog(SETTINGS_WIDGET)
+    assert isinstance(dialog, toolbar.FloatingDialog)
+
+
+def test_floating_dialog_already_active(_toolbar):
+    """Check if toolbar action creates only once instance."""
+    _toolbar._show_dialog(SETTINGS_WIDGET)
+    dialog = _toolbar._show_dialog(SETTINGS_WIDGET)
     assert dialog == 'Already active'
 
 
-def test_toolbar_floating_is_deleted(toolbar_obj):
-    """Check if dialog gets closed."""
-    dialog = toolbar_obj._show_dialog(SETTINGS_WIDGET)
+@pytest.mark.skip(reason='need to find a proper way.')
+def test_toolbar_floating_is_deleted(_toolbar):
+    """Check if dialog triggers closeEvent."""
+    dialog = _toolbar._show_dialog(SETTINGS_WIDGET)
     dialog.close()
-    assert dialog.isVisible() is False
+    # assert that dialog gets deleted
