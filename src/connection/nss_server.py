@@ -7,7 +7,7 @@ import logging
 from PySide2.QtCore import QObject, Signal
 from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
-from .nss_socket import Socket
+from .nss_socket import QSocket
 from ..utils import AppSettings, connection_timer
 
 LOGGER = logging.getLogger('NukeServerSocket.server')
@@ -21,7 +21,7 @@ class Server(QObject):
     Signal:
         (None) timeout: emit when the timeout event has been triggered.
         (str) state_changed: emits when the connection state has changed
-        (Socket) socket_ready: emits the socket class that has been created
+        (QSocket) socket_ready: emits the socket class that has been created
         when connection is successful.
     """
 
@@ -76,7 +76,7 @@ class Server(QObject):
             socket = self.server.nextPendingConnection()
             socket.stateChanged.connect(self.connection_state)
 
-            self.socket = Socket(socket)
+            self.socket = QSocket(socket)
             self.socket_ready.emit(self.socket)
 
     def start_server(self):

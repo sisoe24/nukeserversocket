@@ -13,7 +13,7 @@ from ..script_editor import CodeEditor
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
-class Socket(QObject):
+class QSocket(QObject):
     """QObject Socket class that deals with the incoming data.
 
     Class will also verify its type before calling a CodeEditor to execute it.
@@ -32,7 +32,7 @@ class Socket(QObject):
     def __init__(self, socket):
         """Init method for the socket class."""
         QObject.__init__(self)
-        LOGGER.debug('Socket :: Listening...')
+        LOGGER.debug('QSocket :: Listening...')
 
         self.socket = socket
         self.socket.connected.connect(self.on_connected)
@@ -46,12 +46,12 @@ class Socket(QObject):
     @staticmethod
     def on_connected():
         """Connect event."""
-        LOGGER.debug('Socket :: Connected.')
+        LOGGER.debug('QSocket :: Connected.')
 
     @staticmethod
     def on_disconnected():
         """Disconnect event."""
-        LOGGER.debug('Socket :: Disconnected.')
+        LOGGER.debug('QSocket :: Disconnected.')
 
     def close_socket(self):
         """Close the socket and stop the timeout timer."""
@@ -69,7 +69,7 @@ class Socket(QObject):
         """
         msg = 'Error. Invalid data: %s' % err
 
-        LOGGER.warning('Socket :: %s', msg)
+        LOGGER.warning('QSocket :: %s', msg)
         self.state_changed.emit(msg)
 
         self.close_socket()
@@ -80,7 +80,7 @@ class Socket(QObject):
         When data received is ready, method will pass the job to the CodeEditor
         class that will execute the received code.
         """
-        LOGGER.debug('Socket :: Message ready')
+        LOGGER.debug('QSocket :: Message ready')
         self.state_changed.emit("Message received.")
         self.timer.start()
 
@@ -94,7 +94,7 @@ class Socket(QObject):
         editor = CodeEditor(msg_data)
         output_text = editor.execute()
 
-        LOGGER.debug('Socket :: sending message back.')
+        LOGGER.debug('QSocket :: sending message back.')
         self.socket.write(validate_output(output_text))
 
         self.close_socket()
