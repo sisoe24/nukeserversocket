@@ -33,7 +33,7 @@
         {
             "label": "Open coverage report",
             "type": "shell",
-            "command": "open htmlcov/index.html",
+            "command": "open coverage/index.html",
         },
         {
             "label": "Create coverage report",
