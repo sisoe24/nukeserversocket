@@ -1,3 +1,4 @@
+"""Pytest configuration file."""
 import os
 
 import pytest
@@ -7,21 +8,24 @@ from src.script_editor import nuke_se
 from src.widgets import FakeScriptEditor
 from src.script_editor.nuke_se import editors_widgets
 
-from tests.run_local import _MainWindowWidget
+from src.run_local import _MainWindowWidget
 
 
 def pytest_addoption(parser):
+    """Add pytest new options."""
     parser.addoption(
         '--checklinks', action='store_true', default=False, help='Validate web link'
     )
 
 
 def pytest_configure(config):
+    """Add pytest new configurations."""
     config.addinivalue_line('markers', 'web: validate web link')
     config.addinivalue_line('markers', 'quicktest: quick test methods')
 
 
 def pytest_collection_modifyitems(config, items):
+    """Change pytest behavior for certain marks."""
     if config.getoption('--checklinks'):
         return
 
@@ -34,7 +38,7 @@ def pytest_collection_modifyitems(config, items):
 
 @pytest.fixture(scope='session')
 def package():
-    """Package directory path"""
+    """Package directory path."""
     current_dir = os.path.dirname(__file__)
     package_dir = os.path.abspath(os.path.dirname(current_dir))
     yield package_dir
@@ -42,7 +46,7 @@ def package():
 
 @pytest.fixture(scope='session')
 def tmp_settings_file(package):
-    """Temporary settings file path"""
+    """Temporary settings file path."""
     tmp_dir = os.path.join(package, 'tests', 'tmp')
 
     if not os.path.exists(tmp_dir):
@@ -68,7 +72,7 @@ def patch_settings(tmp_settings_file, monkeypatch):
 
 @pytest.fixture()
 def ui(qtbot):
-    """Main UI Widget"""
+    """Initialize Main UI Widget."""
     widget = _MainWindowWidget()
     qtbot.addWidget(widget)
     # widget.show()
@@ -85,6 +89,7 @@ def start_connection(ui):
 
 @pytest.fixture()
 def init_fake_editor(qtbot):
+    """Initialize the FakeScriptEditor class."""
     widget = FakeScriptEditor()
     qtbot.addWidget(widget)
     yield widget

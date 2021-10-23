@@ -1,7 +1,7 @@
-import sys
+"""Test utils module."""
 import re
+import sys
 
-import pytest
 from PySide2.QtCore import QByteArray
 
 from src.utils import get_ip
@@ -9,11 +9,13 @@ from src.utils.util import validate_output
 
 
 def test_get_ip():
-    """Check for match:
-        192.168.1.34 or 127.0.0.1
-        192.168.1.34 or 192.168.1.3
-        192.168.1.35
-        127.0.0.1
+    """Test ip match.
+
+    Test if ip matches one of the following pattern:
+        - 192.168.1.34 or 127.0.0.1
+        - 192.168.1.34 or 192.168.1.3
+        - 192.168.1.35
+        - 127.0.0.1
     """
     ip = get_ip()
     assert re.match(r'''
@@ -23,6 +25,10 @@ def test_get_ip():
 
 
 def test_validate_output():
+    """Check if validate output method.
+
+    If python version is 3 or higher should be bytearray otherwise QByteArray.
+    """
     output = validate_output('test message')
     if sys.version_info > (3, 0):
         assert isinstance(output, bytearray)

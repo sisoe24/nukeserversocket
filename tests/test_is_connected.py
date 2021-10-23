@@ -12,12 +12,12 @@ FILE = 'tmp/path/nss.py'
 
 @pytest.fixture()
 def send_json_error():
-    """Simple client to send misspelled array data via TCP."""
+    """Send wrong array data."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     s.connect(('127.0.0.1', 54321))
     s.sendall(bytearray('{text":"print("hello")"} ', encoding='utf-8'))
     s.close()
+
 
 def test_data_has_json_error(start_connection, ui, qtbot, send_json_error):
     """Check if status log has right text."""
@@ -29,9 +29,8 @@ def test_data_has_json_error(start_connection, ui, qtbot, send_json_error):
 
 @pytest.fixture(params=[' ', '{"name": true}', '{"text":""}'])
 def send_invalid_data(request):
-    """Simple client to send data via TCP."""
+    """Send invalid data."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
     s.connect(('127.0.0.1', 54321))
     s.sendall(bytearray(request.param, encoding='utf-8'))
     s.close()
@@ -48,7 +47,7 @@ def test_data_is_invalid(start_connection, ui, qtbot, send_invalid_data):
 
 @pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})])
 def send_data(request):
-    """Simple client to send data via TCP."""
+    """Send valid data."""
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     s.connect(('127.0.0.1', 54321))

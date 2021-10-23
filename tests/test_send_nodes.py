@@ -1,3 +1,4 @@
+"""Test sending nodes module."""
 import os
 import logging
 import configparser
@@ -35,6 +36,10 @@ ypos -301
 
 @pytest.fixture(scope='session', autouse=True)
 def init_tmp(package):
+    """Create the tmp path.
+
+    If it exists will be deleted.
+    """
     tmp_folder = os.path.join(package, 'src', '.tmp')
     rmtree(tmp_folder)
     yield
@@ -43,8 +48,6 @@ def init_tmp(package):
 @pytest.fixture()
 def transfer_node_file(tmp_settings_file):
     """Initialize the tmp directory.
-
-    If transfer_nodes.tmp file exists then it will be deleted.
 
     Yields:
         str: path to the transfer_node.tmp file
@@ -85,7 +88,7 @@ def test_send_was_successful(ui, qtbot):
     ui._send_nodes()
 
     def check_status():
-        """Wait for the status to register the transfer"""
+        """Wait for the status to register the transfer."""
         log = ui.log_widgets.status_widget.text_box
         assert 'Connection successful {}:{}'.format(
             hostname, port) in log.toPlainText()
@@ -96,14 +99,13 @@ def test_send_was_successful(ui, qtbot):
 
 def test_received_was_successful(ui, qtbot):
     """Check if nodes were received with success."""
-
     ui.toggle_connection(True)
 
     s = SendNodesClient()
     s.connect_to_host()
 
     def check_status():
-        """Wait for the status to register the transfer"""
+        """Wait for the status to register the transfer."""
         assert 'Message received.' in ui.log_widgets.status_text
         assert 'Nodes received.' in ui.log_widgets.output_text
         assert TRANSFER_NODES_FILE in ui.log_widgets.received_text
@@ -114,14 +116,12 @@ def test_received_was_successful(ui, qtbot):
 
 def test_transfer_file_is_valid(transfer_node_file):
     """Check if file got copied correctly."""
-
     with open(transfer_node_file) as f:
         assert TRANSFER_NODES_FILE == f.read()
 
 
 def test_send_was_not_successful(qtbot, ui):
-    """Check connection timeout."""
-
+    """Emit connection timeout."""
     ui._send_nodes()
     ui._node_client._connection_timeout()
 
@@ -133,8 +133,7 @@ def test_send_was_not_successful(qtbot, ui):
 
 
 def test_send_was_error(qtbot, ui):
-    """Check connection error."""
-
+    """Emit connection error."""
     ui._send_nodes()
     ui._node_client.on_error('test error')
 

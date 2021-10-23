@@ -1,8 +1,9 @@
+"""Test about widget."""
 import os
-import requests
 import platform
 
 import pytest
+import requests
 
 from src import about
 from src.widgets import about_widget
@@ -42,6 +43,7 @@ LINKS = about.about_links()
 
 
 class TestAboutWidget:
+    """Test AboutWidget class."""
 
     def test_about_form(self, qtbot):
         """Test if the form layout has the proper about information."""
@@ -81,7 +83,6 @@ class TestAboutWidget:
 @pytest.mark.parametrize('link', LINKS, ids=[i.label for i in LINKS])
 def test_about_links(link):
     """Test if about link are reachable."""
-
     # Logs is a system path
     if link.label == 'Logs':
         assert os.path.exists(link.repr.replace('file:///', ''))

@@ -31,7 +31,8 @@ def init_fake_editor(qtbot):
     yield widget
 
 
-def code(file):
+def data_code(file):
+    """Return a initialized DataCode object."""
     return DataCode(json.dumps({'text': 'test', 'file': file}))
 
 
@@ -43,20 +44,20 @@ class TestCodeEditor:
 
     @pytest.mark.parametrize('file', ['file.py', ''])
     def test_is_python_controller(self, file):
-        """Check if is a valid PyController when file ends .py or none."""
-        editor = se.CodeEditor(code(file))
+        """Check if is a valid PyController when file ends .py, None."""
+        editor = se.CodeEditor(data_code(file))
         assert isinstance(editor._controller, se._PyController)
 
     @pytest.mark.parametrize('file', ['file.cpp', 'file.blink'])
     def test_is_blink_controller(self, file):
-        """Check if is a valid BlinkController when file ends .cpp|.blink."""
-        editor = se.CodeEditor(code(file))
+        """Check if is a valid BlinkController when file ends .cpp, .blink."""
+        editor = se.CodeEditor(data_code(file))
 
         assert isinstance(editor._controller, se._BlinkController)
 
     def test_is_nodes_controller(self):
         """Check if is a valid CopyNodesController when file ends .tmp."""
-        editor = se.CodeEditor(code('file.tmp'))
+        editor = se.CodeEditor(data_code('file.tmp'))
 
         assert isinstance(editor._controller, se._CopyNodesController)
 
@@ -74,7 +75,7 @@ class TestNodesCopyController:
 
     @pytest.fixture()
     def nodes_controller(self):
-        """Init node controller class."""
+        """Init _CopyNodesController class."""
         init_settings()
 
         controller = se._CopyNodesController()
@@ -85,7 +86,7 @@ class TestNodesCopyController:
         se.ScriptEditorController().set_input('')
 
     def test_nodes_controller_input_result(self, nodes_controller, transfer_file):
-        """Check if set input returns valid Nuke string."""
+        """Check if set input returns valid Nuke command."""
         if os.path.exists(transfer_file):
             os.remove(transfer_file)
 
@@ -125,7 +126,7 @@ class TestBlinkController:
 
     @pytest.fixture(scope='class')
     def blink_controller(self):
-        """Get the blink controller class."""
+        """Initialize the _BlinkController class."""
         controller = se._BlinkController('file/to/tmp.cpp')
         yield controller
         se.ScriptEditorController().set_input('')
@@ -135,7 +136,7 @@ class TestBlinkController:
         assert blink_controller.output() == 'Recompiling'
 
     def test_blink_wrapper(self, blink_controller):
-        """Check the blink wrapper nuke commands."""
+        """Check the blink wrapper nuke command."""
         wrapper = blink_controller._blink_wrapper("TEST CODE")
         assert self.wrapper == wrapper
 
@@ -150,7 +151,7 @@ class TestNukeSe:
 
     @pytest.fixture()
     def editor(self, monkeypatch):
-        """Initialize the editor.
+        """Initialize NukeScriptEditor.
 
         Tests in this class need to clean the editor cache each time.
         """
@@ -159,9 +160,18 @@ class TestNukeSe:
 
         yield se_editor
 
-    def test_get_script_editor(self, editor):
-        """Check if script editor was found."""
+    def test_script_editor_is_widget(self, editor):
+        """Check if script editor was found and is a QWidget."""
         assert isinstance(editor._find_script_editor(), QWidget)
+
+    def test_get_script_editor(self, editor):
+        """Check if script editor was found and is a FakeScriptEditor."""
+        assert isinstance(editor.script_editor, fake_se.FakeScriptEditor)
+
+    def test_script_editor_not_found(self, editor):
+        """Check if script editor was not found."""
+        with pytest.raises(RuntimeWarning, match='NukeServerSocket: Script Editor panel not found.+'):
+            editor._find_script_editor('scripteditor.3')
 
     def test_get_run_button(self, editor):
         """Check if run button was found."""
@@ -193,12 +203,3 @@ class TestNukeSe:
 
         code = subprocess.check_output(['python', '-c', input_text])
         assert se_controller.output() == pyDecoder(code)
-
-    def test_get_script_editor(self, editor):
-        """Check if script editor was found."""
-        assert isinstance(editor.script_editor, fake_se.FakeScriptEditor)
-
-    def test_script_editor_not_found(self, editor):
-        """Check if script editor was not found."""
-        with pytest.raises(RuntimeWarning, match='NukeServerSocket: Script Editor panel not found.+'):
-            editor._find_script_editor('scripteditor.3')

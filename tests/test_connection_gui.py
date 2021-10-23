@@ -1,3 +1,4 @@
+"""Test module for the UI elements when various connection modes happen."""
 import random
 import configparser
 
@@ -9,6 +10,8 @@ RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 
 
 class GuiApp:
+    """Base class for testing the UI state."""
+
     label = None
     port_is_enabled = None
     ip_entry_readonly = None
@@ -87,6 +90,7 @@ class TestGuiIsIdle(GuiApp):
 
     @classmethod
     def setup_class(cls):
+        """Set up method."""
         cls.label = "Idle"
         cls.port_is_enabled = True
         cls.ip_entry_readonly = True
@@ -107,9 +111,11 @@ class TestGuiIsIdle(GuiApp):
 
 @pytest.mark.usefixtures('start_connection')
 class TestGuiIsConnected(GuiApp):
+    """Test UI when app is connected."""
 
     @classmethod
     def setup_class(cls):
+        """Set up method."""
         cls.label = "Connected"
         cls.port_is_enabled = False
         cls.ip_entry_readonly = True
@@ -135,9 +141,11 @@ class TestGuiIsConnected(GuiApp):
 
 
 class TestGuiIsSenderMode(GuiApp):
+    """Test UI when app is in sender mode."""
 
     @classmethod
     def setup_class(cls):
+        """Set up method."""
         cls.label = "Ready to send"
         cls.port_is_enabled = True
         cls.ip_entry_readonly = False
@@ -165,14 +173,13 @@ class TestGuiIsSenderMode(GuiApp):
     @pytest.fixture()
     def change_ip_entry(self, ui):
         """Check if ip entry can be changed."""
-        # TODO: when changing port to the same default port will not write to config file
+        # TODO: changing port to the default port will not write to config file
 
         ip_entry = ui.connections.ip_entry
         ip_entry.setText(RANDOM_IP)
 
     def test_send_local_ip(self, change_ip_entry,  tmp_settings_file):
         """Check if `local_ip` is saved correctly in config when changed."""
-
         config = configparser.ConfigParser()
         config.read(tmp_settings_file)
 

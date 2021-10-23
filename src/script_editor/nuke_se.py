@@ -5,7 +5,7 @@ from __future__ import print_function
 import logging
 from functools import wraps
 
-from abc import abstractmethod, ABCMeta, abstractproperty
+from abc import abstractmethod, ABCMeta
 
 import shiboken2
 from PySide2.QtCore import Qt

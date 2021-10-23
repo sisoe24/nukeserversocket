@@ -1,3 +1,4 @@
+"""Test log widgets."""
 import re
 from PySide2.QtWidgets import QGroupBox
 
@@ -8,7 +9,10 @@ from src.widgets import LogWidgets
 
 @pytest.fixture()
 def log_obj(qtbot):
+    """Create a log widget object.
 
+    After tests, will clear the log text.
+    """
     logs = LogWidgets()
     qtbot.addWidget(logs)
 
@@ -18,18 +22,15 @@ def log_obj(qtbot):
         box.text_box.clear()
 
 
-log_methods = (
-    'set_status_text',
-    'set_received_text',
-    'set_output_text',
-)
-
-
-@pytest.mark.parametrize('log_methods', log_methods, ids=['status', 'received', 'output'])
+@pytest.mark.parametrize('log_methods',
+                         ('set_status_text',
+                          'set_received_text',
+                          'set_output_text'),
+                         ids=['status', 'received', 'output'])
 def test_log_widgets(log_methods, log_obj):
     """Test that log widgets receive text.
 
-    This method is a bit of a hack for no good reason. should change it. 
+    This method is a bit of a hack for no good reason. should change it.
     """
     set_method = getattr(log_obj, log_methods)
     set_method(log_methods)

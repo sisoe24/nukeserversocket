@@ -1,20 +1,18 @@
+"""Run application locally outside Nuke."""
 # coding: utf-8
 from __future__ import print_function
 
 import sys
 import logging
-import traceback
 
 from PySide2.QtWidgets import (
     QApplication,
-    QMainWindow,
     QPushButton,
     QVBoxLayout,
     QWidget,
-    QStatusBar
 )
 
-from src.widgets import FakeScriptEditor, ToolBar, ErrorDialog
+from src.widgets import FakeScriptEditor
 from src.main import MainWindowWidget, MainWindow
 
 
@@ -22,7 +20,14 @@ LOGGER = logging.getLogger('NukeServerSocket.runapp')
 
 
 class SecondFakeScriptEditor(QWidget):
+    """Second fake script editor class.
+
+    I wanted to test what happens when a second script editor gets created, and
+    the other gets deleted.
+    """
+
     def __init__(self, se1):
+        """Init method for the SecondFakeScriptEditor class."""
         QWidget.__init__(self)
         self.se1 = se1
         self.se2 = FakeScriptEditor('uk.co.thefoundry.scripteditor.2')
@@ -37,12 +42,16 @@ class SecondFakeScriptEditor(QWidget):
         self.setLayout(_layout)
 
     def delete_widget(self):
+        """Delete the script editor1."""
         print('delete editor.1')
         self.se1.deleteLater()
 
 
 class _MainWindowWidget(QWidget):
+    """Main window widget that holds the main app and the fake script editor."""
+
     def __init__(self, parent=None):
+        """Init method for the _MainWindowWidget class."""
         QWidget.__init__(self)
         LOGGER.debug('RUN APP :: INIT')
 
@@ -57,14 +66,21 @@ class _MainWindowWidget(QWidget):
         self.setLayout(_layout)
 
     def _auto_test(self):
-        """Auto run simple test"""
+        """Auto run simple test."""
         self.main_app.connect_btn.click()
         self.script_editor.run_btn.click()
         self.main_app.test_btn.click()
 
 
 class _MainWindow(MainWindow):
+    """Main Window that inherits from main.py.
+
+    This is to add some extra functionality when testing locally, like screen
+    position.
+    """
+
     def __init__(self, *args, **kwargs):
+        """Init method for the _MainWindow class."""
         MainWindow.__init__(self, main_widget=_MainWindowWidget)
         self.setWindowTitle('NukeServerSocket Test')
 
@@ -78,7 +94,10 @@ class _MainWindow(MainWindow):
 
 
 class MyApplication(QApplication):
+    """Custom QApplication class."""
+
     def __init__(self, *args):
+        """Init method for the MyApplication class."""
         super(MyApplication, self).__init__(*args)
         self.window = _MainWindow()
         self.window.show()

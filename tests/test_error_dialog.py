@@ -1,3 +1,4 @@
+"""Test module for the Error dialog widget."""
 import os
 import logging
 
@@ -11,7 +12,7 @@ from src.about import about_to_string
 
 @pytest.fixture()
 def log_path(package):
-    """Get the log directory path"""
+    """Get the log directory path."""
     yield os.path.join(package, 'src', 'log')
 
 

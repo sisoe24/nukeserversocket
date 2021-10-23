@@ -1,6 +1,7 @@
-import pytest
+"""Test ToolBar class module."""
 from collections import namedtuple
 
+import pytest
 
 from PySide2.QtWidgets import QWidget
 from src.widgets import toolbar, settings_widget, about_widget
@@ -17,6 +18,7 @@ FLOATING_WIDGETS = (
 
 @pytest.fixture()
 def toolbar_obj(qtbot):
+    """Initiate the ToolBar class."""
     widget = toolbar.ToolBar()
     qtbot.addWidget(widget)
 
@@ -24,14 +26,15 @@ def toolbar_obj(qtbot):
 
 
 def test_widget_no_obj_name(toolbar_obj):
-    """If widget used to create a floating dialog has no object name raise Error."""
+    """Raise error if widget used for floating dialog has no object name."""
     with pytest.raises(RuntimeWarning):
         toolbar_obj._show_dialog(QWidget)
 
 
-@pytest.mark.parametrize('widgets', FLOATING_WIDGETS, ids=['About', 'Settings'])
+@pytest.mark.parametrize('widgets', FLOATING_WIDGETS,
+                         ids=['About', 'Settings'])
 def test_toolbar_floating_dialog(toolbar_obj, widgets):
-    """Create a Floating Dialog Widget"""
+    """Create a Floating Dialog Widget."""
     dialog = toolbar_obj._show_dialog(widgets.widget)
 
     assert dialog.objectName() == widgets.object_name
@@ -40,7 +43,7 @@ def test_toolbar_floating_dialog(toolbar_obj, widgets):
 
 
 def test_toolbar_floating_dialog_already_on(toolbar_obj):
-    """Check if dialog gets only once instance."""
+    """Check if ToolBar class creates only once instance."""
     toolbar_obj._show_dialog(SETTINGS_WIDGET)
     dialog = toolbar_obj._show_dialog(SETTINGS_WIDGET)
     assert dialog == 'Already active'

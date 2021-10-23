@@ -1,3 +1,4 @@
+"""Test SettingsWidget class."""
 import os
 import configparser
 
@@ -9,8 +10,12 @@ from src.widgets import settings_widget
 
 @pytest.fixture()
 def settings(qtbot, tmp_settings_file):
+    """Initialize the SettingsWidget class.
 
+    Before and after tests, settings file will be cleaned.
+    """
     def reset_settings():
+        """Clean settings file."""
         with open(tmp_settings_file, 'w') as _:
             pass
 
@@ -25,22 +30,29 @@ def settings(qtbot, tmp_settings_file):
 
 
 class TestSubStateSettings:
+    """Test settings which have depend on other settings."""
+
     settings_widget = None  # type:  QWidget
 
     @property
     def output_console(self):  # type: () -> QCheckBox
+        """Output to Console QCheckBox obj."""
         return self.settings_widget._output_console
 
     @property
     def format_output(self):  # type: () -> QCheckBox
+        """Format Output QCheckBox obj."""
         return self.settings_widget._format_output
 
     @property
     def clear_text(self):  # type: () -> QCheckBox
+        """Clear Text QCheckBox obj."""
         return self.settings_widget._clear_output
 
     def test_output_console_is_true(self, settings):
-        """If `console_output` is enable, so it should be for `clear_text` and
+        """Test output_to_console enabled settings.
+
+        If `console_output` is enable, so it should be for `clear_text` and
         `format_output`.
         """
         self.settings_widget = settings
@@ -51,10 +63,13 @@ class TestSubStateSettings:
         assert self.format_output.isChecked()
 
     def test_output_console_is_false(self, settings):
-        """If `console_output` is disabled, so it should be for `clear_text` and 
+        """Test console_output disabled settings.
+
+        If `console_output` is disabled, so it should be for `clear_text` and
         `format_output`.
         """
         def is_sub_state_false():
+            """Check for settings substate."""
             assert not self.clear_text.isChecked()
             assert not self.format_output.isChecked()
             assert not self.clear_text.isEnabled()
@@ -71,8 +86,12 @@ class TestSubStateSettings:
         is_sub_state_false()
 
     def test_format_text_is_false(self, settings):
-        """If `format_text` is disabled so it should be for `clear_text`"""
+        """Test format text disabled setting.
+
+        If `format_text` is disabled so it should be for `clear_text`.
+        """
         def is_sub_state_false():
+            """Check for settings substate."""
             assert not self.clear_text.isEnabled()
             assert not self.clear_text.isChecked()
 
@@ -88,11 +107,11 @@ class TestSubStateSettings:
 
 
 class TestSettingsFile:
+    """Test settings.ini file."""
 
     @pytest.fixture()
     def toggle_options(self, settings):
         """Toggle all options to True state."""
-
         for checkbox in settings.findChildren(QCheckBox):
             checkbox.toggle()
             checkbox.setChecked(True)
@@ -102,8 +121,7 @@ class TestSettingsFile:
         assert os.path.exists(tmp_settings_file)
 
     def test_check_value(self, toggle_options, tmp_settings_file):
-        """Check if file checkboxes saved their state on the file settings"""
-
+        """Check if checkboxes saved their state on the file settings."""
         config = configparser.ConfigParser()
         config.read(tmp_settings_file)
 
@@ -112,9 +130,11 @@ class TestSettingsFile:
         for opt in settings_values:
             assert config.getboolean('options', opt)
 
-    def test_no_settings_default_values(self,  settings):
-        """Check if checkbox values are on the default if no ini file is found."""
+    def test_no_settings_default_values(self, settings):
+        """Check checkbox default values.
 
+        If no file.ini is found, checkbox should start with a default value.
+        """
         initial_values = {
             'output_to_console': True,
             'format_text': True,
