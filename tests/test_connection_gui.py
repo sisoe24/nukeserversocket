@@ -50,22 +50,22 @@ class GuiApp:
         assert receiver.isChecked() is self.receiver_mode_active
 
     def test_receiver_btn(self, ui):
-        """Test if receiver button is disabled"""
+        """Test if receiver button is disabled."""
         test_btn = ui.test_btn
         assert test_btn.isEnabled() is self.test_btn_enabled
 
     def test_send_btn(self, ui):
-        """Test if send button is disabled"""
+        """Test if send button is disabled."""
         send_btn = ui.send_btn
         assert send_btn.isEnabled() is self.send_btn_enabled
 
     def test_connect_btn(self, ui):
-        """Test if connect button is enabled"""
+        """Test if connect button is enabled."""
         connect_btn = ui.connect_btn
         assert connect_btn.isEnabled() is self.connect_btn_enabled
 
     def test_connect_btn_text(self, ui):
-        """Test if connect button is enabled"""
+        """Test if connect button is enabled."""
         connect_btn = ui.connect_btn
         assert connect_btn.text() == self.connect_btn_text
 
@@ -128,7 +128,7 @@ class TestGuiIsConnected(GuiApp):
         cls.output_text = ''
 
     def test_raise_error_if_connected(self, ui):
-        """Check if RuntimeError is raised when address is already connected."""
+        """Check if RuntimeError is raised when address is in use."""
         with pytest.raises(RuntimeError, match='.+The bound address is already in use'):
             s = Server()
             s.start_server()
@@ -157,7 +157,7 @@ class TestGuiIsSenderMode(GuiApp):
 
     @pytest.fixture(autouse=True)
     def activate_sender_mode(self, ui):
-        """Click the connect button of the UI and enter in the connected state."""
+        """Click the connect button and enter in the connected state."""
         ui.connections.sender_mode.toggle()
         yield
         ui.connections.receiver_mode.toggle()
@@ -171,7 +171,7 @@ class TestGuiIsSenderMode(GuiApp):
         ip_entry.setText(RANDOM_IP)
 
     def test_send_local_ip(self, change_ip_entry,  tmp_settings_file):
-        """Check if `local_ip` is saved correctly in settings.ini when changed."""
+        """Check if `local_ip` is saved correctly in config when changed."""
 
         config = configparser.ConfigParser()
         config.read(tmp_settings_file)

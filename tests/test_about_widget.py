@@ -9,31 +9,31 @@ from src.widgets import about_widget
 
 
 def test_get_about_key():
-    """Get a key from the about dictionary"""
+    """Get a key from the about dictionary."""
     key = about.get_about_key('Python')
     assert key == platform.python_version()
 
 
 def test_about_python_version():
-    """Python version should be 3.7.7 for nuke 13 or 2.7.16 for nuke11/12"""
+    """Python version should be 3.7.7 for nuke 13 or 2.7.16 for nuke11/12."""
     version = about.get_about_key('Python')
     assert version <= '3.7.7'
 
 
 def test_get_about_missing_key():
-    """Get a key from the about dictionary"""
+    """Get a key from the about dictionary."""
     key = about.get_about_key('Maya')
     assert key == ''
 
 
 def test_about_to_string():
-    """Get the about data into a string format"""
+    """Get the about data into a string format."""
     keys = about.about_to_string()
     assert isinstance(keys, str)
 
 
-def test_about_to_string():
-    """Get the about data into a string format and exclude one key"""
+def test_about_to_string_exclude_key():
+    """Get the about data into a string format and exclude one key."""
     keys = about.about_to_string(exclude=['Machine'])
     assert 'Machine' not in keys
 
@@ -68,7 +68,7 @@ class TestAboutWidget:
             assert _widget.property('link') == link.repr
 
     def test_about_buttons(self, qtbot):
-        """Test if about buttons are enabled"""
+        """Test if about buttons are enabled."""
         widget = about_widget.AboutWidget()
         qtbot.addWidget(widget)
 

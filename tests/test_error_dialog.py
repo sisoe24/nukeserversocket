@@ -16,7 +16,7 @@ def log_path(package):
 
 
 def test_error_dialog_prepare_report(qtbot):
-    """Check if error dialog returns the issues path when clicking Report bug."""
+    """Check if error dialog returns the issues link when clicking Report."""
     widget = error_dialog.ErrorDialog('Test Error')
     qtbot.addWidget(widget)
 
