@@ -159,7 +159,7 @@ class TestNukeSe:
 
         yield se_editor
 
-    def test_get_run_button(self, editor):
+    def test_get_script_editor(self, editor):
         """Check if script editor was found."""
         assert isinstance(editor._find_script_editor(), QWidget)
 
@@ -167,15 +167,15 @@ class TestNukeSe:
         """Check if run button was found."""
         assert isinstance(editor._find_run_button('Run'), QPushButton)
 
-    def _find_input_widget(self, editor):
+    def test_find_input_widget(self, editor):
         """Check if input editor widget was found."""
         assert isinstance(editor._find_input_widget(), QPlainTextEdit)
 
-    def _find_output_widget(self, editor):
+    def test_find_output_widget(self, editor):
         """Check if output editor widget was found."""
         assert isinstance(editor._find_output_widget(), QTextEdit)
 
-    def _find_console(self, editor):
+    def test_find_console(self, editor):
         """Check if run button was found."""
         assert isinstance(editor._find_console(), QSplitter)
 
