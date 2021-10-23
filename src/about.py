@@ -3,6 +3,7 @@
 from __future__ import print_function, with_statement
 
 import os
+import re
 import platform
 
 from collections import namedtuple
@@ -39,14 +40,10 @@ def _get_package_name():
 
 
 def _get_package_version():
-    """Get package version. If no file return empty string."""
-    file = join(_get_root(), 'VERSION')
-
-    if exists(file):
-        with open(file) as file:
-            return file.read()
-
-    return ''
+    """Get package version from pyproject.toml."""
+    path = os.path.join(_get_root(), 'pyproject.toml')
+    with open(path) as file:
+        return re.search(r'(?<=version = ").+(?=")', file.read()).group()
 
 
 PACKAGE = _get_package_name()
