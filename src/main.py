@@ -55,7 +55,7 @@ class MainWindowWidget(QWidget):
     a higher level logic of user interaction when clicking the various buttons.
     """
 
-    def __init__(self, parent=None):
+    def __init__(self):
         """Init method for MainWindowWidget."""
         QWidget.__init__(self)
         LOGGER.debug('Main :: init')
@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
         self.setStatusBar(self.status_bar)
 
         try:
-            main_widgets = main_widget(self)
+            main_widgets = main_widget()
         except Exception as err:
             ErrorDialog(err, self).show()
             LOGGER.critical(err, exc_info=True)

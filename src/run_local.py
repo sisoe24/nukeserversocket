@@ -50,14 +50,14 @@ class SecondFakeScriptEditor(QWidget):
 class _MainWindowWidget(QWidget):
     """Main window widget that holds the main app and the fake script editor."""
 
-    def __init__(self, parent=None):
+    def __init__(self):
         """Init method for the _MainWindowWidget class."""
         QWidget.__init__(self)
         LOGGER.debug('RUN APP :: INIT')
 
         se_name = 'uk.co.thefoundry.scripteditor.1'
         self.script_editor = FakeScriptEditor(se_name)
-        self.main_app = MainWindowWidget(parent)
+        self.main_app = MainWindowWidget()
 
         _layout = QVBoxLayout()
         _layout.addWidget(self.main_app)
