@@ -22,61 +22,59 @@ def test_about_python_version():
 
 
 def test_get_about_missing_key():
-    """Get a key from the about dictionary."""
+    """Get a key that is not present in about dictionary."""
     key = about.get_about_key('Maya')
     assert key == ''
 
 
 def test_about_to_string():
-    """Get the about data into a string format."""
+    """Check if the about data is converted into a string."""
     keys = about.about_to_string()
     assert isinstance(keys, str)
 
 
 def test_about_to_string_exclude_key():
-    """Get the about data into a string format and exclude one key."""
-    keys = about.about_to_string(exclude=['Machine'])
-    assert 'Machine' not in keys
+    """Get the about data in string format and exclude one key."""
+    keys = about.about_to_string(exclude=['Python'])
+    assert 'Python' not in keys
 
 
 LINKS = about.about_links()
 
 
-class TestAboutWidget:
-    """Test AboutWidget class."""
+@pytest.fixture()
+def _about_widget(qtbot):
+    """Initiate about widget class."""
+    widget = about_widget.AboutWidget()
+    qtbot.addWidget(widget)
+    yield widget
 
-    def test_about_form(self, qtbot):
-        """Test if the form layout has the proper about information."""
-        widget = about_widget.AboutWidget()
-        qtbot.addWidget(widget)
 
-        about_list = []
-        for label in about.about():
-            about_list.append(label.label)
-            about_list.append(label.repr)
+def test_about_form(_about_widget):
+    """Test if the form layout has the proper about information."""
+    about_list = []
+    for label in about.about():
+        about_list.append(label.label)
+        about_list.append(label.repr)
 
-        for index, item in enumerate(about_list):
-            _widget = widget._form_layout.itemAt(index).widget()
-            assert item == _widget.text()
+    for index, item in enumerate(about_list):
+        _widget = _about_widget._form_layout.itemAt(index).widget()
+        assert item == _widget.text()
 
-    def test_about_grid(self, qtbot):
-        """Test if grid layout has the proper about information."""
-        widget = about_widget.AboutWidget()
-        qtbot.addWidget(widget)
 
-        for index, link in enumerate(LINKS):
-            _widget = widget._grid_layout.itemAt(index).widget()
-            assert _widget.text() == link.label
-            assert _widget.property('link') == link.repr
+def test_about_grid(_about_widget):
+    """Test if grid layout has the proper about information."""
+    for index, link in enumerate(LINKS):
+        _widget = _about_widget._grid_layout.itemAt(index).widget()
+        assert _widget.text() == link.label
+        assert _widget.property('link') == link.repr
 
-    def test_about_buttons(self, qtbot):
-        """Test if about buttons are enabled."""
-        widget = about_widget.AboutWidget()
-        qtbot.addWidget(widget)
 
-        for index, _ in enumerate(LINKS):
-            _widget = widget._grid_layout.itemAt(index).widget()
-            assert _widget.isEnabled()
+def test_about_buttons(_about_widget):
+    """Test if about buttons are enabled."""
+    for index, _ in enumerate(LINKS):
+        _widget = _about_widget._grid_layout.itemAt(index).widget()
+        assert _widget.isEnabled()
 
 
 @pytest.mark.web
