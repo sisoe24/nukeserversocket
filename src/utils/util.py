@@ -103,45 +103,20 @@ def pyEncoder(text):
 
 
 def get_ip():
-    """Return the network ip to show to user.
+    """Return the local network ip address.
 
-    Method will try to get the first address using Qt modules and then using
-    python socket module.
+    Get ip network with python socket modules. If socket error happens, then
+    will return the local host `127.0.0.1`.
 
     Returns:
-        (str): a str with the ip address. Could be more than one in that case
-        will have the format: `first_address or second_address`
+        str: network ip address (eg. 192.168.1.60)
     """
-    def _get_ip_qt():
-        """Get ip network with Qt modules.
-
-        Doesn't work on Nuke 11 as QNetworkInterface doesn't not have .isglobal
-        """
-        # TODO: should probably delete this
-        return [
-            address.toString()
-            for address in QNetworkInterface().allAddresses()
-            if address.isGlobal()
-        ]
-
-    def _get_ip_py():
-        """Get ip network with python socket modules."""
-        _socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        try:
-            _socket.connect(('10.255.255.255', 1))
-            ip, _ = _socket.getsockname()
-        except Exception:
-            ip = '127.0.0.1'
-        finally:
-            _socket.close()
-        return [ip]
-
-    # Nuke11 doesn't have Network.isGlobal()
+    _socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        ip1 = _get_ip_qt()
-    except AttributeError:
-        ip1 = []
-
-    ip2 = _get_ip_py()
-
-    return ' or '.join(list(set(ip1).union(ip2)))
+        _socket.connect(('10.255.255.255', 1))
+        ip, _ = _socket.getsockname()
+    except socket.error:
+        ip = '127.0.0.1'
+    finally:
+        _socket.close()
+    return ip
