@@ -8,7 +8,7 @@ from src.widgets import LogWidgets
 
 
 @pytest.fixture()
-def log_obj(qtbot):
+def _log_widget(qtbot):
     """Create a log widget object.
 
     After tests, will clear the log text.
@@ -22,18 +22,24 @@ def log_obj(qtbot):
         box.text_box.clear()
 
 
-@pytest.mark.parametrize('log_methods',
-                         ('set_status_text',
-                          'set_received_text',
-                          'set_output_text'),
-                         ids=['status', 'received', 'output'])
-def test_log_widgets(log_methods, log_obj):
-    """Test that log widgets receive text.
+def match_log_text(text, string):
+    """Match the log text output format."""
+    return re.match(r'\[\d\d:\d\d:\d\d\] ' + text, string)
 
-    This method is a bit of a hack for no good reason. should change it.
-    """
-    set_method = getattr(log_obj, log_methods)
-    set_method(log_methods)
 
-    log_output = getattr(log_obj, log_methods.replace('set_', ''))
-    assert re.match(r'\[\d\d:\d\d:\d\d\] ' + log_methods, log_output)
+def test_status_widget(_log_widget):
+    """Check the status log widget text."""
+    _log_widget.set_status_text('hello')
+    assert match_log_text('hello', _log_widget.status_text)
+
+
+def test_received_widget(_log_widget):
+    """Check the received log widget text."""
+    _log_widget.set_received_text('hello')
+    assert match_log_text('hello', _log_widget.received_text)
+
+
+def test_output_widget(_log_widget):
+    """Check the output log widget text."""
+    _log_widget.set_output_text('hello')
+    assert match_log_text('hello', _log_widget.output_text)
