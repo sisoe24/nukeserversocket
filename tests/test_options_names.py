@@ -12,36 +12,52 @@ import pytest
 from src.widgets import settings_widget
 
 
-@pytest.fixture()
-def options_name(qtbot):
-    """Get the options name from the SettingsWidget."""
-    settings = settings_widget.SettingsWidget()
-    checkboxes = settings.findChildren(settings_widget.CheckBox)
-    return [x.text().lower().replace(' ', '_') for x in checkboxes]
+def _uses_settings(file):
+    """Check if file imports AppSettings class.
+
+    Returns:
+        bool: True if it does, False otherwise.
+    """
+    with open(file) as src_file:
+        return bool(re.search('AppSettings', src_file.read()))
 
 
-def traverse_dir(package):
+def _traverse_dir(package):
     """Traverse the package directory in search for a python file."""
     for dirpath, _, filenames in os.walk(package):
         for filename in filenames:
-            if filename.endswith('py'):
-                fp = os.path.join(dirpath, filename)
+            fp = os.path.join(dirpath, filename)
+            if filename.endswith('py') and _uses_settings(fp):
                 yield fp
 
 
-# TODO: make this parametrized
+def _get_options_keys(file):
+    """Get all of the options reference inside the source file.
+
+    Returns:
+        list: list with all of the options reference found.
+    """
+    with open(file) as src_file:
+        return re.findall(r'(?<=options/)\w+', src_file.read())
+
+
+@pytest.fixture()
+def options_name(qtbot):
+    """Get the options name from the SettingsWidget."""
+    widget = settings_widget.SettingsWidget()
+    qtbot.addWidget(widget)
+
+    checkboxes = widget.findChildren(settings_widget.CheckBox)
+    return [x.text().lower().replace(' ', '_') for x in checkboxes]
+
 
 def test_options_names(package, options_name):
     """Test that options name are valid.
 
-    Search for the files that are using the settings system, and confirm that
-    the options name are valid.
+    Search for the files that are using the setting system, and confirm that
+    names are valid.
     """
-    for file in traverse_dir(package):
-        with open(file) as f:
-            content = f.read()
-            if re.search(r'AppSettings', content):
-                opts = re.findall(r'(?<=options/)\w+', content)
-                for opt in opts:
-                    msg = 'Option name was not update in file: {}'.format(file)
-                    assert opt in options_name, msg
+    for file in _traverse_dir(package):
+        for opt in _get_options_keys(file):
+            msg = 'Option name was not update in file: {}'.format(file)
+            assert opt in options_name, msg
