@@ -64,6 +64,14 @@ class ScriptEditorController():
         """Get output from the nuke internal script editor."""
         return self.script_editor.output_widget.document().toPlainText()
 
+    def clear_input(self):
+        """Delete all the text in the text edit."""
+        self.script_editor.input_widget.document().clear()
+
+    def clear_output(self):
+        """Delete all the text in the text edit."""
+        self.script_editor.output_widget.document().clear()
+
     def execute(self):
         """Abstract method for executing code from script editor."""
         self.script_editor.execute()
