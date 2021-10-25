@@ -9,6 +9,8 @@ STRING = 'nss test msg'
 TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
 
+# pytestmark = pytest.mark.connection
+
 
 def _socket_send(data):
     """Create a socket to send data.
@@ -78,6 +80,7 @@ def test_data_is_invalid(data, qtbot, _check_log_widget):
 
 @pytest.fixture()
 def _send_test_msg(_main_ui):
+    """Send a test message from TestClient."""
     _main_ui._send_test()
 
 

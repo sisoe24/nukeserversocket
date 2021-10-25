@@ -11,6 +11,8 @@ from src.connection import QServer
 
 RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 
+pytestmark = pytest.mark.connection
+
 
 @six.add_metaclass(ABCMeta)
 class BaseUIElements():
@@ -245,7 +247,9 @@ class TestGuiIsSenderMode(GuiApp, BaseUIElements):
         # TODO: changing port to the default port will not write to config file
 
         ip_entry = _main_ui.connections.ip_entry
+        print("➡ ip_entry :", ip_entry.text())
         ip_entry.setText(RANDOM_IP)
+        print("➡ ip_entry :", ip_entry.text())
 
     def test_send_local_ip(self, _change_ip_entry,  tmp_settings_file):
         """Check if `local_ip` is saved correctly in config when changed."""
@@ -259,15 +263,12 @@ class TestGuiIsSenderMode(GuiApp, BaseUIElements):
         assert settings_values == RANDOM_IP
 
 
-def test_not_connected_label(_main_ui):
+def test_not_connected_label(_main_ui, _start_server):
     """Check UI label when not able to connect.
 
     Method will start a connection and then try to start a new one. This should
     set the UI status label to 'Not Connected' because it couldn't connect.
     """
-    s = QServer()
-    s.start_server()
-
     # start second connection from UI
     _main_ui.toggle_connection(True)
     assert _main_ui.connections._is_connected.text() == 'Not Connected'

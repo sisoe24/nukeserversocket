@@ -1,10 +1,9 @@
 """Test Port Widget module."""
-import time
 import configparser
 
 import pytest
 
-from src.connection import QServer, nss_client
+from src.connection import nss_client
 from src.widgets.connections_widget import TcpPort
 from src.utils import AppSettings
 
@@ -12,12 +11,6 @@ from src.utils import AppSettings
 def _port_in_range(value):
     """Return True if port is in expected range."""
     return 49512 <= value <= 65535
-
-
-def test_default_value_server():
-    """Test port default value if no settings.ini is found."""
-    server_port = QServer().tcp_port
-    assert server_port == 54321
 
 
 def test_default_value_client():
