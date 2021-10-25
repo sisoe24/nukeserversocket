@@ -31,34 +31,6 @@ def auto_start_connection(_start_connection):
     """Auto start connection for each test."""
 
 
-@pytest.fixture()
-def _check_log_widget(_main_ui):
-    """Check if log text has message based on connection status."""
-    # TODO: not sure if this is more confusing to understand than writing a
-    # method to each test that checks the log.
-
-    def _inspect_log(log, msg):
-        """Inspect the various log widget text.
-
-        Asserts if msg is inside the log text.
-
-        Args:
-            log (str): the name of the log widget to inspect. Valid names are:
-            `status`, `received` and `output`.
-            msg (str): the message to check inside the log.
-        """
-        if log == 'status':
-            log = _main_ui.log_widgets.status_text
-        elif log == 'received':
-            log = _main_ui.log_widgets.received_text
-        elif log == 'output':
-            log = _main_ui.log_widgets.output_text
-
-        assert msg in log
-
-    return _inspect_log
-
-
 def test_data_has_json_error(_check_log_widget, qtbot):
     """Check status log text when data has json error."""
     # Data will have a missing enclosing quote

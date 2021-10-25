@@ -65,23 +65,6 @@ def test_transfer_dir_exists(_transfer_node_file):
     assert os.path.exists(os.path.dirname(_transfer_node_file))
 
 
-def test_send_was_successful(_main_ui, qtbot, _start_server):
-    """Check if nodes were sent with success.
-
-    This will only work if there is another instance connected that listens for
-    incoming nodes.
-    """
-    nodes_client = _main_ui._send_nodes()
-
-    def check_status():
-        """Wait for the status to register the transfer."""
-        log = _main_ui.log_widgets.status_text
-        assert 'Connection successful {}:{}'.format('127.0.0.1', 54321) in log
-
-    qtbot.waitUntil(check_status, timeout=10000)
-    nodes_client._disconnect()
-
-
 def test_received_was_successful(_main_ui, qtbot):
     """Check if nodes were received with success."""
     _main_ui.toggle_connection(True)
@@ -107,23 +90,23 @@ def _nodes_client(_main_ui):
     nodes_client._disconnect()
 
 
-def test_send_was_not_successful(qtbot, _main_ui,  _nodes_client):
+def test_send_was_successful(qtbot, _start_server, _check_log_widget, _nodes_client):
+    """Check if nodes were sent with success.
+
+    This will only work if there is another instance connected that listens for
+    incoming nodes.
+    """
+    msg = 'Connection successful {}:{}'.format('127.0.0.1', 54321)
+    qtbot.waitUntil(lambda: _check_log_widget('status', msg))
+
+
+def test_send_was_not_successful(qtbot, _check_log_widget,  _nodes_client):
     """Emit connection timeout."""
     _nodes_client._connection_timeout()
-
-    def check_status():
-        """Wait for the status to register the transfer"""
-        assert 'Connection timeout.' in _main_ui.log_widgets.status_text
-
-    qtbot.waitUntil(check_status, timeout=10000)
+    qtbot.waitUntil(lambda: _check_log_widget('status', 'Connection timeout.'))
 
 
-def test_send_was_error(qtbot, _main_ui, _nodes_client):
+def test_send_was_error(qtbot, _main_ui, _nodes_client, _check_log_widget):
     """Emit connection error."""
     _nodes_client.on_error('test error')
-
-    def check_status():
-        """Wait for the status to register the transfer"""
-        assert 'Error: ' in _main_ui.log_widgets.status_text
-
-    qtbot.waitUntil(check_status, timeout=10000)
+    qtbot.waitUntil(lambda: _check_log_widget('status', 'Error:'))
