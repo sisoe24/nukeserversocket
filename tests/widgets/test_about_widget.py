@@ -6,6 +6,7 @@ import pytest
 import requests
 
 from src import about
+from src.utils import pyEncoder
 from src.widgets import about_widget
 
 
@@ -30,8 +31,9 @@ def test_get_about_missing_key():
 def test_about_to_string():
     """Check if the about data is converted into a string."""
     keys = about.about_to_string()
-    # TODO: this will fail for python 2 because it returns unicode and not str
-    assert isinstance(keys, str)
+    # calling pyEncoder because this will fail for python 2 as it returns
+    # unicode and not str
+    assert isinstance(pyEncoder(keys), str)
 
 
 def test_about_to_string_exclude_key():
