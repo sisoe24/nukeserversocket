@@ -153,18 +153,28 @@ class MainWindowWidget(QWidget):
         self._enable_connection_mod(True)
 
     def _send_nodes(self):
-        """Send the selected Nuke Nodes using the internal client."""
+        """Send the selected Nuke Nodes using the internal client.
+
+        Returns:
+            SendNodesClient: SendNodesClient object.
+        """
         self._node_client = SendNodesClient()
         self._node_client.state_changed.connect(
             self.log_widgets.set_status_text)
         self._node_client.connect_to_host()
+        return self._node_client
 
     def _send_test(self):
-        """Send a test message using the internal client."""
+        """Send a test message using the internal client.
+
+        Returns:
+            SendTestClient: SendTestClient object.
+        """
         self._test_client = SendTestClient()
         self._test_client.state_changed.connect(
             self.log_widgets.set_status_text)
         self._test_client.connect_to_host()
+        return self._test_client
 
 
 class MainWindow(QMainWindow):
