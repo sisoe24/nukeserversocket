@@ -238,6 +238,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "six"
+version = "1.16.0"
+description = "Python 2 and 3 compatibility utilities"
+category = "dev"
+optional = false
+python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -289,7 +297,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "~3.7.7"
-content-hash = "459836fd176e15adce9f201bcd3b9c28eb242a8f8f59eed289a10de80cc07ec9"
+content-hash = "7fb75590758696926663a589e800da65491f91f1c5341b6607be1643dfc5193f"
 
 [metadata.files]
 atomicwrites = [
@@ -410,6 +418,10 @@ shiboken2 = [
     {file = "shiboken2-5.12.2-5.12.2-cp35.cp36.cp37-abi3-manylinux1_x86_64.whl", hash = "sha256:1572ee14e4670980815b875d05fa7db6aabba9ea47dc00a236bb09c85afb039b"},
     {file = "shiboken2-5.12.2-5.12.2-cp35.cp36.cp37-none-win32.whl", hash = "sha256:1ee2d5865e5a19091df8e86b88c352ee643629aede0b4532ae05efba2e5bd2c2"},
     {file = "shiboken2-5.12.2-5.12.2-cp35.cp36.cp37-none-win_amd64.whl", hash = "sha256:042323f03910c8fec32bd94221f72f951521ab5ca9568f780ca5d52d39e2d997"},
+]
+six = [
+    {file = "six-1.16.0-py2.py3-none-any.whl", hash = "sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"},
+    {file = "six-1.16.0.tar.gz", hash = "sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

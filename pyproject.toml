@@ -17,6 +17,7 @@ pytest-qt = "~4.0.2"
 requests = "~2.26.0"
 pytest-cov = "~3.0.0"
 pytest-randomly = "^3.10.1"
+six = "^1.16.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
