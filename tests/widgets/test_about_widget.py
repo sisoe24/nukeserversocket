@@ -30,6 +30,7 @@ def test_get_about_missing_key():
 def test_about_to_string():
     """Check if the about data is converted into a string."""
     keys = about.about_to_string()
+    # TODO: this will fail for python 2 because it returns unicode and not str
     assert isinstance(keys, str)
 
 

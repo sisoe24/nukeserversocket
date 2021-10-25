@@ -249,6 +249,8 @@ class TestGuiIsSenderMode(GuiApp, BaseUIElements):
 
     def test_send_local_ip(self, _change_ip_entry,  tmp_settings_file):
         """Check if `local_ip` is saved correctly in config when changed."""
+        # TODO: some its right about the config parser. some times it does not find
+        # the value server
         config = configparser.ConfigParser()
         config.read(tmp_settings_file)
 

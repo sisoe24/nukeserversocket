@@ -22,10 +22,16 @@ def _app_settings():
 def _py_controller(_init_fake_editor):
     """Initialize the PyController Class.
 
-    The FakeScriptEditor class must be created before.
+    Before and after each tests, clear the text widgets.
     """
     controller = nse._PyController('path/to/file.py')
+    controller.clear_output()
+    controller.clear_input()
+
     yield controller
+
+    controller.clear_output()
+    controller.clear_input()
 
 
 def _show_path_settings():
