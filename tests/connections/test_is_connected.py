@@ -81,7 +81,9 @@ def test_data_is_invalid(data, qtbot, _check_log_widget):
 @pytest.fixture()
 def _send_test_msg(_main_ui):
     """Send a test message from TestClient."""
-    _main_ui._send_test()
+    test_client = _main_ui._send_test()
+    yield
+    test_client._disconnect()
 
 
 def test_tester_message_status(qtbot, _send_test_msg, _check_log_widget):
