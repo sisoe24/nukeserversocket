@@ -11,6 +11,8 @@ import pytest
 
 from src.widgets import settings_widget
 
+pytestmark = pytest.mark.settings_name
+
 
 def _uses_settings(file):
     """Check if file imports AppSettings class.
