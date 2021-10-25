@@ -23,8 +23,6 @@ def _nuke_editor(_init_fake_editor):
     Tests in this class need to clean the editor cache each time.
     """
     se_editor = nuke_se.NukeScriptEditor()
-
-    # TODO: might raise an error in python2 if clear method is not avaliable
     nuke_se.editors_widgets.clear()
 
     yield se_editor
