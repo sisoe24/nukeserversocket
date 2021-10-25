@@ -2,6 +2,7 @@
 import os
 
 import pytest
+from src.connection.nss_server import QServer
 
 from src.utils import settings
 from src.script_editor import nuke_se
@@ -20,8 +21,12 @@ def pytest_addoption(parser):
 
 def pytest_configure(config):
     """Add pytest new configurations."""
+    config.addinivalue_line(
+        'markers', 'connection: test modules that deal with connection')
     config.addinivalue_line('markers', 'web: validate web link')
     config.addinivalue_line('markers', 'quicktest: quick test methods')
+    config.addinivalue_line(
+        'markers', 'settings_name: test system options name')
 
 
 def pytest_collection_modifyitems(config, items):
@@ -37,41 +42,41 @@ def pytest_collection_modifyitems(config, items):
 
 
 @pytest.fixture(scope='session')
-def package():
-    """Package directory path."""
+def _package():
+    """Package directory path.
+
+    Method will also create a tmp directory if not already present.
+
+    Yields:
+        str: path of the _package root.
+    """
     current_dir = os.path.dirname(__file__)
     package_dir = os.path.abspath(os.path.dirname(current_dir))
-    yield package_dir
 
-
-@pytest.fixture(scope='session')
-def tmp_settings_file(package):
-    """Temporary settings file path."""
-    tmp_dir = os.path.join(package, 'tests', 'tmp')
-
+    tmp_dir = os.path.join(current_dir, 'tmp')
     if not os.path.exists(tmp_dir):
         os.mkdir(tmp_dir)
 
-    file = os.path.join(tmp_dir, 'fake_ini.ini')
+    yield package_dir
 
-    with open(file, 'w') as _:
-        pass
 
+@pytest.fixture()
+def _tmp_settings_file(_package):
+    """Temporary settings file path. """
+    file = os.path.join('tests', 'tmp', 'fake_ini.ini')
     yield file
-
     # os.remove(file)
 
 
 @pytest.fixture(autouse=True)
-def patch_settings(tmp_settings_file, monkeypatch):
+def patch_settings(_tmp_settings_file, monkeypatch):
     """Patch CONFIG_FILE path with new fake settings file."""
-    monkeypatch.setattr(settings, 'CONFIG_FILE', tmp_settings_file)
-    monkeypatch.setattr(nuke_se, 'editors_widgets', {})
+    monkeypatch.setattr(settings, 'CONFIG_FILE', _tmp_settings_file)
     yield
 
 
 @pytest.fixture()
-def ui(qtbot):
+def _main_ui(qtbot):
     """Initialize Main UI Widget."""
     widget = _MainWindowWidget()
     qtbot.addWidget(widget)
@@ -79,17 +84,14 @@ def ui(qtbot):
     yield widget.main_app
 
 
-@pytest.fixture()
-def start_connection(ui):
-    """Click the connect button of the UI and enter in the connected state."""
-    ui.connect_btn.setChecked(True)
+@pytest.fixture(autouse=True)
+def _clean_settings(_tmp_settings_file):
+    """Clean settings file before and after each test."""
+    def _clean_file():
+        """Clean file."""
+        with open(_tmp_settings_file, 'w') as _:
+            pass
+
+    _clean_file()
     yield
-    ui.connect_btn.setChecked(False)
-
-
-@pytest.fixture()
-def init_fake_editor(qtbot):
-    """Initialize the FakeScriptEditor class."""
-    widget = FakeScriptEditor()
-    qtbot.addWidget(widget)
-    yield widget
+    _clean_file()
