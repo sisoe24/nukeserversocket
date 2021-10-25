@@ -112,7 +112,7 @@ class _PyController(ScriptEditorController, object):
     @classmethod
     def _clear_history(cls):
         """Clear the history list."""
-        cls.history = []
+        del cls.history[:]
 
     @classmethod
     def _append_output(cls, output_text):  # type: (str) -> None
