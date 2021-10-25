@@ -9,53 +9,84 @@ from src.utils import AppSettings
 from src.script_editor import nuke_se_controllers as nse
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
-
 SAMPLE_WORD = 'NukeServerSocket'
-SAMPLE_TEXT = 'Random Code Result: {}'.format(SAMPLE_WORD)
 
 
 @pytest.fixture()
-def settings(scope='session'):
+def _app_settings():
     """Initiate the application settings class."""
     yield AppSettings()
 
 
 @pytest.fixture()
-def py_controller(init_fake_editor):
-    """Get the PyController Class."""
+def _py_controller(_init_fake_editor):
+    """Initialize the PyController Class.
+
+    The FakeScriptEditor class must be created before.
+    """
     controller = nse._PyController('path/to/file.py')
     yield controller
 
 
-def show_path_settings():
-    """Create a namedtuple with show_file settings values."""
-    ShowPath = namedtuple('ShowPath', ['setting', 'expected'])
+def _show_path_settings():
+    """Create a namedtuple with show_file settings values.
+
+    Values will be:
+        * state: True, expected: 'path/to/file.py'
+        * state: False, expected: 'file.py'
+
+    Returns:
+        tuple[ShowPath, ShowPath]: ShowPath tuple with key: settings, expected.
+    """
+    ShowPath = namedtuple('ShowPath', ['state', 'expected'])
     return (ShowPath(True, 'path/to/file.py'), ShowPath(False, 'file.py'))
 
 
-@pytest.mark.parametrize('show_path', show_path_settings(),
+@pytest.mark.parametrize('setting', _show_path_settings(),
                          ids=['fullpath', 'basename'])
-def test_show_filename(show_path, settings, py_controller):
-    """Check if file path is displayed correctly based on settings."""
-    settings.setValue('options/show_file_path', show_path.setting)
-    assert py_controller._show_file() == show_path.expected
+def test_show_filename(setting, _app_settings, _py_controller):
+    """Check if file path is displayed correctly based on settings.
+
+    If settings if True, should display full path of the file. If False only
+    the basename.
+    """
+    _app_settings.setValue('options/show_file_path', setting.state)
+    assert _py_controller._show_file() == setting.expected
 
 
 @pytest.mark.parametrize('msg', ['RandomCode Result: Hello', 'Hello'],
                          ids=['With Result', 'No Result'])
-def test_clean_output(py_controller, msg):
-    """Check if output text is getting cleaned from Result."""
-    assert py_controller._clean_output(msg) == 'Hello'
+def test_clean_output(_py_controller, msg):
+    """Check if output text is getting cleaned from Result.
+
+    When `Result: Hello` is present, clean output should return only Hello. If
+    output is only `Hello`, clean output should do nothing
+    """
+    assert _py_controller._clean_output(msg) == 'Hello'
 
 
 def output_format_settings():
-    """Create a series of settings to test the output format."""
+    """Create a series of settings combinations to test the output format.
+
+    Create a namedtuple with the following keys:
+        * show_file: Show File setting state.
+        * show_unicode: Show Unicode setting state.
+        * pattern: The pattern that should match the output.
+
+    Returns:
+        tuple[Format, Format, Format, Format]
+    """
     def pattern(s):
-        """Generate a pattern."""
+        r"""Generate the pattern for the test.
+
+        Pattern: `[timestamp] [NukeTools] \nNukeServerSocket
+        """
         return BEGIN_PATTERN + s + '\n' + SAMPLE_WORD
 
-    Format = namedtuple('Format', ['show_file', 'show_unicode', 'pattern'])
+    # unicode must be created like this for py 2/3 compatibility.
     unicode = u'\u21B4'
+
+    Format = namedtuple('Format', ['show_file', 'show_unicode', 'pattern'])
     return (
         Format(True, True, pattern(r'path/to/file\.py ' + unicode)),
         Format(True, False, pattern(r'path/to/file\.py ')),
@@ -67,120 +98,187 @@ def output_format_settings():
 @pytest.mark.parametrize('output', output_format_settings(),
                          ids=['filepath + unicode', 'filepath no unicode',
                               'filename + unicode', 'filename no unicode'])
-def test_output_format(py_controller, settings, output):
-    """Test various format output settings."""
-    settings.setValue('options/show_file_path', output.show_file)
-    settings.setValue('options/show_unicode', output.show_unicode)
+def test_output_format(_py_controller, _app_settings, output):
+    """Test a combinations of settings to see if output matches."""
+    _app_settings.setValue('options/show_file_path', output.show_file)
+    _app_settings.setValue('options/show_unicode', output.show_unicode)
 
-    result = py_controller._format_output(SAMPLE_TEXT)
+    result = _py_controller._format_output(SAMPLE_WORD)
     assert re.match(output.pattern, result)
 
 
-def test_append_output(py_controller):
+def test_append_output(_py_controller):
     """Append output to history list."""
-    py_controller._append_output(SAMPLE_TEXT)
-    assert py_controller.history == [SAMPLE_TEXT]
+    # TODO: when randomly testing, this could have some values left from the
+    # tests bellow that append to history.
+    _py_controller._append_output(SAMPLE_WORD)
+    assert len(_py_controller.history) >= 1
 
 
-def test_clear_history(py_controller):
+def test_clear_history(_py_controller):
     """Clear history."""
-    py_controller._clear_history()
-    assert py_controller.history == []
+    _py_controller._append_output(SAMPLE_WORD)
+    _py_controller._clear_history()
+    assert len(_py_controller.history) == 0
+
+
+@pytest.mark.skip(reason='not implemented')
+def test_history_size():
+    """Test history clean last element if too big."""
 
 
 @pytest.fixture()
-def override_input_editor(py_controller, settings):
-    """Override input editor fixture factory."""
+def _overwrite_input_editor(_py_controller, _app_settings):
+    """Overwrite input editor fixture factory.
 
-    def _override_input_editor(value):
-        """Set input editor to initial state."""
-        settings.setValue('options/override_input_editor', value)
-        py_controller.restore_input()
-        return py_controller.input()
+    Set the controller input to the SAMPLE_TEXT var: 'NukeServerSocket' and
+    initiate the restore state.
+    """
+    def _init_restore(value, text):
+        """Set setting value and check get input editor text.
 
-    py_controller.set_input(SAMPLE_TEXT)
-    return _override_input_editor
+        Args:
+            text (str): text to insert in the input editor.
+            value (bool): True if input will be overwritten, False otherwise.
+
+        Returns:
+            str: the controller input text.
+        """
+        _py_controller.set_input(text)
+        _app_settings.setValue('options/override_input_editor', value)
+        _py_controller.restore_input()
+        return _py_controller.input()
+
+    return _init_restore
 
 
-def test_restore_input(override_input_editor, py_controller):
-    """Check if input was restored."""
-    input_text = override_input_editor(False)
-    assert input_text == py_controller.initial_input
+@pytest.mark.quicktest
+def test_restore_input(_overwrite_input_editor, _py_controller):
+    """Check if input was restored.
+
+    After execution, input editor should be restored to the initial state. The
+    initial text is set from the FakeScriptEditor: 'Hello from Fake SE'.
+    """
+    input_text = _overwrite_input_editor(False, SAMPLE_WORD)
+    assert input_text == _py_controller.initial_input
 
 
-def test_override_input(override_input_editor):
-    """Check if input was overridden."""
-    input_text = override_input_editor(True)
-    assert input_text == SAMPLE_TEXT
+def test_overwrite_input(_overwrite_input_editor):
+    """Check if input editor was overwritten.
+
+    After execution, input editor should retain the executed code.
+    """
+    input_text = _overwrite_input_editor(True, SAMPLE_WORD)
+    assert input_text == SAMPLE_WORD
 
 
 @pytest.fixture()
-def output_to_console(py_controller, settings):
-    """Restore output fixture factory."""
+def _output_to_console(_py_controller, _app_settings):
+    """Output to console fixture factory."""
+    def _restore_output(value, text):
+        """Execute code and restore output.
 
-    def _restore_output(value):
-        """Set output editor to initial state."""
-        py_controller.set_input("print('{}'.upper())".format(SAMPLE_WORD))
-        py_controller.execute()
+        Set the input to be executed, then set the value that decides if output
+        will be restored and get the output content.
 
-        settings.setValue('options/output_to_console', value)
-        py_controller.restore_output()
+        Args:
+            value (bool): True if sending output to console, False otherwise.
+            text (str): text to execute. Text will be execute in the expression
+            `print('text')`.
 
-        return py_controller.output()
+        Returns:
+            str: the output editor text.
+        """
+        _py_controller.set_input("print('{}')".format(text))
+        _py_controller.execute()
+
+        _app_settings.setValue('options/output_to_console', value)
+        _py_controller.restore_output()
+
+        return _py_controller.output()
 
     return _restore_output
 
 
-def test_format_text_settings(output_to_console, settings):
-    """Test format text options."""
-    settings.setValue('options/format_text', False)
-    output = output_to_console(True)
+def test_format_text_settings(_output_to_console, _app_settings):
+    """Test Format Text option.
 
-    assert output.startswith(SAMPLE_WORD.upper())
+    If Format Text is false, then console output should be a simple string.
+    """
+    _app_settings.setValue('options/format_text', False)
+    output = _output_to_console(True, SAMPLE_WORD)
 
-    settings.setValue('options/format_text', True)
-
-
-def test_restore_output(output_to_console, settings):
-    """Check if output was sent to console."""
-    output = output_to_console(True)
-    unicode = u'\u21B4'
-    output_pattern = BEGIN_PATTERN + r'.+?py (' + unicode + r')?\n'
-    assert re.search(output_pattern + SAMPLE_WORD.upper(), output)
+    assert output.startswith(SAMPLE_WORD)
 
 
-def test_override_output(output_to_console, py_controller):
-    """Check if output was not sent to console."""
-    output = output_to_console(False)
-    assert output == py_controller.initial_output
+def test_restore_output(_output_to_console, _app_settings):
+    """Check if output was sent to console.
+
+    If Output to console is true, then so it should be for the format text
+    (unless specified otherwise), so the output should return the formatted
+    string.
+
+    Method will also set the `show_file_path` and `show_unicode` settings to
+    False for simpler pattern match.
+    """
+    _app_settings.setValue('options/show_file_path', False)
+    _app_settings.setValue('options/show_unicode', False)
+
+    output = _output_to_console(True, SAMPLE_WORD)
+
+    output_pattern = BEGIN_PATTERN + r'file.py \n' + SAMPLE_WORD
+    assert re.match(output_pattern, output)
+
+
+def test_override_output(_output_to_console, _py_controller):
+    """Check if output was not sent to console.
+
+    After execution, output editor should be restored with the initial text: an
+    empty string.
+    """
+    output = _output_to_console(False, SAMPLE_WORD)
+    assert output == _py_controller.initial_output
 
 
 @pytest.fixture()
-def clear_output(output_to_console, settings):
+def _clear_output(_output_to_console, _app_settings):
     """Clear output console.
 
-    Execute code a two times to check if based on clear_output settings, the
-    widget will register the clean.
+    After executing code, setting Clear Output should clear the output based on
+    its state.
     """
-    def _clear_output(value):
-        """Return True if there is only one line, False otherwise."""
-        settings.setValue('options/clear_output', value)
+    def _execute_output(value):
+        """Execute code twice.
+
+        Args:
+            value (bool): If True output should be clear at each execution, if
+            not the output should retain all of the text.
+
+        Returns:
+            bool: True if there is only one line, False otherwise.
+        """
+        _app_settings.setValue('options/clear_output', value)
         for _ in range(2):
-            output = output_to_console(True)
+            output = _output_to_console(True, SAMPLE_WORD)
 
-        return len(re.findall('Nuke Tools', output)) <= 1
+        # because text is garanteed to be always formatted, we can search for
+        # [Nuke Tools] pattern inside the output string.
+        return re.findall(r'\[Nuke Tools\]', output)
 
-    return _clear_output
+    return _execute_output
 
 
-def test_no_clear_output(clear_output):
+def test_no_clear_output(_clear_output):
     """Check if output widget wasn't cleaned.
 
     This will result in having multiple lines of text.
     """
-    assert not clear_output(False)
+    assert len(_clear_output(False)) > 1
 
 
-def test_clear_output(clear_output):
-    """Check if output widget was cleaned."""
-    assert clear_output(True)
+def test_clear_output(_clear_output):
+    """Check if output widget was cleaned.
+
+    This will result in having a single line of text.
+    """
+    assert len(_clear_output(True)) == 1
