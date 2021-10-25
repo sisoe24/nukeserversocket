@@ -37,14 +37,14 @@ pytestmark = pytest.mark.connection
 
 
 @pytest.fixture(scope='session', autouse=True)
-def _delete_tmp_folder(package):
+def _delete_tmp_folder(_package):
     """Delete the tmp folder if it already exist."""
-    tmp_folder = os.path.join(package, 'src', '.tmp')
+    tmp_folder = os.path.join(_package, 'src', '.tmp')
     rmtree(tmp_folder, ignore_errors=True)
 
 
 @pytest.fixture()
-def _transfer_node_file(tmp_settings_file):
+def _transfer_node_file(_tmp_settings_file):
     """Initialize the tmp directory.
 
     Yields:
@@ -53,7 +53,7 @@ def _transfer_node_file(tmp_settings_file):
     init_settings()
 
     config = configparser.ConfigParser()
-    config.read(tmp_settings_file)
+    config.read(_tmp_settings_file)
 
     path = config['path']['transfer_file']
 
@@ -76,7 +76,6 @@ def test_send_was_successful(_main_ui, qtbot, _start_server):
     def check_status():
         """Wait for the status to register the transfer."""
         log = _main_ui.log_widgets.status_text
-        print("➡ log :", log)
         assert 'Connection successful {}:{}'.format('127.0.0.1', 54321) in log
 
     qtbot.waitUntil(check_status, timeout=10000)
@@ -102,6 +101,7 @@ def test_received_was_successful(_main_ui, qtbot):
 
 @pytest.fixture()
 def _nodes_client(_main_ui):
+    """Send nodes from the SendNodesClient."""
     nodes_client = _main_ui._send_nodes()
     yield nodes_client
     nodes_client._disconnect()

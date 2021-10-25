@@ -42,10 +42,10 @@ def test_port_new_value_ui(_tcp_port, _bad_port_ui_value):
 
 
 @pytest.mark.quicktest
-def test_port_new_value_file(tmp_settings_file, _tcp_port, _bad_port_ui_value):
+def test_port_new_value_file(_tmp_settings_file, _tcp_port, _bad_port_ui_value):
     """Test if port change is saved into config file."""
     config = configparser.ConfigParser()
-    config.read(tmp_settings_file)
+    config.read(_tmp_settings_file)
 
     settings_values = config['server']['port']
 
@@ -53,12 +53,12 @@ def test_port_new_value_file(tmp_settings_file, _tcp_port, _bad_port_ui_value):
 
 
 @pytest.fixture()
-def _bad_port_file_value(tmp_settings_file):
+def _bad_port_file_value(_tmp_settings_file):
     """Write a bad port settings into settings.ini file."""
     config = configparser.ConfigParser()
     config['server'] = {'port': '11111'}
 
-    with open(tmp_settings_file, 'w') as configfile:
+    with open(_tmp_settings_file, 'w') as configfile:
         config.write(configfile)
 
 
@@ -71,7 +71,7 @@ def test_wrong_port_ui(_bad_port_file_value, _tcp_port):
     assert _port_in_range(_tcp_port.value())
 
 
-def test_wrong_port_file(_bad_port_file_value, tmp_settings_file):
+def test_wrong_port_file(_bad_port_file_value, _tmp_settings_file):
     """Test verify_port_config method.
 
     When app starts will try to fix any wrong port value.
@@ -79,7 +79,7 @@ def test_wrong_port_file(_bad_port_file_value, tmp_settings_file):
     AppSettings().validate_port_settings()
 
     config = configparser.ConfigParser()
-    config.read(tmp_settings_file)
+    config.read(_tmp_settings_file)
 
     settings_values = config['server']['port']
     assert int(settings_values) == 54321

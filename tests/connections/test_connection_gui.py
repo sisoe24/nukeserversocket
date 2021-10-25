@@ -247,16 +247,14 @@ class TestGuiIsSenderMode(GuiApp, BaseUIElements):
         # TODO: changing port to the default port will not write to config file
 
         ip_entry = _main_ui.connections.ip_entry
-        print("➡ ip_entry :", ip_entry.text())
         ip_entry.setText(RANDOM_IP)
-        print("➡ ip_entry :", ip_entry.text())
 
-    def test_send_local_ip(self, _change_ip_entry,  tmp_settings_file):
+    def test_send_local_ip(self, _change_ip_entry,  _tmp_settings_file):
         """Check if `local_ip` is saved correctly in config when changed."""
         # TODO: some its right about the config parser. some times it does not find
         # the value server
         config = configparser.ConfigParser()
-        config.read(tmp_settings_file)
+        config.read(_tmp_settings_file)
 
         settings_values = config['server']['send_to_address']
 

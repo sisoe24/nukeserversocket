@@ -44,7 +44,7 @@ def _get_options_keys(file):
 
 
 @pytest.fixture()
-def options_name(qtbot):
+def _options_name(qtbot):
     """Get the options name from the SettingsWidget."""
     widget = settings_widget.SettingsWidget()
     qtbot.addWidget(widget)
@@ -53,13 +53,13 @@ def options_name(qtbot):
     return [x.text().lower().replace(' ', '_') for x in checkboxes]
 
 
-def test_options_names(package, options_name):
+def test_options_names(_package, _options_name):
     """Test that options name are valid.
 
     Search for the files that are using the setting system, and confirm that
     names are valid.
     """
-    for file in _traverse_dir(package):
+    for file in _traverse_dir(_package):
         for opt in _get_options_keys(file):
             msg = 'Option name was not update in file: {}'.format(file)
-            assert opt in options_name, msg
+            assert opt in _options_name, msg

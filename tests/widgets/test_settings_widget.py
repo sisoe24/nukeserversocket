@@ -8,7 +8,7 @@ from src.widgets import settings_widget
 
 
 @pytest.fixture()
-def _settings(qtbot, tmp_settings_file):
+def _settings(qtbot, _tmp_settings_file):
     """Initialize the SettingsWidget class."""
     widget = settings_widget.SettingsWidget()
     qtbot.addWidget(widget)
@@ -63,14 +63,14 @@ def _toggle_options(_settings):
         checkbox.setChecked(True)
 
 
-def test_check_value(_toggle_options, tmp_settings_file):
+def test_check_value(_toggle_options, _tmp_settings_file):
     """Check if checkboxes saved their state on the file settings.
 
     All values should be True because tests call fixture which toggles all
     of them to True.
     """
     config = configparser.ConfigParser()
-    config.read(tmp_settings_file)
+    config.read(_tmp_settings_file)
 
     settings_values = config['options']
 

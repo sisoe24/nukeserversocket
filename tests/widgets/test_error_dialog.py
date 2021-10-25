@@ -11,9 +11,9 @@ from src.about import about_to_string
 
 
 @pytest.fixture()
-def error_log_path(package):
+def error_log_path(_package):
     """Get the log directory path."""
-    yield os.path.join(package, 'src', 'log', 'errors.log')
+    yield os.path.join(_package, 'src', 'log', 'errors.log')
 
 
 @pytest.fixture(name='report')
