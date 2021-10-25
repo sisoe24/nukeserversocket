@@ -9,19 +9,6 @@ from src.widgets.connections_widget import TcpPort
 from src.utils import AppSettings
 
 
-@pytest.fixture(autouse=True)
-def _clean_settings(tmp_settings_file):
-    """Clean settings file before and after each test."""
-    def _clean_file():
-        """Clean file."""
-        with open(tmp_settings_file, 'w') as _:
-            pass
-
-    _clean_file()
-    yield
-    _clean_file()
-
-
 def _port_in_range(value):
     """Return True if port is in expected range."""
     return 49512 <= value <= 65535
