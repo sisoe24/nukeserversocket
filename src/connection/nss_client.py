@@ -103,6 +103,11 @@ class QBaseClient(QObject):
                 'Connection successful %s:%s' % (self.tcp_host, self.tcp_port)
             )
 
+    def _disconnect(self):
+        """Abort socket connection."""
+        self.timer.stop()
+        self.socket.abort()
+
     def _connection_timeout(self):
         """Trigger connection timeout event.
 
@@ -111,7 +116,7 @@ class QBaseClient(QObject):
         """
         self.state_changed.emit('Connection timeout.\n----')
         LOGGER.debug('Connection Timeout')
-        self.socket.abort()
+        self._disconnect()
 
     def write_data(self, data):  # type: (dict) -> None
         """Write the data to the socket and disconnected from host.
