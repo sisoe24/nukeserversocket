@@ -158,7 +158,6 @@ def _overwrite_input_editor(_py_controller, _app_settings):
     return _init_restore
 
 
-@pytest.mark.quicktest
 def test_restore_input(_overwrite_input_editor, _py_controller):
     """Check if input was restored.
 

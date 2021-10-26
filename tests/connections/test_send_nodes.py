@@ -1,17 +1,14 @@
 """Test sending nodes module."""
 import os
-import logging
 import configparser
 
 from shutil import rmtree
 
 import pytest
 
-from src.connection import SendNodesClient
 from src.main import init_settings
+from src.connection import SendNodesClient
 
-
-LOGGER = logging.getLogger('NukeServerSocket.main')
 
 TRANSFER_NODES_FILE = """
 set cut_paste_input [stack 0]

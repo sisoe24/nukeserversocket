@@ -41,7 +41,6 @@ def test_port_new_value_ui(_tcp_port, _bad_port_ui_value):
     assert _port_in_range(_tcp_port.value())
 
 
-@pytest.mark.quicktest
 def test_port_new_value_file(_tmp_settings_file, _tcp_port, _bad_port_ui_value):
     """Test if port change is saved into config file."""
     config = configparser.ConfigParser()
