@@ -18,6 +18,8 @@ def pytest_configure(config):
     """Add pytest new configurations."""
     config.addinivalue_line(
         'markers', 'connection: test modules that deal with connection')
+    config.addinivalue_line(
+        'markers', 'controllers: tests the script editor controllers')
     config.addinivalue_line('markers', 'web: validate web link')
     config.addinivalue_line('markers', 'quicktest: quick test methods')
     config.addinivalue_line(

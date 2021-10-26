@@ -11,6 +11,8 @@ from src.script_editor import nuke_se_controllers as nse
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
 SAMPLE_WORD = 'NukeServerSocket'
 
+pytestmark = pytest.mark.controllers
+
 
 @pytest.fixture()
 def _app_settings():

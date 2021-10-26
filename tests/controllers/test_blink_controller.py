@@ -20,6 +20,9 @@ finally:
 """).strip()
 
 
+pytestmark = pytest.mark.controllers
+
+
 @pytest.fixture()
 def _blink_controller(_init_fake_editor):
     """Initialize the _BlinkController class.

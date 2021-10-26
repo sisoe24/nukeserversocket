@@ -8,6 +8,8 @@ from src.main import init_settings
 from src.utils import AppSettings
 from src.script_editor import nuke_se_controllers as se
 
+pytestmark = pytest.mark.controllers
+
 
 @pytest.fixture()
 def _transfer_file():
