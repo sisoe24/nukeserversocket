@@ -2,13 +2,8 @@
 import os
 
 import pytest
-from src.connection.nss_server import QServer
 
 from src.utils import settings
-from src.script_editor import nuke_se
-from src.widgets import FakeScriptEditor
-from src.script_editor.nuke_se import editors_widgets
-
 from src.run_local import _MainWindowWidget
 
 
@@ -62,7 +57,7 @@ def _package():
 
 @pytest.fixture()
 def _tmp_settings_file(_package):
-    """Temporary settings file path. """
+    """Temporary settings file path."""
     file = os.path.join('tests', 'tmp', 'fake_ini.ini')
     yield file
     # os.remove(file)

@@ -12,7 +12,7 @@ from src.utils.util import pyDecoder, pyEncoder, validate_output
 def test_get_ip():
     """Test ip matches pattern.
 
-    Test if ip matches one of the following pattern: `192.168.1.34` or 
+    Test if ip matches one of the following pattern: `192.168.1.34` or
     `127.0.0.1`.
     """
     ip = get_ip()

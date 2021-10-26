@@ -17,7 +17,7 @@ from PySide2.QtWidgets import (
 
 from ..about import about, about_links
 
-LOGGER = logging.getLogger('ProfileInspector.about_widget')
+LOGGER = logging.getLogger('NukeServerSocket.about_widget')
 
 
 class AboutWidget(QWidget):

@@ -79,7 +79,7 @@ class _MainWindow(MainWindow):
     position.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self):
         """Init method for the _MainWindow class."""
         MainWindow.__init__(self, main_widget=_MainWindowWidget)
         self.setWindowTitle('NukeServerSocket Test')

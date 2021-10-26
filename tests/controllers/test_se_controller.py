@@ -42,7 +42,6 @@ def test_get_script_editor(_nuke_editor):
 
 def test_script_editor_not_found(_nuke_editor):
     """Check if script editor was not found."""
-
     msg = 'NukeServerSocket: Script Editor panel not found.+'
     with pytest.raises(RuntimeWarning, match=msg):
         _nuke_editor._find_script_editor('scripteditor.3')
