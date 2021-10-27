@@ -46,10 +46,12 @@ class QBaseClient(QObject):
     Signals:
         () timeout: emits when connection timeout has been triggered.
         (str) state_changed: emits when connection state has changed.
+        (bool) client_ready: emits when client is ready to connect again.
     """
 
     timeout = Signal()
     state_changed = Signal(str)
+    client_ready = Signal(bool)
 
     def __init__(self, hostname, port):  # type: (str, int) -> None
         """Init method for the QBaseClient class.
@@ -85,7 +87,7 @@ class QBaseClient(QObject):
         This should be considered as an abstract method that child class
         needs to implement.
         """
-        raise NotImplementedError
+        raise NotImplementedError('Child class must implement method.')
 
     def connection_state(self, socket_state):
         """Check che socket connection state.
@@ -102,6 +104,9 @@ class QBaseClient(QObject):
             self.state_changed.emit(
                 'Connection successful %s:%s' % (self.tcp_host, self.tcp_port)
             )
+
+        if socket_state == QAbstractSocket.UnconnectedState:
+            self.client_ready.emit(True)
 
     def _disconnect(self):
         """Abort socket connection."""
@@ -192,8 +197,12 @@ class SendTestClient(QBaseClient):
         self.write_data(output_text)
 
 
+class NodesNotSelectedError(BaseException):
+    """No nodes selected."""
+
+
 class SendNodesClient(QBaseClient):
-    """Send nuke nodes using between ."""
+    """Send nuke nodes between instances."""
 
     def __init__(self, hostname=None, port=None):
         """Init method for the SendNodesClient.
@@ -213,8 +222,6 @@ class SendNodesClient(QBaseClient):
 
         QBaseClient.__init__(self, hostname, port)
 
-        self.transfer_data = self.transfer_file_content()
-
     def on_connected(self):
         """Override parent method.
 
@@ -222,20 +229,30 @@ class SendNodesClient(QBaseClient):
         the socket.
         """
         LOGGER.debug('Client :: Send nodes connection successful.')
-        self.write_data(self.transfer_data)
+        try:
+            self.write_data(self.transfer_file_content())
+        except NodesNotSelectedError:
+            pass
 
-    @staticmethod
-    def transfer_file_content():
+    def transfer_file_content(self):
         """Get the transfer file content to be sent.
 
         Returns:
             (dict): a dict to be sent to the socket.
+
+        Raises:
+            NodesNotSelectedError: when nodes are not selected inside nuke but
+            user tries to send something.
         """
         settings = AppSettings()
         transfer_file = settings.value('path/transfer_file')
 
-        # this will also create the file if it doesn't exists already
-        nuke.nodeCopy(transfer_file)
-
-        with open(transfer_file) as file:
-            return {"text": file.read(), "file": transfer_file}
+        try:
+            # this will also create the file if it doesn't exists already
+            nuke.nodeCopy(transfer_file)
+        except RuntimeError:
+            self.state_changed.emit('No nodes selected.')
+            raise NodesNotSelectedError
+        else:
+            with open(transfer_file) as file:
+                return {"text": file.read(), "file": transfer_file}
