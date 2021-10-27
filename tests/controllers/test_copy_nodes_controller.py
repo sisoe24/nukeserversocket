@@ -42,9 +42,6 @@ def _nodes_controller(_init_fake_editor):
     """
     controller = se._CopyNodesController()
 
-    controller.clear_input()
-    controller.clear_output()
-
     yield controller
 
     controller.clear_output()

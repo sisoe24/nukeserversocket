@@ -30,8 +30,6 @@ def _blink_controller(_init_fake_editor):
     Before and after each tests, clear the text widgets.
     """
     controller = se._BlinkController('file/to/tmp.cpp')
-    controller.clear_input()
-    controller.clear_output()
 
     yield controller
 

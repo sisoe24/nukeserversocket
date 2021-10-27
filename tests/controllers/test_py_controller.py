@@ -27,8 +27,6 @@ def _py_controller(_init_fake_editor):
     Before and after each tests, clear the text widgets.
     """
     controller = nse._PyController('path/to/file.py')
-    controller.clear_output()
-    controller.clear_input()
 
     yield controller
 
