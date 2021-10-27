@@ -9,8 +9,6 @@ import sys
 import logging
 import subprocess
 
-from random import randint
-
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QKeySequence, QKeyEvent
 
@@ -53,7 +51,6 @@ class InputEditor(QPlainTextEdit):
     def __init__(self):
         """Init method of the the InputEditor class."""
         QPlainTextEdit.__init__(self)
-        self.setPlainText("print('Hello From Fake SE %s')" % randint(1, 50))
 
 
 class FakeScriptEditor(QWidget):

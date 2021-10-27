@@ -5,6 +5,8 @@ from __future__ import print_function
 import sys
 import logging
 
+from random import randint
+
 from PySide2.QtWidgets import (
     QApplication,
     QPushButton,
@@ -57,6 +59,8 @@ class _MainWindowWidget(QWidget):
 
         se_name = 'uk.co.thefoundry.scripteditor.1'
         self.script_editor = FakeScriptEditor(se_name)
+        self.script_editor.input_console.setPlainText(
+            "print('Hello From Fake SE %s'.upper())" % randint(1, 50))
         self.main_app = MainWindowWidget()
 
         _layout = QVBoxLayout()
