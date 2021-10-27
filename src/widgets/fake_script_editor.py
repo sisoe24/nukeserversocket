@@ -124,7 +124,7 @@ class FakeScriptEditor(QWidget):
         # with a path inside, so skip subprocess.
         if 'nuke.nodePaste' not in code:
             try:
-                code = subprocess.check_output(['/usr/bin/python', '-c', code])
+                code = subprocess.check_output([sys.executable, '-c', code])
                 code = pyDecoder(code)
             except subprocess.CalledProcessError:
                 LOGGER.error('Error executing code: -> %s <-', code)

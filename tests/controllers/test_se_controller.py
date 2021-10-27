@@ -1,4 +1,5 @@
 """Test the Nuke Script Editor controller classes."""
+import sys
 import subprocess
 
 import pytest
@@ -75,10 +76,12 @@ def test_run_button_not_found(_nuke_editor):
 def test_execute_shortcut(_init_fake_editor):
     """Check if shortcut will execute the code when run button is not found."""
     se_controller = se.ScriptEditorController()
+    se_controller.set_input('print("hello".upper())')
+
     input_text = se_controller.input()
 
     se_controller.script_editor._run_button = None
     se_controller.execute()
 
-    code = subprocess.check_output(['/usr/bin/python', '-c', input_text])
+    code = subprocess.check_output([sys.executable, '-c', input_text])
     assert se_controller.output() == pyDecoder(code)
