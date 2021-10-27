@@ -81,29 +81,43 @@ def test_received_was_successful(_main_ui, qtbot):
 
 @pytest.fixture()
 def _nodes_client(_main_ui):
-    """Send nodes from the SendNodesClient."""
+    """Send nodes from the SendNodesClient and return the client object.."""
     nodes_client = _main_ui._send_nodes()
     yield nodes_client
     nodes_client._disconnect()
 
 
-def test_send_was_successful(qtbot, _start_server, _check_log_widget, _nodes_client):
+def test_send_was_successful(qtbot, _start_server, _main_ui, _nodes_client):
     """Check if nodes were sent with success.
 
     This will only work if there is another instance connected that listens for
     incoming nodes.
     """
-    msg = 'Connection successful {}:{}'.format('127.0.0.1', 54321)
-    qtbot.waitUntil(lambda: _check_log_widget('status', msg))
+    def check_status():
+        """Wait for the status to register the transfer."""
+        msg = 'Connection successful {}:{}'.format('127.0.0.1', 54321)
+        assert msg in _main_ui.log_widgets.status_text
+
+    qtbot.waitUntil(check_status)
 
 
-def test_send_was_not_successful(qtbot, _check_log_widget,  _nodes_client):
+def test_send_was_not_successful(qtbot, _main_ui, _nodes_client):
     """Emit connection timeout."""
+    def check_status():
+        """Wait for the status to register the transfer."""
+        msg = 'Connection timeout.'
+        assert msg in _main_ui.log_widgets.status_text
+
     _nodes_client._connection_timeout()
-    qtbot.waitUntil(lambda: _check_log_widget('status', 'Connection timeout.'))
+    qtbot.waitUntil(check_status)
 
 
-def test_send_was_error(qtbot, _main_ui, _nodes_client, _check_log_widget):
+def test_send_was_error(qtbot, _main_ui, _nodes_client):
     """Emit connection error."""
+    def check_status():
+        """Wait for the status to register the transfer."""
+        msg = 'Error:'
+        assert msg in _main_ui.log_widgets.status_text
+
     _nodes_client.on_error('test error')
-    qtbot.waitUntil(lambda: _check_log_widget('status', 'Error:'))
+    qtbot.waitUntil(check_status)

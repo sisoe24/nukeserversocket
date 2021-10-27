@@ -31,23 +31,27 @@ def auto_start_connection(_start_connection):
     """Auto start connection for each test."""
 
 
-def test_data_has_json_error(_check_log_widget, qtbot):
+def test_data_has_json_error(_main_ui, qtbot):
     """Check status log text when data has json error."""
+    def check_status():
+        """Wait for the status to register the transfer."""
+        assert 'Error json deserialization' in _main_ui.log_widgets.status_text
+
     # Data will have a missing enclosing quote
     _socket_send('{text":"print("hello")"}')
-
-    msg = 'Error json deserialization.'
-    qtbot.waitUntil(lambda: _check_log_widget('status', msg))
+    qtbot.waitUntil(check_status)
 
 
 @pytest.mark.parametrize('data', [' ', '{"name": true}', '{"text":""}'],
                          ids=['no data', 'wrong key', 'empty data'])
-def test_data_is_invalid(data, qtbot, _check_log_widget):
+def test_data_is_invalid(data, qtbot, _main_ui):
     """Check if status log has right text."""
-    _socket_send(data)
+    def check_status():
+        """Wait for the status to register the transfer."""
+        assert 'Error. Invalid data:' in _main_ui.log_widgets.status_text
 
-    msg = 'Error. Invalid data:'
-    qtbot.waitUntil(lambda: _check_log_widget('status', msg))
+    _socket_send(data)
+    qtbot.waitUntil(check_status)
 
 
 @pytest.fixture()
@@ -58,22 +62,32 @@ def _send_test_msg(_main_ui):
     test_client._disconnect()
 
 
-def test_tester_message_status(qtbot, _send_test_msg, _check_log_widget):
+def test_tester_message_status(qtbot, _send_test_msg, _main_ui):
     """Send a test message and check status log text."""
-    msg = 'Connection successful'
-    qtbot.waitUntil(lambda: _check_log_widget('status', msg))
+    def check_status():
+        """Wait for the status to register the transfer."""
+        assert 'Connection successful' in _main_ui.log_widgets.status_text
+
+    qtbot.waitUntil(check_status)
 
 
-def test_tester_message_received(qtbot, _send_test_msg, _check_log_widget):
+def test_tester_message_received(qtbot, _send_test_msg, _main_ui):
     """Send a test message and check received log text."""
-    msg = "from __future__ import print_function; print('Hello from Test Client'"
-    qtbot.waitUntil(lambda: _check_log_widget('received', msg))
+    def check_status():
+        """Wait for the status to register the transfer."""
+        msg = "Hello from Test Client"
+        assert msg in _main_ui.log_widgets.received_text
+
+    qtbot.waitUntil(check_status)
 
 
-def test_tester_message_output(qtbot, _send_test_msg, _check_log_widget):
+def test_tester_message_output(qtbot, _send_test_msg, _main_ui):
     """Send a test message and check output log text."""
-    msg = "Hello from Test Client"
-    qtbot.waitUntil(lambda: _check_log_widget('output', msg))
+    def check_status():
+        """Wait for the status to register the transfer."""
+        assert "Hello from Test Client" in _main_ui.log_widgets.output_text
+
+    qtbot.waitUntil(check_status)
 
 
 @pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})],
@@ -86,17 +100,28 @@ def _send_data(request):
     _socket_send(request.param)
 
 
-def test_message_status(_send_data, qtbot, _check_log_widget):
+def test_message_status(_send_data, qtbot, _main_ui):
     """Check if status log has right text."""
-    msg = 'Message received'
-    qtbot.waitUntil(lambda: _check_log_widget('status', msg))
+    def check_status():
+        """Wait for the status to register the transfer."""
+        assert 'Message received' in _main_ui.log_widgets.status_text
+
+    qtbot.waitUntil(check_status)
 
 
-def test_message_received(_send_data, qtbot, _check_log_widget):
+def test_message_received(_send_data, qtbot, _main_ui):
     """Check if received log has right text."""
-    qtbot.waitUntil(lambda: _check_log_widget('received', TEXT))
+    def check_status():
+        """Wait for the status to register the transfer."""
+        assert TEXT in _main_ui.log_widgets.received_text
+
+    qtbot.waitUntil(check_status)
 
 
-def test_message_output(_send_data, qtbot, _check_log_widget):
+def test_message_output(_send_data, qtbot, _main_ui):
     """Check if output log has right text."""
-    qtbot.waitUntil(lambda: _check_log_widget('output', STRING.upper()))
+    def check_status():
+        """Wait for the status to register the transfer."""
+        assert STRING.upper() in _main_ui.log_widgets.output_text
+
+    qtbot.waitUntil(check_status)
