@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import os
 import logging
+from PySide2.QtCore import QObject
 
 from PySide2.QtWidgets import (
     QMainWindow,
@@ -32,7 +33,7 @@ def init_settings():
     the path to the application settings file. Function will also validate the
     port configuration.
     """
-    # TODO: need to think this better
+    # ! TODO: need to re think this
 
     tmp_folder = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), '.tmp'
@@ -59,7 +60,7 @@ class MainWindowWidget(QWidget):
         """Init method for MainWindowWidget."""
         QWidget.__init__(self)
         LOGGER.debug('Main :: init')
-        # TODO: class need refactoring
+        # ! TODO: Refactor needed
 
         init_settings()
 
@@ -69,10 +70,10 @@ class MainWindowWidget(QWidget):
         self.connect_btn.toggled.connect(self.toggle_connection)
 
         self.send_btn = self.connections.buttons.send_btn
-        self.send_btn.clicked.connect(self._send_nodes)
+        self.send_btn.clicked.connect(self.send_nodes)
 
         self.test_btn = self.connections.buttons.test_btn
-        self.test_btn.clicked.connect(self._send_test)
+        self.test_btn.clicked.connect(self.send_test)
 
         self.log_widgets = LogWidgets()
 
@@ -83,8 +84,7 @@ class MainWindowWidget(QWidget):
         self.setLayout(_layout)
 
         self._server = None
-        self._test_client = None
-        self._node_client = None
+        self._client = None
 
     def _enable_connection_mod(self, state):  # type: (bool) -> None
         """Enable/disable connection widgets modification.
@@ -131,8 +131,7 @@ class MainWindowWidget(QWidget):
                 status = self._server.start_server()
             except RuntimeError as err:
                 LOGGER.error('server did not connect: %s', err)
-                self.connect_btn.disconnect()
-                self.connections.set_disconnected()
+                self.connections._disconnect()
                 return False
             else:
                 LOGGER.debug('server is connected: %s', status)
@@ -152,29 +151,37 @@ class MainWindowWidget(QWidget):
 
         self._enable_connection_mod(True)
 
-    def _send_nodes(self):
+    def send_nodes(self):
         """Send the selected Nuke Nodes using the internal client.
 
         Returns:
             SendNodesClient: SendNodesClient object.
         """
-        self._node_client = SendNodesClient()
-        self._node_client.state_changed.connect(
-            self.log_widgets.set_status_text)
-        self._node_client.connect_to_host()
-        return self._node_client
+        self._client = SendNodesClient()
+        self._connect_client(self.send_btn)
+        return self._client
 
-    def _send_test(self):
-        """Send a test message using the internal client.
+    def send_test(self):
+        """Send a test message using the internal _client.
 
         Returns:
             SendTestClient: SendTestClient object.
         """
-        self._test_client = SendTestClient()
-        self._test_client.state_changed.connect(
-            self.log_widgets.set_status_text)
-        self._test_client.connect_to_host()
-        return self._test_client
+        self._client = SendTestClient()
+        self._connect_client(self.test_btn)
+        return self._client
+
+    def _connect_client(self, client_btn):
+        """Connect the client to host and update status log.
+
+        Args:
+            client_btn (QPushButton): the client button to enable back when
+            client is ready so send new data. This will be emitted from the
+            client object signal.
+        """
+        self._client.client_ready.connect(client_btn.setEnabled)
+        self._client.state_changed.connect(self.log_widgets.set_status_text)
+        self._client.connect_to_host()
 
 
 class MainWindow(QMainWindow):
