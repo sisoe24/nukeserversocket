@@ -82,7 +82,7 @@ def test_received_was_successful(_main_ui, qtbot):
 @pytest.fixture()
 def _nodes_client(_main_ui):
     """Send nodes from the SendNodesClient and return the client object.."""
-    nodes_client = _main_ui._send_nodes()
+    nodes_client = _main_ui.send_nodes()
     yield nodes_client
     nodes_client._disconnect()
 
