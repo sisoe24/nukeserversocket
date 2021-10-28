@@ -14,4 +14,3 @@ nukeserversocket = {editable = true, path = "."}
 pytest = "==4.6.11"
 requests = "==2.26.0"
 pytest-qt = "==3.3.0"
-pytest-cov = "==2.12.1"
