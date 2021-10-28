@@ -9,6 +9,7 @@ from src.utils import get_ip
 from src.utils.util import pyDecoder, pyEncoder, validate_output
 
 
+@pytest.mark.skip
 def test_get_ip():
     """Test ip matches pattern.
 
