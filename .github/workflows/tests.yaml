@@ -71,7 +71,7 @@ jobs:
       - name: Install pipenv and packages
         run: |
           pip install pipenv
-          pipenv install --dev
+          pipenv install --ignore-pipfile --dev -e .
 
       - name: Run pytest for Python2
         run: pipenv run pytest
