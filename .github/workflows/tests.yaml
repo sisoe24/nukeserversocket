@@ -38,13 +38,13 @@ jobs:
 
       - name: Run pytest for Python3 and generated coverage.
         run: python -m poetry run pytest --cov=src --cov-report=xml
-        continue-on-error: true
+        # continue-on-error: true
 
-      - name: Run codacy-coverage-reporter
-        uses: codacy/codacy-coverage-reporter-action@v1
-        with:
-          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: coverage.xml
+      # - name: Run codacy-coverage-reporter
+      #   uses: codacy/codacy-coverage-reporter-action@v1
+      #   with:
+      #     project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+      #     coverage-reports: coverage.xml
 
   tests-python2:
     # python 2 will not run on windows as it will not be possible to compile qt
@@ -71,7 +71,7 @@ jobs:
       - name: Install pipenv and packages
         run: |
           pip install pipenv
-          pipenv install
+          pipenv install --dev
 
       - name: Run pytest for Python2
         run: pipenv run pytest
