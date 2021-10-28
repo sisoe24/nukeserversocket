@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import os
 import logging
-from PySide2.QtCore import QObject
 
 from PySide2.QtWidgets import (
     QMainWindow,
