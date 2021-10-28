@@ -1,0 +1,78 @@
+# Test the package with pytest on both python 2 and 3.
+
+name: Pytest
+
+on:
+  pull_request:
+    branches: [main, 0.2.0-dev]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  tests-python3:
+    # python 3 will be tested on all platforms
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-10.15, windows-2019]
+        python-version: [3.7.7]
+
+    runs-on: ${{ matrix.os }}
+
+    # timeout for the jobs
+    # timeout-minutes: 5
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 3.7.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install poetry and packages
+        run: |
+          python -m pip install poetry
+          python -m poetry install
+
+      - name: Run pytest for Python3 and generated coverage.
+        run: python -m poetry run pytest --cov=src --cov-report=xml
+        continue-on-error: true
+
+      - name: Run codacy-coverage-reporter
+        uses: codacy/codacy-coverage-reporter-action@v1
+        with:
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: coverage.xml
+
+  tests-python2:
+    # python 2 will not run on windows as it will not be possible to compile qt
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, macos-10.15]
+        # latest version of python 2
+        python-version: [2.7.18]
+
+    runs-on: ${{ matrix.os }}
+
+    # timeout for the jobs
+    # timeout-minutes: 5
+
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+
+      - name: Set up Python 2.7.18
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install pipenv and packages
+        run: |
+          python -m pip install pipenv
+          python -m pipenv install
+
+      - name: Run pytest for Python2
+        run: python -m pipenv run pytest
+        continue-on-error: true
