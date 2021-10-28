@@ -27,7 +27,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Python 3.7.7
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Python 2.7.18
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v2.2.2
         with:
           python-version: ${{ matrix.python-version }}
 
