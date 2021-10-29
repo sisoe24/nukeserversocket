@@ -33,11 +33,6 @@ def _get_root():
     )
 
 
-def _get_package_name():
-    """Get package name."""
-    return os.path.basename(_get_root())
-
-
 def _get_package_version():
     """Get package version from pyproject.toml."""
     path = os.path.join(_get_root(), 'pyproject.toml')
@@ -45,7 +40,7 @@ def _get_package_version():
         return re.search(r'(?<=version = ").+(?=")', file.read()).group()
 
 
-PACKAGE = _get_package_name()
+PACKAGE = 'NukeServerSocket'
 
 
 def _clean_empty(_list):
