@@ -1,10 +1,8 @@
 # 1. NukeServerSocket README
 
 [![Main Build](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)](https://github.com/sisoe24/NukeServerSocket/releases)
-![Last commit](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket)
-
 [![Pre Release](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&include_prereleases)](https://github.com/sisoe24/NukeServerSocket/releases)
-![Last commit](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket/0.2.0)
+![Last commit](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket)
 
 [![issues](https://img.shields.io/github/issues/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/issues)
 [![pull-request](https://img.shields.io/github/issues-pr/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/pulls)
@@ -15,14 +13,12 @@
 
 [![license](https://img.shields.io/github/license/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE)
 
-![x](https://img.shields.io/badge/Python-2.7.16_|_3.7.7-success)
+![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
 ![x](https://img.shields.io/badge/Nuke11-success)
 ![x](https://img.shields.io/badge/Nuke12-success)
 ![x](https://img.shields.io/badge/Nuke13-success)
 
 A Nuke plugin that will allow code execution from the local network and more.
-
-> This is primarily a companion plugin for [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools).
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
   - [1.1. Tools](#11-tools)
@@ -33,13 +29,19 @@ A Nuke plugin that will allow code execution from the local network and more.
     - [1.4.2. Receive/Send nodes](#142-receivesend-nodes)
       - [1.4.2.1. Send](#1421-send)
       - [1.4.2.2. Receive](#1422-receive)
+      - [1.4.2.3. Connection timeouts](#1423-connection-timeouts)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
     - [1.6.1. Code Sample](#161-code-sample)
     - [1.6.2. Port & Host address](#162-port--host-address)
-  - [1.7. Known Issues](#17-known-issues)
-  - [1.8. Compatibility](#18-compatibility)
-  - [1.9. Test plugin locally](#19-test-plugin-locally)
+  - [1.7. Test plugin locally](#17-test-plugin-locally)
+    - [1.7.1. Python 3](#171-python-3)
+    - [1.7.2. Python 2](#172-python-2)
+      - [1.7.2.1. `virtualenv`](#1721-virtualenv)
+      - [1.7.2.2. `pipenv`](#1722-pipenv)
+      - [1.7.2.3. Change python requirements](#1723-change-python-requirements)
+  - [1.8. Known Issues](#18-known-issues)
+  - [1.9. Compatibility](#19-compatibility)
   - [1.10. Overview](#110-overview)
 
 ## 1.1. Tools
@@ -47,6 +49,7 @@ A Nuke plugin that will allow code execution from the local network and more.
 Tools that are using NukeServerSocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
+- [Nuke Tools ST](https://github.com/sisoe24/Nuke-Tools-ST) - Sublime Text package. (currently waiting for package control approval)
 
 ## 1.2. Features
 
@@ -85,6 +88,12 @@ When sending nodes, switch the mode from **Receiver** to **Sender** and be sure 
 
 When receiving nodes just follow the steps for [Receive incoming request](#141-receive-incoming-request) for the receiving instance and the [Send](#1421-send) steps for the sending instances.
 
+#### 1.4.2.3. Connection timeouts
+
+- The server connection will shutdown after 5 minutes of inactivity.
+- The socket server will shutdown after 30 seconds if did not received any request.
+- The socket client will shutdown after 10 seconds if could not initiate a connection.
+
 ## 1.5. Settings
 
 The plugin offers some minor settings like output text to internal script editor, format text and so on.
@@ -95,7 +104,7 @@ At its core, the plugin is just a server socket that awaits for an incoming requ
 
 The only requirement is that the code received should be inside a string.
 
-From the client point of view, the code can be sended either inside a _stringified_ associative array or inside a simple string, with the latter being valid only when sending Python code.
+From the client point of view, the code can be sent either inside a _stringified_ associative array or inside a simple string, with the latter being valid only when sending Python code.
 
 The associative array should have the following keys: `text` and an optional `file`.
 
@@ -177,12 +186,101 @@ This is pretty much all you need to start your own extension for your favorite t
 
 If you still have some problems, please feel free to reach out for any questions.
 
-## 1.7. Known Issues
+
+
+## 1.7. Test plugin locally
+
+The plugin can be launched locally. This is useful for testing code and implementing new features.
+Also the local plugin offers a simple emulation of the Nuke's internal Script Editor layout.
+
+The project default interpreter is Python 3 but it can also be build with Python 2.
+Python 3 version is required to be `<=3.7.7` as in newer versions there is a Qt related bug that was solved only in versions newer that the one inside Nuke.
+
+After each new feature, the project is required to pass both Python 2 and Python 3 tests.
+
+### 1.7.1. Python 3
+
+Poetry package manager is used to build the project for Python 3. A different virtualenv wrapper could be used instead as is just a matter of personal preference.
+
+```sh
+# clone the repo
+
+# install packages
+poetry install
+
+# run app locally
+poetry run python -m src.run_local
+
+# run tests
+poetry run pytest
+```
+
+### 1.7.2. Python 2
+
+There are different ways to achieve this:
+
+#### 1.7.2.1. `virtualenv`
+
+Preferred.
+
+This method will require `virtualenv` package for Python2 and on some systems, `pip` is not included with python 2 by default.
+
+```sh
+# Download and setup pip for python 2.
+curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py && python2 $_
+
+# install virtualenv
+python2 -m pip install virtualenv
+
+# setup a virtualenv for python2
+python2 -m virtualenv .venv/
+
+# activate the env with .venv/bin/activate or call it directly
+# install package dependencies
+.venv/bin/pip install -r requirements.txt
+
+# run locally
+.venv/bin/python -m src.run_local
+
+# run tests
+.venv/bin/python -m pytest
+```
+
+#### 1.7.2.2. `pipenv`
+
+Hacky.
+
+One could use `pipenv` to create a different environment. The problem with this approach is that `pipenv` needs to install the package locally in editable mode in order for `pytest` to find the packages.
+
+```sh
+pipenv install --two --dev -e .
+```
+
+This will need a basic `setup.py` file and it will not work as _pyproject.toml_ has a different python requirement specification. A little workaround could be done by temporarily removing the pyproject.toml and then building the project.
+
+```sh
+# rename pyproject.toml
+mv pyproject.toml tmp.toml
+
+# build package locally
+pipenv install --two --dev -e .
+
+# restore name of pyproject.toml
+mv tmp.toml pyproject.toml
+```
+
+#### 1.7.2.3. Change python requirements
+
+Discouraged.
+
+Because poetry allows multiple environment, one could change the _pyproject.toml_ python requirements to satisfy both python2 and 3: `>=2.7.18, <=3.7.7`. This has the drawback that poetry will only install the latest package version compatible for python2.
+
+## 1.8. Known Issues
 
 - Settings window doesn't display the tooltip text.
 - When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. The only way to force close all of the connections is to restart Nuke.
 
-## 1.8. Compatibility
+## 1.9. Compatibility
 
 Nuke version: 11,12, 13.
 
@@ -196,27 +294,6 @@ While it should work the same on all platforms, it has been currently only teste
   - Mojave 10.14.06
   - Catalina 10.15.06
 - Windows 10
-
-## 1.9. Test plugin locally
-
-> This works only on Linux and Mac. Probably Windows WSL but haven't tested it yet.
-
-While limited in some regards, the plugin can be tested outside Nuke environment.
-
-1. Clone the github repo into your machine.
-2. `pipenv install --ignore-pipfile` for normal installation or `pipenv install --ignore-pipfile --dev -e .` if you want to test the code with `pytest` (No tests are provided at the time of writing).
-3. Launch the app via terminal `python -m tests.run_local` or vscode task: `RunApp`
-
-The local plugin offers a simple emulation of the Nuke's internal Script Editor layout. It just basic enough to test some simple code.
-
-When the application starts it will:
-
-1. Click the connect button
-2. Send a test message
-3. Display the received message or error if any.
-4. Override input/output widgets if settings allowed it.
-
-It is a very basic and simple test but because the PySide2 and Python version are pretty much identical to Nuke's one will likely function the same way inside Nuke.
 
 ## 1.10. Overview
 
