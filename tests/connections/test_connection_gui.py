@@ -244,15 +244,17 @@ class TestGuiIsSenderMode(GuiApp, BaseUIElements):
     @pytest.fixture()
     def _change_ip_entry(self, _main_ui):
         """Check if ip entry can be changed."""
-        # TODO: changing port to the default port will not write to config file
-
         ip_entry = _main_ui.connections.ip_entry
+
+        # XXX: if RANDOM_IP is the same as local ip, will not write the value
+        # to the config file probably because it does not update its value?
+        # setting the text to an empty string and then write the port seems to
+        # do the trick
+        ip_entry.setText('')
         ip_entry.setText(RANDOM_IP)
 
     def test_send_local_ip(self, _change_ip_entry,  _tmp_settings_file):
         """Check if `local_ip` is saved correctly in config when changed."""
-        # TODO: some its right about the config parser. some times it does not find
-        # the value server
         config = configparser.ConfigParser()
         config.read(_tmp_settings_file)
 
