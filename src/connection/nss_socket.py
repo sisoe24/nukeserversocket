@@ -1,91 +1,103 @@
+"""Socket modules that deals with the incoming data."""
 # coding: utf-8
 from __future__ import print_function
 
-import json
 import logging
 
-from PySide2.QtCore import QObject
+from PySide2.QtCore import QObject, Signal
 
-from ..utils import validate_output
+from .data_to_code import DataCode, InvalidData
+from ..utils import validate_output, connection_timer
 from ..script_editor import CodeEditor
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
-class Socket(QObject):
-    def __init__(self, socket, log_widgets):
+class QSocket(QObject):
+    """QObject Socket class that deals with the incoming data.
+
+    Class will also verify its type before calling a CodeEditor to execute it.
+    Custom signals will emit when connection status has changed.
+
+    Signal:
+        (str) state_changed: emits when the connection state has changed.
+        (str) received_text: emits the received text when ready.
+        (str) output_text: emits the output text after code executing happened.
+    """
+
+    state_changed = Signal(str)
+    received_text = Signal(str)
+    output_text = Signal(str)
+
+    def __init__(self, socket):
+        """Init method for the socket class."""
         QObject.__init__(self)
-        self.log_widgets = log_widgets
+        LOGGER.debug('QSocket :: Listening...')
 
         self.socket = socket
         self.socket.connected.connect(self.on_connected)
         self.socket.disconnected.connect(self.on_disconnected)
         self.socket.readyRead.connect(self.on_readyRead)
 
-    def on_connected(self):
-        LOGGER.debug('Client connect event')
-        self.log_widgets.set_status_text("Client Connected Event")
+        self.timer = connection_timer(30)
+        self.timer.timeout.connect(self.close_socket)
+        self.timer.start()
 
-    def on_disconnected(self):
-        LOGGER.debug('-*- Client disconnect event -*-')
-        self.log_widgets.set_status_text("Client socket closed.")
+    @staticmethod
+    def on_connected():
+        """Connect event."""
+        LOGGER.debug('QSocket :: Connected.')
 
-    def _get_message(self):
-        """Get the socket message.
+    @staticmethod
+    def on_disconnected():
+        """Disconnect event."""
+        LOGGER.debug('QSocket :: Disconnected.')
 
-        If the message is a simple string then add it to a dictionary,
-        else return deserialized array.
+    def close_socket(self):
+        """Close the socket and stop the timeout timer."""
+        self.socket.close()
+        self.timer.stop()
 
-        Returns:
-            dict - dictionary data with the following keys:
-                'text': code to execute
-                'file': optional file name
+    def _invalid_data(self, err):
+        """Close socket when data is invalid.
 
-        Raises:
-            ValueError: if fails to deserialize json data.
+        If data is invalid, the socket connection will be stop and the signal
+        `state_changed` will emit a message: 'Error. Invalid data:...'
+
+        Args:
+            err (Any): exception message.
         """
-        msg = self.socket.readAll()
+        msg = 'Error. Invalid data: %s' % err
 
-        # startsWith is a method of QByteArray
-        if not msg.startsWith('{'):
-            LOGGER.debug('Message is simple string. Converting into dict')
-            return {'text': msg.data()}
+        LOGGER.warning('QSocket :: %s', msg)
+        self.state_changed.emit(msg)
 
-        try:
-            LOGGER.debug('Message is stringified array.')
-            msg_data = json.loads(msg.data())
-        except Exception as err:
-            LOGGER.critical("Invalid Json Deserialization: %s",
-                            err, exc_info=True)
-            raise ValueError('Json Deserialization error')
-        else:
-            LOGGER.debug('msg_data: %s', msg_data)
-            return msg_data
+        self.close_socket()
 
     def on_readyRead(self):
-        LOGGER.debug('Socket message ready')
+        """Execute the received data.
+
+        When data received is ready, method will pass the job to the CodeEditor
+        class that will execute the received code.
+        """
+        LOGGER.debug('QSocket :: Message ready')
+        self.state_changed.emit("Message received.")
+        self.timer.start()
 
         try:
-            msg_data = self._get_message()
-        except ValueError:
+            data = self.socket.readAll().data().decode('utf-8')
+            msg_data = DataCode(data)
+        except InvalidData as err:
+            self._invalid_data(err)
             return
 
-        msg_text = msg_data.get('text')
-        if not msg_text:
-            LOGGER.warning("no text data to execute")
-            return
+        editor = CodeEditor(msg_data)
+        output_text = editor.execute()
 
-        editor = CodeEditor(msg_data.get('file', ''))
-        editor.controller.set_input(msg_text)
-        editor.controller.execute()
-
-        output_text = editor.controller.output()
-
-        LOGGER.debug('Sending message back')
+        LOGGER.debug('QSocket :: sending message back.')
         self.socket.write(validate_output(output_text))
 
-        self.socket.close()
-        LOGGER.debug('Closing socket')
+        self.close_socket()
 
-        self.log_widgets.set_input_text(msg_text)
-        self.log_widgets.set_output_text(output_text)
+        self.received_text.emit(msg_data.text)
+        self.output_text.emit(output_text)

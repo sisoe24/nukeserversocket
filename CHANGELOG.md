@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+## [0.2.0] - 2021-10-29
+
+Tests, code refactoring, connection timeouts, various fixes and optimizations.
+
+### Added
+
+* Connection timeout for client and server.
+* Tests.
+
+### Changed
+
+* Python3 is now the base interpreter when building locally.
+
+### Fixed
+
+* Sending nodes when no were selected, will properly display a hint.
+* Fixed crash that could occur if connection did not initiate but user would attempt to request a new one.
+* Fixed Script editor going out of scope by adding a cache system.
+
 ## [0.1.0] - 2021-09-23
 
 Code refactoring and some new features.

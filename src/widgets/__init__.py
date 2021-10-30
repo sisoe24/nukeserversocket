@@ -1,3 +1,4 @@
+"""Main Widgets package."""
 from .error_dialog import ErrorDialog
 from .toolbar import ToolBar
 from .connections_widget import ConnectionsWidget
