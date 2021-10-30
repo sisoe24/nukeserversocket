@@ -1,60 +1,101 @@
+"""Server module that deals with creates a socket when connection is valid."""
 # coding: utf-8
 from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject
-from PySide2.QtNetwork import QTcpServer, QHostAddress
+from PySide2.QtCore import QObject, Signal
+from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
-from .nss_socket import Socket
-from ..utils import AppSettings
+from .nss_socket import QSocket
+from ..utils import AppSettings, connection_timer
 
 LOGGER = logging.getLogger('NukeServerSocket.server')
 
 
-class Server(QObject):
+class QServer(QObject):
+    """QObject Server class that deals with the connection.
 
-    def __init__(self, log_widgets):
+    Class will also emit signal when connection status has changed.
+
+    Signal:
+        (None) timeout: emit when the timeout event has been triggered.
+        (str) state_changed: emits when the connection state has changed
+        (QSocket) socket_ready: emits the socket class that has been created
+        when connection is successful.
+    """
+
+    timeout = Signal()
+    state_changed = Signal(str)
+    socket_ready = Signal(object)
+
+    def __init__(self):
+        """Init method for the QServer class."""
         QObject.__init__(self)
+        LOGGER.debug('-> QServer :: Starting...')
         self.settings = AppSettings()
 
-        self.log_widgets = log_widgets
-
         self.tcp_port = int(self.settings.value('server/port', '54321'))
-        LOGGER.debug('server tcp port: %s', self.tcp_port)
 
         self.server = QTcpServer()
         self.server.newConnection.connect(self._create_connection)
         self.server.acceptError.connect(
-            lambda err: LOGGER.error('Server error: %s', err)
+            lambda err: LOGGER.error('QServer error: %s', err)
         )
 
         self.socket = None
 
+        self.timer = connection_timer(60 * 5)
+        self.timer.timeout.connect(self.timeout.emit)
+
+    def connection_state(self, state):
+        """Check if connection state.
+
+        If connection state is unconnected, start the timeout timer.
+        """
+        if state == QAbstractSocket.UnconnectedState:
+            self.timer.start()
+
     def close_server(self):
-        """Close server connection."""
+        """Close server connection.
+
+        Method will also stop the timer and emit the 'Disconnected' state.
+        """
         self.server.close()
-        self.log_widgets.set_status_text('Disconnected\n----')
+        self.timer.stop()
+        self.state_changed.emit('Disconnected\n----')
+        LOGGER.debug('QServer :: Closing <-')
 
     def _create_connection(self):
+        """Establish connection and create a new socket.
+
+        When connection is successful, will create a socket and emit
+        `socket_ready` signal.
+        """
         while self.server.hasPendingConnections():
-            self.socket = Socket(
-                self.server.nextPendingConnection(), self.log_widgets
-            )
-            LOGGER.debug('socket: %s', self.socket)
+            socket = self.server.nextPendingConnection()
+            socket.stateChanged.connect(self.connection_state)
+
+            self.socket = QSocket(socket)
+            self.socket_ready.emit(self.socket)
 
     def start_server(self):
         """Start server connection.
 
+        QServer will listen on Any host address and the tcp port specified in
+        the config file.
+
         Raises:
-            ValueError: if connection cannot be made.
+            RuntimeError: if connection cannot be made.
 
         """
         if self.server.listen(QHostAddress.Any, self.tcp_port):
-            self.log_widgets.set_status_text(
+            self.timer.start()
+            self.state_changed.emit(
                 "Connected. Server listening to port: %s..." % self.tcp_port)
             return True
 
         msg = "Server did not initiate. Error: %s." % self.server.errorString()
-        self.log_widgets.set_status_text(msg)
-        raise ValueError(msg)
+        self.state_changed.emit(msg)
+
+        raise RuntimeError(msg)

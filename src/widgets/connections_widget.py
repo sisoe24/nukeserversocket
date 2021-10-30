@@ -1,10 +1,10 @@
+"""Module that deals with the ui connection logic."""
 # coding: utf-8
 from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject, Qt, Signal
-from PySide2.QtNetwork import QHostInfo
+from PySide2.QtCore import QObject, Qt
 
 from PySide2.QtWidgets import (
     QFormLayout,
@@ -24,50 +24,48 @@ from ..utils import AppSettings, get_ip
 LOGGER = logging.getLogger('NukeServerSocket.connections_widget')
 
 
-class ConnectButton(QPushButton):
-    """Custom QPushButton class for quick Connect/Disconnect setup."""
+class ConnectionButtons(QObject):
+    """Button section of the connection widgets."""
 
     def __init__(self, parent=None):
-        QPushButton.__init__(self, parent)
-        self.setText('Connect')
-        self.setCheckable(True)
+        """Init method for the ConnectionButtons class.
 
-        self.toggled.connect(self.toggle_state)
+        Args:
+            (QWidget | None): QWidget to set as a parent. Defaults to: None.
+        """
+        QObject.__init__(self, parent)
 
-    def disconnect(self):
-        """Force disconnect and uncheck toggle state of button."""
-        self.setText('Connect')
-        self.setChecked(False)
+        self.connect_btn = QPushButton('Connect')
+        self.connect_btn.setCheckable(True)
+        self.connect_btn.toggled.connect(self.toggle_state)
+        self.connect_btn.toggled.connect(self._toggle_buttons_state)
+
+        self.test_btn = QPushButton('Test Receiver')
+        self.test_btn.setEnabled(False)
+        self.test_btn.clicked.connect(lambda: self.test_btn.setEnabled(False))
+
+        self.send_btn = QPushButton('Send Selected Nodes')
+        self.send_btn.setEnabled(False)
+        self.send_btn.clicked.connect(lambda: self.send_btn.setEnabled(False))
+
+    def _disconnect(self):
+        """Disconnect and uncheck toggle state of button."""
+        self.connect_btn.setText('Connect')
+        self.connect_btn.setChecked(False)
 
     def toggle_state(self, state):
         """Toggle state of button.
 
-        When a button is toggled (True) the button text will be changed to Disconnect,
-        otherwise when the button not toggled (False) will be changed to Connect.
+        When button is toggled (True), text will be changed to Disconnect,
+        otherwise when toggled (False) will be changed to Connect.
 
         Args:
             state (bool): state of the button
         """
         if state:
-            self.setText('Disconnect')
+            self.connect_btn.setText('Disconnect')
         else:
-            self.setText('Connect')
-
-
-class ConnectionButtons(QObject):
-    """Button section of the connection widgets"""
-
-    def __init__(self, parent=None):
-        QObject.__init__(self, parent)
-
-        self.connect_btn = ConnectButton(parent)
-        self.connect_btn.toggled.connect(self._toggle_buttons_state)
-
-        self.test_btn = QPushButton('Test Receiver')
-        self.test_btn.setEnabled(False)
-
-        self.send_btn = QPushButton('Send Selected Nodes')
-        self.send_btn.setEnabled(False)
+            self.connect_btn.setText('Connect')
 
     def _toggle_buttons_state(self, state):
         """Switch button state based on the connect button.
@@ -78,18 +76,7 @@ class ConnectionButtons(QObject):
         Args:
             state (bool): state of the connect button
         """
-        # self._enable_send(state)
         self._enable_test(state)
-
-    def _enable_send(self, state):
-        """Enable or disable send_btn.
-
-        The state will always be mutually exclusive with the connect_btn.
-
-        Args:
-            state (bool): state of the connect button
-        """
-        self.send_btn.setEnabled(not state)
 
     def _enable_test(self, state):
         """Enable or disable test_btn.
@@ -101,12 +88,17 @@ class ConnectionButtons(QObject):
 
 
 class TcpPort(QSpinBox):
-    """Tcp port object"""
+    """Custom QSpinBox class for the tcp port."""
 
-    def __init__(self, port_id):  # type: (str) -> None
+    def __init__(self, port_id='port'):  # type: (str) -> None
+        """Init method for the TcpPort class.
+
+        Args:
+            (str): config file id key to be used for the port.
+        """
         QSpinBox.__init__(self)
 
-        self.port_id = port_id
+        self.port_id = 'server/%s' % port_id
         self.settings = AppSettings()
 
         self.setRange(49512, 65535)
@@ -115,7 +107,12 @@ class TcpPort(QSpinBox):
         self._setup_port()
 
     def _setup_port(self):
-        """Setup the port entry field widget."""
+        """Set up the port entry field widget.
+
+        Method grab the value from the config file if any and assign it to the
+        port value. After that will connect the signal `valueChanged` to update
+        the config key.
+        """
         port = self.settings.value(self.port_id, 54321)
 
         self.setValue(int(port))
@@ -125,23 +122,31 @@ class TcpPort(QSpinBox):
         """Write port id to configuration file is port is valid.
 
         The method will convert the port value into text before writing it.
+        This is because when settings are first initialized will read the value
+        as a string, so is better to assume that port is always a string.
         """
         if 49152 <= port <= 65535:
             self.settings.setValue(self.port_id, self.textFromValue(port))
 
 
 class ConnectionsWidget(QWidget):
+    """Class that deals with the ui connection logic."""
 
     def __init__(self, parent=None):
+        """Init method for the ConnectionsWidget class.
+
+        Args:
+            (QWidget | None): QWidget to set as a parent. Defaults to: None.
+        """
+        # ! TODO: Refactor needed.
         QWidget.__init__(self, parent)
 
         self.settings = AppSettings()
 
         self._is_connected = QLabel()
         self._is_connected.setObjectName('connection')
-        self.set_idle()
 
-        self.server_port = TcpPort(port_id='server/port')
+        self.server_port = TcpPort()
 
         self.buttons = ConnectionButtons(self)
 
@@ -160,6 +165,7 @@ class ConnectionsWidget(QWidget):
         self.receiver_mode.setLayoutDirection(Qt.RightToLeft)
 
         self.sender_mode = QRadioButton('Sender')
+        self.sender_mode.toggled.connect(self.set_label_sender)
 
         self._layout = QVBoxLayout()
         self._add_switch_layout()
@@ -170,7 +176,7 @@ class ConnectionsWidget(QWidget):
         self._set_tooltips()
 
     def _set_tooltips(self):
-        """Setup the various tooltips so to clean the init method."""
+        """Set up the various tooltips to clean the init method."""
         self._is_connected.setToolTip(
             'State of the server when listening for incoming requests.'
         )
@@ -192,17 +198,20 @@ class ConnectionsWidget(QWidget):
             self.settings.setValue('server/send_to_address', text)
 
     def _state_changed(self, state):
-        """When mode changes, update the UI accordingly.  """
+        """When mode changes, update the UI accordingly."""
+        self.set_label_idle()
 
         def _update_ip_text(state):
             """Update the ip widgets based on the mode."""
+            ip_text = get_ip()
+
             if state:
                 ip_label_text = 'Local IP Address'
-                ip_entry_text = get_ip()
+                ip_entry_text = ip_text
             else:
                 ip_label_text = 'Send To IP Address'
                 ip_entry_text = self.settings.value(
-                    'server/send_to_address', get_ip()
+                    'server/send_to_address', ip_text
                 )
 
             self.ip_entry.setText(ip_entry_text)
@@ -215,6 +224,7 @@ class ConnectionsWidget(QWidget):
         _update_ip_text(state)
 
     def _add_switch_layout(self):
+        """Set up the radiobuttons layout."""
         switch_layout = QHBoxLayout()
         switch_layout.addWidget(self.receiver_mode)
         switch_layout.addWidget(self.sender_mode)
@@ -222,21 +232,17 @@ class ConnectionsWidget(QWidget):
         self._layout.addLayout(switch_layout)
 
     def _add_form_layout(self):
-        """Setup the form layout for the labels."""
-
+        """Set up the form layout for the labels."""
         _form_layout = QFormLayout()
         _form_layout.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
         _form_layout.addRow(QLabel('Status'), self._is_connected)
         _form_layout.addRow(self.ip_address_label, self.ip_entry)
-        # _form_layout.addRow(
-        #     QLabel('Local Host Address'), QLabel(QHostInfo().localHostName()))
         _form_layout.addRow(QLabel('Port'), self.server_port)
 
         self._layout.addLayout(_form_layout)
 
     def _add_grid_layout(self):
-        """Setup the grid layout for the buttons."""
-
+        """Set up the grid layout for the buttons."""
         _grid_layout = QGridLayout()
         _grid_layout.addWidget(self.buttons.connect_btn, 0, 0, 1, 2)
         _grid_layout.addWidget(self.buttons.test_btn, 1, 0)
@@ -244,20 +250,30 @@ class ConnectionsWidget(QWidget):
 
         self._layout.addLayout(_grid_layout)
 
-    def set_idle(self):
+    def set_label_sender(self):
+        """Set idle status."""
+        self._is_connected.setText('Ready to send')
+        self.setStyleSheet('QLabel#connection { color: CornflowerBlue;}')
+
+    def set_label_idle(self):
         """Set idle status."""
         self._is_connected.setText('Idle')
         self.setStyleSheet('QLabel#connection { color: orange;}')
 
-    def set_disconnected(self):
+    def set_label_disconnected(self):
         """Set disconnected status."""
         self._is_connected.setText('Not Connected')
         self.setStyleSheet('QLabel#connection { color: red;}')
 
-    def set_connected(self):
+    def set_label_connected(self):
         """Set connected status."""
         self._is_connected.setText('Connected')
         self.setStyleSheet('QLabel#connection { color: green;}')
+
+    def _disconnect(self):
+        """Set label disconnect at toggle the connection button."""
+        self.set_label_disconnected()
+        self.buttons._disconnect()
 
     def update_status_label(self, status):  # type (bool) -> None
         """Update status label.
@@ -266,6 +282,6 @@ class ConnectionsWidget(QWidget):
             status (bool): bool representation of the connection status
         """
         if status is True:
-            self.set_connected()
+            self.set_label_connected()
         elif status is False:
-            self.set_idle()
+            self.set_label_idle()

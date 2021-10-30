@@ -1,3 +1,4 @@
+"""Module for the nuke script editor controller classes."""
 # coding: utf-8
 from __future__ import print_function
 
@@ -9,8 +10,10 @@ import logging
 from sys import getsizeof
 from textwrap import dedent
 
+from PySide2.QtCore import QObject
+
+from .nuke_se import NukeScriptEditor
 from ..utils import AppSettings, insert_time
-from ..script_editor import NukeScriptEditor
 
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
@@ -20,7 +23,11 @@ class ScriptEditorController():
     """Manipulate internal script editor."""
 
     def __init__(self):
+        """Init method for the ScriptEditorController class.
 
+        Method will also initialize the NukeScriptEditor class.
+        """
+        # TODO: should reference input_widget and output_widget
         self.script_editor = NukeScriptEditor()
 
         self.initial_input = None
@@ -49,9 +56,21 @@ class ScriptEditorController():
         """
         self.script_editor.output_widget.setPlainText(text)
 
+    def input(self):  # type: () -> str
+        """Get input from the nuke internal script editor."""
+        return self.script_editor.input_widget.document().toPlainText()
+
     def output(self):  # type: () -> str
         """Get output from the nuke internal script editor."""
         return self.script_editor.output_widget.document().toPlainText()
+
+    def clear_input(self):
+        """Delete all the text in the text edit."""
+        self.script_editor.input_widget.document().clear()
+
+    def clear_output(self):
+        """Delete all the text in the text edit."""
+        self.script_editor.output_widget.document().clear()
 
     def execute(self):
         """Abstract method for executing code from script editor."""
@@ -70,28 +89,30 @@ class ScriptEditorController():
         self.restore_input()
         self.restore_output()
 
-    def __del__(self):
-        """Restore widget text after deleting object"""
-        # TODO: this is kind of confusing
-        self.restore_state()
-
 
 class _PyController(ScriptEditorController, object):
+    """Controller class that deals with python code execution."""
+
     history = []
 
     def __init__(self, file):
+        """Init method for the _PyController class.
+
+        Args:
+            file (str): file path of the file that is being executed.
+        """
         ScriptEditorController.__init__(self)
         self.settings = AppSettings()
         self._file = file
 
     def restore_input(self):
         """Override input editor if setting is True."""
-        if not self.settings.get_bool('options/override_input'):
+        if not self.settings.get_bool('options/override_input_editor'):
             super(_PyController, self).restore_input()
 
     def restore_output(self):
         """Send text to script editor output if setting is True."""
-        if self.settings.get_bool('options/output_console'):
+        if self.settings.get_bool('options/output_to_console'):
             self._output_to_console()
         else:
             super(_PyController, self).restore_output()
@@ -99,15 +120,15 @@ class _PyController(ScriptEditorController, object):
     @classmethod
     def _clear_history(cls):
         """Clear the history list."""
-        cls.history = []
+        del cls.history[:]
 
     @classmethod
     def _append_output(cls, output_text):  # type: (str) -> None
-        """Append text to class list in order to have a history output.
+        """Append text to list in order to have a history output.
 
-        The list can have a maximum size of 1mb after that it deletes the last element.
-        Theoretically this is way to big, but I am also unsure about this method
-        in general so it works for now.
+        The list can have a maximum size of 1mb after that it deletes the last
+        element. Theoretically this is way to big, but I am also unsure about
+        this method in general so it works for now.
 
         Args:
             output_text (str): text to append into the list
@@ -119,15 +140,15 @@ class _PyController(ScriptEditorController, object):
             cls.history.pop(0)
 
     def _show_file(self):  # type: () -> str
-        """Set the file that is being executed.
+        """Show the file that is being executed.
 
         File could be empty string, in that case will do nothing
 
         Returns:
-            (str) file - file path of the file that is being executed from NukeTools
+            (str) file - file path of the file that is being executed.
         """
         return self._file if self.settings.get_bool(
-            'options/include_path') else os.path.basename(self._file)
+            'options/show_file_path') else os.path.basename(self._file)
 
     @staticmethod
     def _clean_output(text):  # type: (str) -> str
@@ -137,7 +158,8 @@ class _PyController(ScriptEditorController, object):
             text (str): text do be cleaned
 
         Returns:
-            str: Cleaned text. If #Result is not present in text, then returns the untouched text.
+            str: Cleaned text. If #Result is not present in text, then returns
+            the untouched text.
         """
         try:
             return re.search(r'(?:.*Result:\s)(.+)', text, re.S).group(1)
@@ -151,7 +173,7 @@ class _PyController(ScriptEditorController, object):
 
         output = "[Nuke Tools] %s \n%s" % (file, text)
 
-        if self.settings.get_bool('options/use_unicode', True):
+        if self.settings.get_bool('options/show_unicode', True):
             # Arrow sign going down
             unicode = u'\u21B4'
             output = "[Nuke Tools] %s %s\n%s" % (file, unicode, text)
@@ -163,8 +185,12 @@ class _PyController(ScriptEditorController, object):
         return self._clean_output(super(_PyController, self).output())
 
     def _output_to_console(self):
-        """Output data to Nuke internal script editor console."""
+        """Output data to Nuke internal script editor console.
 
+        This function is called only when Output To Console settings is True.
+        Output style is decided based on other settings like Format Text and
+        Clear Output settings.
+        """
         if self.settings.get_bool('options/format_text', True):
 
             output_text = self._format_output(
@@ -182,19 +208,29 @@ class _PyController(ScriptEditorController, object):
 
 
 class _BlinkController(ScriptEditorController, object):
+    """Controller that deals with blink script execution code."""
+
     def __init__(self, file):
+        """Init method for the _BlinkController class.
+
+        Args:
+            file (str):  file path of the file that is being executed.
+        """
         ScriptEditorController.__init__(self)
         self._file = file
 
     def output(self):  # type: () -> str
-        """Overriding parent method by returning a simple string when executing
-        a blinkscript.
+        """Override parent method `output`.
+
+        Returns:
+            (str): string literal: 'Recompiling'
         """
         return 'Recompiling'
 
     def set_input(self, text):  # type: (str) -> str
-        """Overriding parent method by wrapping the code inside a some python
-        commands.
+        """Override parent method `set_input`.
+
+        Wrap the code and insert it to the input widget to be executed.
         """
         text = self._blink_wrapper(text)
         super(_BlinkController, self).set_input(text)
@@ -202,8 +238,8 @@ class _BlinkController(ScriptEditorController, object):
     def _blink_wrapper(self, code):  # type: (str) -> str
         """Wrap the code from the client data into some nuke commands.
 
-        The nuke commands will check for a blinkscript and create one if needed.
-        Then will execute the code from the blinkscript recompile button.
+        The commands will check for a blinkscript and create one if needed,
+        then will execute the code from the blinkscript recompile button.
 
         Returns:
             str: wrapped text code.
@@ -229,33 +265,64 @@ class _BlinkController(ScriptEditorController, object):
 
 
 class _CopyNodesController(ScriptEditorController, object):
+    """Controller that deals with copy nodes execution code."""
+
     def __init__(self):
+        """Init method for the _CopyNodesController class."""
         ScriptEditorController.__init__(self)
-        self.settings = AppSettings()
 
     def output(self):  # type: () -> str
-        """Overriding parent method by returning a simple string when pasting nodes.
+        """Override parent method.
+
+        Method will returning a simple string when pasting nodes.
+
+        Returns:
+            (str): string literal: 'Nodes received'.
         """
-        return 'Nodes copied'
+        return 'Nodes received.'
 
     def set_input(self, text):  # type: (str) -> str
-        """Overriding parent method by executing the `nuke.nodePaste()` command.
+        """Override parent method by executing the `nuke.nodePaste()` command.
 
         Method will create a file with the text data received to be used as an
         argument for the `nuke.nodePaste('file')` method.
+
+        Args:
+            text (str): the text to be set as input in the widget.
         """
-        transfer_file = self.settings.value('path/transfer_file')
+        settings = AppSettings()
+        transfer_file = settings.value('path/transfer_file')
+
         with open(transfer_file, 'w') as file:
             file.write(text)
 
-        text = "nuke.nodePaste('%s')" % transfer_file
+        text = self._paste_nodes_wrapper(transfer_file)
         super(_CopyNodesController, self).set_input(text)
 
+    @staticmethod
+    def _paste_nodes_wrapper(transfer_file):
+        """Wrap the file with a nuke nodePaste command.
 
-class CodeEditor(object):
+        Args:
+            transfer_file (str): the transfer_nodes.tmp file path.
+        """
+        return "nuke.nodePaste('{}')".format(transfer_file)
+
+
+class CodeEditor(QObject):
     """Abstract facade for the script editor controller."""
 
-    def __init__(self, file):  # type: (str) -> None
+    def __init__(self, data):  # type: (DataCode) -> None
+        """Init method for the CodeEditor class.
+
+        Initialize the controller class based on the type of data received.
+
+        Args:
+            data (DataCode): DataCode object.
+        """
+        self.data = data
+
+        file = data.file
         _, file_ext = os.path.splitext(file)
 
         if file_ext in {'.cpp', '.blink'}:
@@ -267,7 +334,16 @@ class CodeEditor(object):
         else:
             self._controller = _PyController(file)
 
-    @property
-    def controller(self):
-        """The script editor controller class."""
-        return self._controller
+    def execute(self):
+        """Higher level facade of the execute code function.
+
+        Set the input, execute the code, return the output and restore the
+        editor state.
+        """
+        self._controller.set_input(self.data.text)
+        self._controller.execute()
+
+        output = self._controller.output()
+        self._controller.restore_state()
+
+        return output

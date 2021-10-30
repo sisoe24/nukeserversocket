@@ -1,11 +1,12 @@
+"""Generate about information for the user or bug reports."""
 # coding: utf-8
 from __future__ import print_function, with_statement
 
 import os
+import re
 import platform
-from os.path import (
-    basename, join, exists, dirname, abspath
-)
+
+from collections import namedtuple
 
 
 from PySide2 import __version__ as PySide2_Version
@@ -27,34 +28,37 @@ def _get_git_branch():
 
 def _get_root():
     """Get root (package) absolute path."""
-    return dirname(dirname(abspath(__file__)))
-
-
-def _get_package_name():
-    """Get package name."""
-    return basename(_get_root())
+    return os.path.dirname(
+        os.path.dirname(os.path.abspath(__file__))
+    )
 
 
 def _get_package_version():
-    """Get package version. If no file return empty"""
-    file = join(_get_root(), 'VERSION')
-
-    if exists(file):
-        with open(file) as file:
-            return file.read()
-
-    return ''
+    """Get package version from pyproject.toml."""
+    path = os.path.join(_get_root(), 'pyproject.toml')
+    with open(path) as file:
+        return re.search(r'(?<=version = ").+(?=")', file.read()).group()
 
 
-PACKAGE = _get_package_name()
+PACKAGE = 'NukeServerSocket'
 
 
 def _clean_empty(_list):
-    """Don't include key if value is empty"""
-    return [(k, v) for k, v in _list if v]
+    """Clean dict from empty keys.
+
+    Returns:
+        AboutData: a namedtuple with the key `label` and `repr`.
+    """
+    AboutData = namedtuple('AboutData', ['label', 'repr'])
+    return [AboutData(k, v.strip()) for k, v in _list if v]
 
 
 def about():
+    """Generate about information with various app versions.
+
+    Returns:
+        (tuple): a tuple containing tuple(str, str) with about information
+    """
     _about = (
         (PACKAGE, _get_package_version()),
         ('PySide2', PySide2_Version),
@@ -69,6 +73,11 @@ def about():
 
 
 def about_links():
+    """Generate About web link information.
+
+    Returns:
+        (tuple): a tuple containing tuple(str, str) with about information
+    """
     github_web = 'https://github.com/sisoe24/' + PACKAGE
 
     _about_links = (
@@ -98,15 +107,11 @@ def about_to_string(exclude=None):
     """Get about dict and convert it into a multi line string.
 
     Args:
-        exclude (list | str): list of str keys from the about dict to exclude in the return.
+        exclude (list | str): A key to exclude in the return.
+        could be a list of str keys or a simple string.
     """
-    about_str = ''
-    for key, value in about():
-
-        if exclude:
-            if key in exclude:
-                continue
-
-        about_str += '%s: %s\n' % (key, value)
-
-    return about_str
+    return ''.join(
+        '%s: %s\n' % (key, value)
+        for key, value in about()
+        if not exclude or key not in exclude
+    )

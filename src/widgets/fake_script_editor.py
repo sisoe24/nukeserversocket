@@ -1,11 +1,13 @@
 # coding: utf-8
-"""Fake emulation of the internal nuke script editor layout/widgets."""
+"""Fake emulation of the internal nuke script editor layout/widgets.
+
+This is needed only for testing purposes so application can be run locally.
+"""
 from __future__ import print_function
 
 import sys
-import random
+import logging
 import subprocess
-
 
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QKeySequence, QKeyEvent
@@ -20,23 +22,53 @@ from PySide2.QtWidgets import (
     QApplication, QMainWindow
 )
 
+from ..utils import pyDecoder
+
+LOGGER = logging.getLogger('NukeServerSocket.fakescripteditor')
+
+# TODO: should search alternative to subprocess
+
 
 class OutputEditor(QTextEdit):
+    """Widget placeholder for the output editor.
+
+    Widget will be read only; the same as the one in Nuke.
+    """
+
     def __init__(self):
+        """Init method of the the OutputEditor class."""
         QTextEdit.__init__(self)
         self.setReadOnly(True)
 
 
 class InputEditor(QPlainTextEdit):
+    """Widget placeholder for the input editor.
+
+    Once initialized, will automatically insert a simple string with a random
+    number.
+    """
+
     def __init__(self):
+        """Init method of the the InputEditor class."""
         QPlainTextEdit.__init__(self)
-        r = random.randint(1, 50)
-        self.setPlainText("print('Hello From Internal SE %s')" % r)
 
 
 class FakeScriptEditor(QWidget):
+    """Widget placeholder for the entire script editor.
+
+    This mimics the Nuke script editor layout widget position and objectName.
+    The Script editor is divided by a QSplitter widget and contains a Output
+    Editor and an Input editor. There is also a Run button that executes python
+    code from the input editor and it sends the output to the Output editor.
+
+    The objectName is the same as the nuke's script editor so it can be found
+    by the Controller class: "uk.co.thefoundry.scripteditor.1".
+    """
+
     def __init__(self, object_name='uk.co.thefoundry.scripteditor.1'):
+        """Init method of the the FakeScriptEditor class."""
         QWidget.__init__(self)
+        LOGGER.debug('FakeScriptEditor :: init')
         self.setObjectName(object_name)
 
         self.run_btn = QPushButton('Run')
@@ -61,23 +93,50 @@ class FakeScriptEditor(QWidget):
         self.installEventFilter(self)
 
     def eventFilter(self, obj, event):
-        if isinstance(event, QKeyEvent):
-            if event.modifiers() == Qt.CTRL and event.key() == Qt.Key_Return:
-                print('shortcut pressed')
-                self.run_code()
-                event.accept()
-                return True
+        """Event filter to intercept the shortcut.
+
+        This is only needed for testing. When the run button is not found, will
+        fallback on shortcut to execute the code.
+        """
+        if (
+            isinstance(event, QKeyEvent)
+            and event.modifiers() == Qt.CTRL
+            and event.key() == Qt.Key_Return
+        ):
+            # print('shortcut pressed')
+            self.run_code()
+            event.accept()
+            return True
         return super(FakeScriptEditor, self).eventFilter(obj, event)
 
     def run_code(self):
+        """Execute python code from the input_console editor.
+
+        Code is executed using `subprocess.check_output` which is not the most
+        safe.
+
+        Raises:
+            subprocess.CalledProcessError: when failing to execute the code.
+        """
         code = self.input_console.toPlainText()
+
+        # when executing from SendNodesClient, code will be just a nuke command
+        # with a path inside, so skip subprocess.
         if 'nuke.nodePaste' not in code:
-            code = subprocess.check_output(['python', '-c', code])
+            try:
+                code = subprocess.check_output([sys.executable, '-c', code])
+                code = pyDecoder(code)
+            except subprocess.CalledProcessError:
+                LOGGER.error('Error executing code: -> %s <-', code)
+                return
         self.output_console.setPlainText(code)
 
 
 class MainWindow(QMainWindow):
+    """Main class needed when testing the editor in standalone mode."""
+
     def __init__(self):
+        """Init method of the MainWindow class."""
         QMainWindow.__init__(self)
 
         self.script_editor = FakeScriptEditor()

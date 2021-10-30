@@ -1,0 +1,16 @@
+[run]
+
+[report]
+skip_covered = true
+skip_empty = true
+exclude_lines = 
+    @abstractmethod
+    @abstractproperty
+    LOGGER.debug
+    
+
+[paths]
+source = src/
+
+[html]
+directory = coverage
