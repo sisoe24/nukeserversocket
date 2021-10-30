@@ -37,9 +37,10 @@ A Nuke plugin that will allow code execution from the local network and more.
   - [1.7. Test plugin locally](#17-test-plugin-locally)
     - [1.7.1. Python 3](#171-python-3)
     - [1.7.2. Python 2](#172-python-2)
-      - [1.7.2.1. `virtualenv`](#1721-virtualenv)
-      - [1.7.2.2. `pipenv`](#1722-pipenv)
-      - [1.7.2.3. Change python requirements](#1723-change-python-requirements)
+      - [1.7.2.1. `pipenv`](#1721-pipenv)
+      - [1.7.2.2. `virtualenv`](#1722-virtualenv)
+      - [1.7.2.3. `poetry`](#1723-poetry)
+    - [1.7.3. Testing](#173-testing)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
   - [1.10. Overview](#110-overview)
@@ -186,8 +187,6 @@ This is pretty much all you need to start your own extension for your favorite t
 
 If you still have some problems, please feel free to reach out for any questions.
 
-
-
 ## 1.7. Test plugin locally
 
 The plugin can be launched locally. This is useful for testing code and implementing new features.
@@ -197,6 +196,7 @@ The project default interpreter is Python 3 but it can also be build with Python
 Python 3 version is required to be `<=3.7.7` as in newer versions there is a Qt related bug that was solved only in versions newer that the one inside Nuke.
 
 After each new feature, the project is required to pass both Python 2 and Python 3 tests.
+
 
 ### 1.7.1. Python 3
 
@@ -217,13 +217,29 @@ poetry run pytest
 
 ### 1.7.2. Python 2
 
-There are different ways to achieve this:
+There are a few ways to create a second virtual environment for Python2:
 
-#### 1.7.2.1. `virtualenv`
+- [pipenv](#1722-pipenv): The most straightforward.
+- [virtualenv](#1722-virtualenv): Python 2 does not include `virtualenv` by default and on some system not even `pip`.
+- [poetry](#1723-poetry): Poetry could create a second env but will have package compatibility issues.
+- and probably more...
+  
+> If the virtualenv created is inside root, poetry must change its configuration value to not use the in root venv: `poetry config virtualenvs.in-project false`
 
-Preferred.
+#### 1.7.2.1. `pipenv`
 
-This method will require `virtualenv` package for Python2 and on some systems, `pip` is not included with python 2 by default.
+```sh
+# install packages for python 2
+pipenv install --two 
+
+# run app locally
+pipenv run python -m src.run_local
+
+# run tests for python 2
+pipenv run pytest
+```
+
+#### 1.7.2.2. `virtualenv`
 
 ```sh
 # Download and setup pip for python 2.
@@ -246,34 +262,22 @@ python2 -m virtualenv .venv/
 .venv/bin/python -m pytest
 ```
 
-#### 1.7.2.2. `pipenv`
-
-Hacky.
-
-One could use `pipenv` to create a different environment. The problem with this approach is that `pipenv` needs to install the package locally in editable mode in order for `pytest` to find the packages.
-
-```sh
-pipenv install --two --dev -e .
-```
-
-This will need a basic `setup.py` file and it will not work as _pyproject.toml_ has a different python requirement specification. A little workaround could be done by temporarily removing the pyproject.toml and then building the project.
-
-```sh
-# rename pyproject.toml
-mv pyproject.toml tmp.toml
-
-# build package locally
-pipenv install --two --dev -e .
-
-# restore name of pyproject.toml
-mv tmp.toml pyproject.toml
-```
-
-#### 1.7.2.3. Change python requirements
+#### 1.7.2.3. `poetry`
 
 Discouraged.
 
-Because poetry allows multiple environment, one could change the _pyproject.toml_ python requirements to satisfy both python2 and 3: `>=2.7.18, <=3.7.7`. This has the drawback that poetry will only install the latest package version compatible for python2.
+Because `poetry` allows multiple environment, one could change the _pyproject.toml_ python requirements to satisfy both python2 and 3: `>=2.7.18, <=3.7.7`. This has the drawback that will only install the latest package version compatible for python2.
+
+### 1.7.3. Testing
+
+The repo includes a `git` hook script that is launched pre-push. The script will execute the tests for Python 2 and 3. If one fails, will exit and abort the push.
+
+```sh
+# to activate the .githooks folder as the default hooks folder for the repo
+git config core.hooksPath .githooks
+```
+
+The script will assume that `poetry` is used for python 3 and that python 2 executable is inside `.venv/bin/`. If this is not the case, change `python2path` and `python3path`.
 
 ## 1.8. Known Issues
 
