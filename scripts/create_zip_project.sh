@@ -5,6 +5,8 @@
 # Build zip project with only essential files. needs git to append the build version
 #
 
+find . -type f \( -name '*.pyc' -o -name '.DS_Store' \) -exec rm {} \;
+
 PROJECT=$(basename "$(pwd)")
 
 (
@@ -15,14 +17,13 @@ PROJECT=$(basename "$(pwd)")
         "$PROJECT"/CHANGELOG.md \
         "$PROJECT"/README.md \
         "$PROJECT"/LICENSE \
-        "$PROJECT"/VERSION
 )
 
 # only works for git > 2.22
 # build=$(git branch --show-current)
 
 build=$(git rev-parse --abbrev-ref HEAD)
-version=$(cat VERSION)
+version=$( < pyproject.toml grep version | grep -Eo '".+"' | sed 's/"//g')
 
 zip_file="dist/${PROJECT}_${build}_${version}.zip"
 
