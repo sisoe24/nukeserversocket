@@ -92,7 +92,7 @@ When receiving nodes just follow the steps for [Receive incoming request](#141-r
 #### 1.4.2.3. Connection timeouts
 
 - The server connection will shutdown after 5 minutes of inactivity.
-- The socket server will shutdown after 30 seconds if did not received any request.
+- The socket server will shutdown after 30 seconds if it doesn't receive any request.
 - The socket client will shutdown after 10 seconds if could not initiate a connection.
 
 ## 1.5. Settings
@@ -212,7 +212,7 @@ poetry install
 poetry run python -m src.run_local
 
 # run tests
-poetry run pytest
+poetry run python -m pytest
 ```
 
 ### 1.7.2. Python 2
@@ -236,7 +236,7 @@ pipenv install --two
 pipenv run python -m src.run_local
 
 # run tests for python 2
-pipenv run pytest
+pipenv run python -m pytest
 ```
 
 #### 1.7.2.2. `virtualenv`
@@ -266,7 +266,7 @@ python2 -m virtualenv .venv/
 
 Discouraged.
 
-Because `poetry` allows multiple environment, one could change the _pyproject.toml_ python requirements to satisfy both python2 and 3: `>=2.7.18, <=3.7.7`. This has the drawback that will only install the latest package version compatible for python2.
+Because `poetry` allows multiple environment, one could change the _pyproject.toml_ python requirements to satisfy both python 2 and 3: `>=2.7.18, <=3.7.7`. This has the drawback that will only install the latest package version compatible for python2.
 
 ### 1.7.3. Testing
 
@@ -277,12 +277,12 @@ The repo includes a `git` hook script that is launched pre-push. The script will
 git config core.hooksPath .githooks
 ```
 
-The script will assume that `poetry` is used for python 3 and that python 2 executable is inside `.venv/bin/`. If this is not the case, change `python2path` and `python3path`.
+The script will assume that `poetry` is used for python 3 and that python 2 executable is inside `root/.venv/bin/`. If this is not the case, change `python2path` and `python3path`.
 
 ## 1.8. Known Issues
 
 - Settings window doesn't display the tooltip text.
-- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. The only way to force close all of the connections is to restart Nuke.
+- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. One way to force close all of the connections is to restart Nuke, or wait for the connection timeout: `5` minutes.
 
 ## 1.9. Compatibility
 
