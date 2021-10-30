@@ -9,7 +9,7 @@ from src.utils import get_ip
 from src.utils.util import pyDecoder, pyEncoder, validate_output
 
 
-def test_get_ip(   ):
+def test_get_ip():
     """Test ip matches pattern.
 
     Test if ip matches one of the following pattern: `192.168.1.34` or
