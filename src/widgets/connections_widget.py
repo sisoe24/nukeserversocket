@@ -214,9 +214,6 @@ class ConnectionsWidget(QWidget):
                     'server/send_to_address', ip_text
                 )
 
-            width = 50 if len(ip_text) <= 12 else 150
-            self.ip_entry.setMinimumWidth(width)
-
             self.ip_entry.setText(ip_entry_text)
             self.ip_address_label.setText(ip_label_text)
 
