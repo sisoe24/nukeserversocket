@@ -17,6 +17,10 @@
     });
   </script>
   <h1 id="1-nukeserversocket-readme">Changelog</h1>
+  <h2>v0.2.0 2021-10-29</h2>
+  <li>Connections timeouts.</li>
+  <li>Various fixes and optimizations.</li>
+
   <h2>v0.1.0 2021-09-23</h2>
   <li>Execute BlinkScript code.</li>
   <li>Send/Receive Nodes from another instance.</li>
@@ -26,10 +30,6 @@
 
   <h1 id="1-nukeserversocket-readme">1. NukeServerSocket README</h1>
   <p>A Nuke plugin that will allow code execution from the local network and more.</p>
-  <blockquote>
-    <p>This is primarily a companion plugin for <a
-        href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a>.</p>
-  </blockquote>
   <ul>
     <li><a href="#1-nukeserversocket-readme">1. NukeServerSocket README</a>
       <ul>
@@ -66,6 +66,7 @@
   <ul>
     <li><a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a> - Visual
       Studio Code extension.</li>
+    <li><a href="https://packagecontrol.io/packages/NukeToolsST">Nuke Tools ST</a> - Sublime Text package.</li>
   </ul>
   <h2 id="12-features">1.2. Features</h2>
   <ul>
@@ -178,30 +179,6 @@
     </li>
     <li>Windows 10</li>
   </ul>
-  <h2 id="19-test-plugin-locally">1.9. Test plugin locally</h2>
-  <blockquote>
-    <p>This works only on Linux and Mac. Probably Windows WSL but haven't tested it yet.</p>
-  </blockquote>
-  <p>While limited in some regards, the plugin can be tested outside Nuke environment.</p>
-  <ol>
-    <li>Clone the github repo into your machine.</li>
-    <li><code>pipenv install --ignore-pipfile</code> for normal installation or
-      <code>pipenv install --ignore-pipfile --dev -e .</code> if you want to test the code with <code>pytest</code> (No
-      tests are provided at the time of writing).
-    </li>
-    <li>Launch the app via terminal <code>python -m tests.run_local</code> or vscode task: <code>RunApp</code></li>
-  </ol>
-  <p>The local plugin offers a simple emulation of the Nuke's internal Script Editor layout. It just basic enough to
-    test some simple code.</p>
-  <p>When the application starts it will:</p>
-  <ol>
-    <li>Click the connect button</li>
-    <li>Send a test message</li>
-    <li>Display the received message or error if any.</li>
-    <li>Override input/output widgets if settings allowed it.</li>
-  </ol>
-  <p>It is a very basic and simple test but because the PySide2 and Python version are pretty much identical to Nuke's
-    one will likely function the same way inside Nuke.</p>
   <h2 id="110-overview">1.10. Overview</h2>
   <img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true"
     width="100%" />
