@@ -50,7 +50,7 @@ A Nuke plugin that will allow code execution from the local network and more.
 Tools that are using NukeServerSocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
-- [Nuke Tools ST](https://github.com/sisoe24/Nuke-Tools-ST) - Sublime Text package. (currently waiting for package control approval)
+- [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
 
 ## 1.2. Features
 
