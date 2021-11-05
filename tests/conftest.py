@@ -31,7 +31,7 @@ def pytest_collection_modifyitems(config, items):
     if config.getoption('--checklinks'):
         return
 
-    skip_check = pytest.mark.skip(reason='need --checklink option to run')
+    skip_check = pytest.mark.skip(reason='need --checklinks option to run')
 
     for item in items:
         if "web" in item.keywords:
