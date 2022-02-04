@@ -14,7 +14,7 @@ from PySide2.QtWidgets import (
 from src.script_editor import nuke_script_editor
 from src.utils import pyDecoder
 from src.widgets import fake_script_editor as fake_se
-from src.script_editor import nuke_se_controllers as se
+from src.script_editor import nuke_controllers as se
 
 
 @pytest.fixture()

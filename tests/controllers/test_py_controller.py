@@ -6,7 +6,7 @@ from collections import namedtuple
 import pytest
 
 from src.utils import AppSettings
-from src.script_editor import nuke_se_controllers as nse
+from src.script_editor import nuke_controllers as nse
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
 SAMPLE_WORD = 'NukeServerSocket'

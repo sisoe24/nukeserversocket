@@ -3,7 +3,7 @@ from textwrap import dedent
 
 import pytest
 
-from src.script_editor import nuke_se_controllers as se
+from src.script_editor import nuke_controllers as se
 
 
 NUKE_CMD = dedent("""
