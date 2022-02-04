@@ -35,3 +35,8 @@ def nodeCopy(string):
     else:
         with open(string, 'w') as file:
             file.write(copy_tmp)
+
+
+def executeInMainThreadWithResult(call, args):
+    """Internal function placeholder."""
+    return args
