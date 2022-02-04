@@ -2,19 +2,21 @@
 # coding: utf-8
 from __future__ import print_function
 
+import io
 import re
 import os
+import sys
 import json
 import logging
+import contextlib
 
-from sys import getsizeof
 from textwrap import dedent
 
 from PySide2.QtCore import QObject
 
+from .. import nuke
 from .nuke_se import NukeScriptEditor
 from ..utils import AppSettings, insert_time
-
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
 
@@ -90,7 +92,50 @@ class ScriptEditorController():
         self.restore_output()
 
 
-class _PyController(ScriptEditorController, object):
+class _ExecuteInMainThread(object):
+    def __init__(self):
+        print('_ExecuteInMainThread')
+        self._output = None
+        self._input = None
+
+    @staticmethod
+    @contextlib.contextmanager
+    def stdoutIO(stdout=None):
+        """Get output from sys.stdout.
+
+        https://stackoverflow.com/a/3906390/9392852
+        """
+        old = sys.stdout
+        if stdout is None:
+            stdout = io.StringIO()
+        sys.stdout = stdout
+        yield stdout
+        sys.stdout = old
+
+    def _exec(self, data):  # type: (str) -> str
+        """Execute a string as a callable nuke command."""
+        with self.stdoutIO() as s:
+            exec(data)
+        return s.getvalue()
+
+    def set_input(self, text):  # type: (str) -> None
+        """Set input from the nuke command."""
+        self._input = text
+
+    def execute(self):
+        """Execute code in the main thread."""
+        self._output = nuke.executeInMainThreadWithResult(
+            self._exec, self._input)
+
+    def output(self):  # type: () -> str
+        """Get output from the nuke command."""
+        return self._output
+
+    def restore_state(self):
+        """Temporary placeholder function."""
+
+
+class _PyController(_ExecuteInMainThread, object):
     """Controller class that deals with python code execution."""
 
     history = []
@@ -101,7 +146,7 @@ class _PyController(ScriptEditorController, object):
         Args:
             file (str): file path of the file that is being executed.
         """
-        ScriptEditorController.__init__(self)
+        _ExecuteInMainThread.__init__(self)
         self.settings = AppSettings()
         self._file = file
 
@@ -134,7 +179,7 @@ class _PyController(ScriptEditorController, object):
             output_text (str): text to append into the list
         """
         cls.history.append(output_text)
-        list_size = [getsizeof(n) for n in cls.history]
+        list_size = [sys.getsizeof(n) for n in cls.history]
 
         if sum(list_size) >= 1000000:
             cls.history.pop(0)
@@ -207,7 +252,7 @@ class _PyController(ScriptEditorController, object):
         self._clear_history()
 
 
-class _BlinkController(ScriptEditorController, object):
+class _BlinkController(_ExecuteInMainThread, object):
     """Controller that deals with blink script execution code."""
 
     def __init__(self, file):
@@ -216,7 +261,7 @@ class _BlinkController(ScriptEditorController, object):
         Args:
             file (str):  file path of the file that is being executed.
         """
-        ScriptEditorController.__init__(self)
+        _ExecuteInMainThread.__init__(self)
         self._file = file
 
     def output(self):  # type: () -> str
@@ -264,12 +309,12 @@ class _BlinkController(ScriptEditorController, object):
         """).format(**kwargs).strip()
 
 
-class _CopyNodesController(ScriptEditorController, object):
+class _CopyNodesController(_ExecuteInMainThread, object):
     """Controller that deals with copy nodes execution code."""
 
     def __init__(self):
         """Init method for the _CopyNodesController class."""
-        ScriptEditorController.__init__(self)
+        _ExecuteInMainThread.__init__(self)
 
     def output(self):  # type: () -> str
         """Override parent method.
