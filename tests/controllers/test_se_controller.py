@@ -11,7 +11,7 @@ from PySide2.QtWidgets import (
     QWidget
 )
 
-from src.script_editor import nuke_se
+from src.script_editor import nuke_script_editor
 from src.utils import pyDecoder
 from src.widgets import fake_script_editor as fake_se
 from src.script_editor import nuke_se_controllers as se
@@ -23,12 +23,12 @@ def _nuke_editor(_init_fake_editor):
 
     Tests in this class need to clean the editor cache each time.
     """
-    se_editor = nuke_se.NukeScriptEditor()
-    nuke_se.editors_widgets.clear()
+    se_editor = nuke_script_editor.NukeScriptEditor()
+    nuke_script_editor.editors_widgets.clear()
 
     yield se_editor
 
-    nuke_se.editors_widgets.clear()
+    nuke_script_editor.editors_widgets.clear()
 
 
 def test_script_editor_is_widget(_nuke_editor):

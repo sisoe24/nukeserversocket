@@ -15,7 +15,7 @@ from textwrap import dedent
 from PySide2.QtCore import QObject
 
 from .. import nuke
-from .nuke_se import NukeScriptEditor
+from .nuke_script_editor import NukeScriptEditor
 from ..utils import AppSettings, insert_time
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
