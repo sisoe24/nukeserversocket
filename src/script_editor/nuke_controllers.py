@@ -15,81 +15,9 @@ from textwrap import dedent
 from PySide2.QtCore import QObject
 
 from .. import nuke
-from .nuke_script_editor import NukeScriptEditor
 from ..utils import AppSettings, insert_time
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
-
-
-class ScriptEditorController():
-    """Manipulate internal script editor."""
-
-    def __init__(self):
-        """Init method for the ScriptEditorController class.
-
-        Method will also initialize the NukeScriptEditor class.
-        """
-        # TODO: should reference input_widget and output_widget
-        self.script_editor = NukeScriptEditor()
-
-        self.initial_input = None
-        self.initial_output = None
-
-        self._save_state()
-
-    def _save_state(self):
-        """Save initial state of the editor before any modification."""
-        self.initial_input = self.script_editor.input_widget.toPlainText()
-        self.initial_output = self.script_editor.output_widget.toPlainText()
-
-    def set_input(self, text):  # type: (str) -> None
-        """Set text to the input editor.
-
-        Arguments
-            (str) text - text to insert.
-        """
-        self.script_editor.input_widget.setPlainText(text)
-
-    def set_output(self, text):  # type: (str) -> None
-        """Set text to the output editor.
-
-        Arguments
-            (str) text - text to insert.
-        """
-        self.script_editor.output_widget.setPlainText(text)
-
-    def input(self):  # type: () -> str
-        """Get input from the nuke internal script editor."""
-        return self.script_editor.input_widget.document().toPlainText()
-
-    def output(self):  # type: () -> str
-        """Get output from the nuke internal script editor."""
-        return self.script_editor.output_widget.document().toPlainText()
-
-    def clear_input(self):
-        """Delete all the text in the text edit."""
-        self.script_editor.input_widget.document().clear()
-
-    def clear_output(self):
-        """Delete all the text in the text edit."""
-        self.script_editor.output_widget.document().clear()
-
-    def execute(self):
-        """Abstract method for executing code from script editor."""
-        self.script_editor.execute()
-
-    def restore_input(self):
-        """Restore input text."""
-        self.script_editor.input_widget.setPlainText(self.initial_input)
-
-    def restore_output(self):
-        """Restore output text."""
-        self.script_editor.output_widget.setPlainText(self.initial_output)
-
-    def restore_state(self):
-        """Restore the initial text data of the editor."""
-        self.restore_input()
-        self.restore_output()
 
 
 class _ExecuteInMainThread(object):
