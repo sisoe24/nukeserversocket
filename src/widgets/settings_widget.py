@@ -8,7 +8,9 @@ from PySide2.QtWidgets import (
     QCheckBox,
     QFormLayout,
     QLabel,
-    QWidget
+    QWidget,
+    QGroupBox,
+    QVBoxLayout
 )
 
 from ..utils import AppSettings
@@ -24,12 +26,13 @@ class CheckBox(QCheckBox):
     connect the toggle signal to update the configuration setting value.
     """
 
-    def __init__(self, title, is_checked, tooltip, parent=None):
-        # type: (str, bool, str, QWidget | None) -> None
+    def __init__(self, title, label, is_checked, tooltip, parent=None):
+        # type: (str, str, bool, str, QWidget | None) -> None
         """Init method for the CheckBox class.
 
         Args:
             title (str): title of the checkbox.
+            label (str): label of the checkbox.
             is_checked (bool): initial state of the checkbox if does not have
             already a setting value in the config file.
             tooltip (str): checkbox tooltip.
@@ -37,6 +40,7 @@ class CheckBox(QCheckBox):
         """
         QCheckBox.__init__(self, title, parent)
         self.setToolTip(tooltip)
+        self._label = label
 
         obj_name = title.lower().replace(' ', '_')
         ini_value = 'options/%s' % obj_name
@@ -54,7 +58,7 @@ class SettingsWidget(QWidget):
     """Settings Widget.
 
     Class that deals mostly with showing the checkbox ui and enabling/disabling
-    certain checkboxs state.
+    certain checkboxes state.
     """
 
     def __init__(self):
@@ -62,47 +66,47 @@ class SettingsWidget(QWidget):
         QWidget.__init__(self)
         self.setObjectName('SettingsWidget')
 
-        self._mirror_to_se = CheckBox(
-            is_checked=False, title='Mirror to ScriptEditor', parent=self,
-            tooltip='Mirror code execution to internal script editor')
+        self._se_checkbox = QGroupBox('Mirror To Script Editor')
+        self._se_checkbox.setCheckable(True)
 
         self._output_console = CheckBox(
             is_checked=False, title='Override Output Editor', parent=self,
-            tooltip='Output to internal Script Editor')
+            tooltip='Output to internal Script Editor', label='Output:')
 
         self._format_output = CheckBox(
-            is_checked=False, title='Format Text', parent=self,
+            is_checked=False, title='Format Text', parent=self, label='',
             tooltip='Clean and format output console text')
 
         self._clear_output = CheckBox(
-            is_checked=False, title='Clear Output', parent=self,
+            is_checked=False, title='Clear Output', parent=self, label='',
             tooltip='Clear previous output in console. Works only if Format Text is enabled')
 
         self._show_path = CheckBox(
-            is_checked=False, title='Show File Path', parent=self,
+            is_checked=False, title='Show File Path', parent=self, label='',
             tooltip='Include full path of the executed file')
 
         self._show_unicode = CheckBox(
-            is_checked=True, title='Show Unicode', parent=self,
+            is_checked=True, title='Show Unicode', parent=self, label='',
             tooltip='include unicode character in output text')
 
         self._override_input = CheckBox(
             is_checked=False, title='Override Input Editor', parent=self,
-            tooltip='Override internal input text editor',)
+            tooltip='Override internal input text editor', label='Input:')
 
-        _layout = QFormLayout()
-        _layout.setVerticalSpacing(10)
+        _layout_checkboxes = QFormLayout()
+        _layout_checkboxes.setVerticalSpacing(10)
 
-        # HACK: this is really ugly.
-        # try to add the labels dynamically in a loop
-        labels = ('', 'Output:', '', '', '', '', 'Input:')
-        for label, checkbox in zip(labels, self.children()):
-            _layout.addRow(QLabel(label), checkbox)
+        for checkbox in self.findChildren(CheckBox):
+            _layout_checkboxes.addRow(checkbox._label, checkbox)
+
+        self._se_checkbox.setLayout(_layout_checkboxes)
+
+        _layout = QVBoxLayout()
+        _layout.addWidget(self._se_checkbox)
 
         self.setLayout(_layout)
 
-        # self._toggle_sub_options()
-        self._mirror_to_se.toggled.connect(self._toggle_sub_options)
+        self._se_checkbox.toggled.connect(self._toggle_sub_options)
         self._output_console.toggled.connect(self._toggle_output_options)
         self._format_output.toggled.connect(self._toggle_clear_console)
 
@@ -152,7 +156,6 @@ class SettingsWidget(QWidget):
         Args:
             state (bool): state of output_console attribute
         """
-        state = self._mirror_to_se.isChecked()
-        for checkbox in self.children():
-            if isinstance(checkbox, CheckBox) and checkbox.objectName() != 'mirror_to_scripteditor':
-                self._toggle_checkboxes(checkbox, state)
+        state = self._se_checkbox.isChecked()
+        for checkbox in self._se_checkbox.findChildren(CheckBox):
+            self._toggle_checkboxes(checkbox, state)
