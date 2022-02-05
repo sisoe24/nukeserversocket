@@ -39,6 +39,7 @@ def _get_options_keys(file):
     Returns:
         list: list with all of the options reference found.
     """
+    # TODO: this will not find the names in the test_settings_widget.py file.
     with open(file) as src_file:
         return re.findall(r'(?<=options/)\w+', src_file.read())
 
