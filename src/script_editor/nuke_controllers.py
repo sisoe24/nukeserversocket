@@ -16,20 +16,22 @@ from PySide2.QtCore import QObject
 
 from .. import nuke
 from ..utils import AppSettings, insert_time
+from .nuke_script_editor import ScriptEditorController
 
 LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
 
 
 class _ExecuteInMainThread(object):
     def __init__(self):
-        print('_ExecuteInMainThread')
+        self.script_editor = ScriptEditorController()
+
         self._output = None
         self._input = None
 
     @staticmethod
     @contextlib.contextmanager
     def stdoutIO(stdout=None):
-        """Get output from sys.stdout.
+        """Get output from sys.stdout after executing code from `exec`.
 
         https://stackoverflow.com/a/3906390/9392852
         """
@@ -41,7 +43,7 @@ class _ExecuteInMainThread(object):
         sys.stdout = old
 
     def _exec(self, data):  # type: (str) -> str
-        """Execute a string as a callable nuke command."""
+        """Execute a string as a callable command."""
         with self.stdoutIO() as s:
             exec(data)
         return s.getvalue()
@@ -51,16 +53,26 @@ class _ExecuteInMainThread(object):
         self._input = text
 
     def execute(self):
-        """Execute code in the main thread."""
-        self._output = nuke.executeInMainThreadWithResult(
-            self._exec, self._input)
+        """Execute code in the main thread.
+        
+        If for some reason execution fails, method will fallback on the script
+        editor execution mechanism.
+        """
+        try:
+            self._output = nuke.executeInMainThreadWithResult(
+                self._exec, self._input)
+        except Exception as error:
+            LOGGER.error("Failed to executeInMainThread: %s", error)
+            self.script_editor.execute()
+            self._output = self.script_editor.output()
 
     def output(self):  # type: () -> str
         """Get output from the nuke command."""
         return self._output
 
-    def restore_state(self):
-        """Temporary placeholder function."""
+    def input(self):  # type: () -> str
+        """Get output from the nuke command."""
+        return self._input
 
 
 class _PyController(_ExecuteInMainThread, object):
@@ -81,14 +93,18 @@ class _PyController(_ExecuteInMainThread, object):
     def restore_input(self):
         """Override input editor if setting is True."""
         if not self.settings.get_bool('options/override_input_editor'):
-            super(_PyController, self).restore_input()
+            self.script_editor.restore_input()
 
     def restore_output(self):
         """Send text to script editor output if setting is True."""
-        if self.settings.get_bool('options/output_to_console'):
+        if self.settings.get_bool('options/override_output_editor'):
             self._output_to_console()
         else:
-            super(_PyController, self).restore_output()
+            self.script_editor.restore_output()
+
+    def set_input(self, text):  # type: (str) -> None
+        super(_PyController, self).set_input(text)
+        self.script_editor.set_input(text)
 
     @classmethod
     def _clear_history(cls):
@@ -157,6 +173,10 @@ class _PyController(_ExecuteInMainThread, object):
         """Get a clean version of the output editor."""
         return self._clean_output(super(_PyController, self).output())
 
+    def restore_state(self):
+        self.restore_output()
+        self.restore_input()
+
     def _output_to_console(self):
         """Output data to Nuke internal script editor console.
 
@@ -171,10 +191,10 @@ class _PyController(_ExecuteInMainThread, object):
             )
 
             if self.settings.get_bool('options/clear_output', True):
-                super(_PyController, self).set_output(output_text)
+                self.script_editor.set_output(output_text)
             else:
                 self._append_output(output_text)
-                super(_PyController, self).set_output(''.join(self.history))
+                self.script_editor.set_output(''.join(self.history))
                 return
 
         self._clear_history()
