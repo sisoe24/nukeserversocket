@@ -99,9 +99,7 @@ class NukeScriptEditor(BaseScriptEditor):
     Methods:
         execute: execute the code.
 
-
-    Note: This could break anytime if Foundry changes something.
-    # TODO: Should invest some time to find a better way.
+    Note: This could break anytime if API changes.
     """
 
     def __init__(self):
@@ -224,7 +222,6 @@ class ScriptEditorController():
 
         Method will also initialize the NukeScriptEditor class.
         """
-        # TODO: should reference input_widget and output_widget
         self.script_editor = NukeScriptEditor()
 
         self.initial_input = None
