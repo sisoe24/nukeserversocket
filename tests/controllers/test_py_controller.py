@@ -197,7 +197,7 @@ def _output_to_console(_py_controller, _app_settings):
         _py_controller.set_input("print('{}')".format(text))
         _py_controller.execute()
 
-        _app_settings.setValue('options/output_to_console', value)
+        _app_settings.setValue('options/override_output_editor', value)
         _py_controller.restore_output()
 
         return _py_controller.output()
