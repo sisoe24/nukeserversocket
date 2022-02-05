@@ -101,7 +101,7 @@ class SettingsWidget(QWidget):
 
         self.setLayout(_layout)
 
-        self._toggle_sub_options()
+        # self._toggle_sub_options()
         self._mirror_to_se.toggled.connect(self._toggle_sub_options)
         self._output_console.toggled.connect(self._toggle_output_options)
         self._format_output.toggled.connect(self._toggle_clear_console)
