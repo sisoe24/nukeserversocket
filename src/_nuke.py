@@ -3,7 +3,10 @@
 from __future__ import print_function
 
 import re
+import sys
+import subprocess
 from textwrap import dedent
+from src.utils import pyDecoder
 
 from PySide2.QtGui import QClipboard
 
@@ -38,5 +41,7 @@ def nodeCopy(string):
 
 
 def executeInMainThreadWithResult(call, args):
-    """Internal function placeholder."""
-    return args
+    """Internal function placeholder that mimics the behavior of Nukes internal."""
+    code = subprocess.check_output([sys.executable, '-c', args])
+    code = pyDecoder(code)
+    return code
