@@ -86,7 +86,7 @@ class SettingsWidget(QWidget):
             tooltip='Include full path of the executed file')
 
         self._show_unicode = CheckBox(
-            is_checked=True, title='Show Unicode', parent=self, label='',
+            is_checked=False, title='Show Unicode', parent=self, label='',
             tooltip='include unicode character in output text')
 
         self._override_input = CheckBox(
@@ -133,7 +133,7 @@ class SettingsWidget(QWidget):
         self._toggle_checkboxes(self._show_unicode, state)
         self._toggle_checkboxes(self._show_path, state)
 
-    def _toggle_output_options(self):
+    def _toggle_output_options(self, state):
         """Set output checkboxes sub options state.
 
         Those options should be enabled only if Output Console is True.
@@ -141,7 +141,6 @@ class SettingsWidget(QWidget):
         Args:
             state (bool): state of output_console attribute
         """
-        state = self._output_console.isChecked()
 
         self._toggle_checkboxes(self._format_output, state)
         self._toggle_checkboxes(self._clear_output, state)
