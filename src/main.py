@@ -111,6 +111,9 @@ class MainWindowWidget(QWidget):
             socket.state_changed.connect(self.log_widgets.set_status_text)
             socket.received_text.connect(self.log_widgets.set_received_text)
             socket.output_text.connect(self.log_widgets.set_output_text)
+            socket.execution_error.connect(
+                lambda text: ErrorDialog(text, self).show()
+            )
 
         _server = QServer()
 
