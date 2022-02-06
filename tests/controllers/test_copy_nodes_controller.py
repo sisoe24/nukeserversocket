@@ -44,9 +44,6 @@ def _nodes_controller(_init_fake_editor):
 
     yield controller
 
-    controller.clear_output()
-    controller.clear_input()
-
 
 def test_nodes_controller_output(_nodes_controller):
     """Check that the output method was overridden."""
