@@ -47,6 +47,8 @@ def init_settings():
     settings.setValue('path/transfer_file',
                       os.path.join(tmp_folder, 'transfer_nodes.tmp'))
 
+    settings.setValue('dialog/dont_show', False)
+
 
 class MainWindowWidget(QWidget):
     """Main window widgets and logic.
