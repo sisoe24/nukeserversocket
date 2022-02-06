@@ -54,7 +54,7 @@ class _ExecuteInMainThread(object):
 
     def execute(self):
         """Execute code in the main thread.
-        
+
         If for some reason execution fails, method will fallback on the script
         editor execution mechanism.
         """
@@ -337,6 +337,9 @@ class CodeEditor(QObject):
         self._controller.execute()
 
         output = self._controller.output()
-        self._controller.restore_state()
+
+        # TODO: add conditions that checks if main options is enabled at all
+        if isinstance(self._controller, _PyController):
+            self._controller.restore_state()
 
         return output
