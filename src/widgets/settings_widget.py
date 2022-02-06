@@ -68,6 +68,7 @@ class SettingsWidget(QWidget):
 
         self._se_checkbox = QGroupBox('Mirror To Script Editor')
         self._se_checkbox.setCheckable(True)
+        self._se_checkbox.setChecked(False)
 
         self._output_console = CheckBox(
             is_checked=False, title='Override Output Editor', parent=self,
