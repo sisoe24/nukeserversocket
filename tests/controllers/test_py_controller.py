@@ -153,6 +153,7 @@ def _overwrite_input_editor(_py_controller, _app_settings):
             str: the controller input text.
         """
         _py_controller.set_input(text)
+        _py_controller.execute()
         _app_settings.setValue('options/override_input_editor', value)
         _py_controller.restore_input()
         return _py_controller.script_editor.input()
@@ -200,7 +201,7 @@ def _overwrite_output_editor(_py_controller, _app_settings):
         _py_controller.execute()
 
         _app_settings.setValue('options/override_output_editor', value)
-        print('->', _app_settings.value('options/override_output_editor'))
+        _py_controller.to_console()
 
         _py_controller.restore_output()
 
