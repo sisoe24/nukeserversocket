@@ -1,6 +1,8 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.0] - 2022-02-06
+
+Under the hood improvements on code execution and some refactoring.
 
 ## [0.2.0] - 2021-10-29
 
