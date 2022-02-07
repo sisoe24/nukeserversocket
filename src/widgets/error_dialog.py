@@ -7,10 +7,11 @@ import traceback
 
 from collections import namedtuple
 
-from PySide2.QtWidgets import QMessageBox
+from PySide2.QtWidgets import QMessageBox, QCheckBox
 from PySide2.QtGui import QClipboard, QDesktopServices
 
 from ..about import get_about_key, about_to_string
+from ..utils import AppSettings
 
 
 LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
@@ -75,6 +76,11 @@ class ErrorDialog(QMessageBox):
         self.setText('NukeServerSocket error...')
         self.setInformativeText(str(msg))
 
+        self._settings = AppSettings()
+        self._setting_name = 'dialog/dont_show'
+        self.cb = QCheckBox("Don't show this again.", self)
+        self.set_checkbox()
+
         self.setStandardButtons(QMessageBox.Cancel | QMessageBox.Ok)
         self.addButton('Report bug', QMessageBox.ActionRole)
         self.addButton('Open logs', QMessageBox.ActionRole)
@@ -87,13 +93,21 @@ class ErrorDialog(QMessageBox):
             '\n---\n' + self._traceback
         )
 
+    def set_checkbox(self):
+        """Set checkbox "don't show" initial configuration."""
+        self.cb.setChecked(self._settings.get_bool(self._setting_name, False))
+        self.cb.toggled.connect(
+            lambda state: self._settings.setValue(self._setting_name, state)
+        )
+        self.setCheckBox(self.cb)
+
     def prepare_report(self):  # type() -> Report
         """Prepare the error report and copies it to the clipboard.
 
         Returns:
             Report: a namedtuple with the link and the port attributes.
         """
-        report = _prepare_report() or self._traceback
+        report = _prepare_report() + '\n' + self._traceback
 
         clipboard = QClipboard()
         clipboard.setText(report)
@@ -113,3 +127,11 @@ class ErrorDialog(QMessageBox):
             return
 
         QDesktopServices.openUrl(to_open)
+
+    def show(self):
+        """Override show method for the MessageBox.
+
+        Before showing the message check `dont show this again` option state.
+        """
+        if not self._settings.get_bool(self._setting_name, False):
+            super(ErrorDialog, self).show()

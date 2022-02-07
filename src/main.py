@@ -47,6 +47,8 @@ def init_settings():
     settings.setValue('path/transfer_file',
                       os.path.join(tmp_folder, 'transfer_nodes.tmp'))
 
+    settings.setValue('dialog/dont_show', False)
+
 
 class MainWindowWidget(QWidget):
     """Main window widgets and logic.
@@ -111,6 +113,9 @@ class MainWindowWidget(QWidget):
             socket.state_changed.connect(self.log_widgets.set_status_text)
             socket.received_text.connect(self.log_widgets.set_received_text)
             socket.output_text.connect(self.log_widgets.set_output_text)
+            socket.execution_error.connect(
+                lambda text: ErrorDialog(text, self).show()
+            )
 
         _server = QServer()
 

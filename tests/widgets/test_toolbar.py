@@ -3,7 +3,6 @@ from collections import namedtuple
 
 import pytest
 
-import shiboken2
 from PySide2.QtWidgets import QWidget
 from src.widgets import toolbar, settings_widget, about_widget
 

@@ -6,7 +6,8 @@ from collections import namedtuple
 import pytest
 
 from src.utils import AppSettings
-from src.script_editor import nuke_se_controllers as nse
+from src.script_editor.nuke_controllers import _PyController
+from src.widgets.settings_widget import SettingsWidget
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
 SAMPLE_WORD = 'NukeServerSocket'
@@ -26,12 +27,9 @@ def _py_controller(_init_fake_editor):
 
     Before and after each tests, clear the text widgets.
     """
-    controller = nse._PyController('path/to/file.py')
+    controller = _PyController('path/to/file.py')
 
     yield controller
-
-    controller.clear_output()
-    controller.clear_input()
 
 
 def _show_path_settings():
@@ -151,24 +149,17 @@ def _overwrite_input_editor(_py_controller, _app_settings):
             str: the controller input text.
         """
         _py_controller.set_input(text)
+
+        if value:
+            _py_controller.script_editor.set_input(text)
+
         _app_settings.setValue('options/override_input_editor', value)
-        _py_controller.restore_input()
-        return _py_controller.input()
+        return _py_controller.script_editor.input()
 
     return _init_restore
 
 
-def test_restore_input(_overwrite_input_editor, _py_controller):
-    """Check if input was restored.
-
-    After execution, input editor should be restored to the initial state. The
-    initial text is set from the FakeScriptEditor: 'Hello from Fake SE'.
-    """
-    input_text = _overwrite_input_editor(False, SAMPLE_WORD)
-    assert input_text == _py_controller.initial_input
-
-
-def test_overwrite_input(_overwrite_input_editor):
+def test_overwrite_input_editor(_overwrite_input_editor):
     """Check if input editor was overwritten.
 
     After execution, input editor should retain the executed code.
@@ -178,7 +169,7 @@ def test_overwrite_input(_overwrite_input_editor):
 
 
 @pytest.fixture()
-def _output_to_console(_py_controller, _app_settings):
+def _overwrite_output_editor(_py_controller, _app_settings):
     """Output to console fixture factory."""
     def _restore_output(value, text):
         """Execute code and restore output.
@@ -197,26 +188,29 @@ def _output_to_console(_py_controller, _app_settings):
         _py_controller.set_input("print('{}')".format(text))
         _py_controller.execute()
 
-        _app_settings.setValue('options/output_to_console', value)
-        _py_controller.restore_output()
+        _app_settings.setValue('options/override_output_editor', value)
+        _py_controller.to_console()
 
-        return _py_controller.output()
+        return _py_controller.script_editor.output()
 
     return _restore_output
 
 
-def test_format_text_settings(_output_to_console, _app_settings):
+def test_format_text_settings(_overwrite_output_editor, _app_settings):
     """Test Format Text option.
 
     If Format Text is false, then console output should be a simple string.
     """
+    settings = SettingsWidget()
+    settings._se_checkbox.setChecked(True)
+
     _app_settings.setValue('options/format_text', False)
-    output = _output_to_console(True, SAMPLE_WORD)
+    output = _overwrite_output_editor(True, SAMPLE_WORD)
 
     assert output.startswith(SAMPLE_WORD)
 
 
-def test_restore_output(_output_to_console, _app_settings):
+def test_restore_output(_overwrite_output_editor, _app_settings):
     """Check if output was sent to console.
 
     If Output to console is true, then so it should be for the format text
@@ -229,24 +223,24 @@ def test_restore_output(_output_to_console, _app_settings):
     _app_settings.setValue('options/show_file_path', False)
     _app_settings.setValue('options/show_unicode', False)
 
-    output = _output_to_console(True, SAMPLE_WORD)
+    output = _overwrite_output_editor(True, SAMPLE_WORD)
 
     output_pattern = BEGIN_PATTERN + r'file.py \n' + SAMPLE_WORD
     assert re.match(output_pattern, output)
 
 
-def test_override_output(_output_to_console, _py_controller):
+def test_override_output(_overwrite_output_editor, _py_controller):
     """Check if output was not sent to console.
 
     After execution, output editor should be restored with the initial text: an
     empty string.
     """
-    output = _output_to_console(False, SAMPLE_WORD)
-    assert output == _py_controller.initial_output
+    output = _overwrite_output_editor(False, SAMPLE_WORD)
+    assert output == _py_controller.script_editor.output()
 
 
 @pytest.fixture()
-def _clear_output(_output_to_console, _app_settings):
+def _clear_output(_overwrite_output_editor, _app_settings):
     """Clear output console.
 
     After executing code, setting Clear Output should clear the output based on
@@ -264,7 +258,7 @@ def _clear_output(_output_to_console, _app_settings):
         """
         _app_settings.setValue('options/clear_output', value)
         for _ in range(2):
-            output = _output_to_console(True, SAMPLE_WORD)
+            output = _overwrite_output_editor(True, SAMPLE_WORD)
 
         # because text is garanteed to be always formatted, we can search for
         # [Nuke Tools] pattern inside the output string.

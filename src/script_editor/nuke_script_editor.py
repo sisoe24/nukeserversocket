@@ -99,9 +99,7 @@ class NukeScriptEditor(BaseScriptEditor):
     Methods:
         execute: execute the code.
 
-
-    Note: This could break anytime if Foundry changes something.
-    # TODO: Should invest some time to find a better way.
+    Note: This could break anytime if API changes.
     """
 
     def __init__(self):
@@ -214,3 +212,73 @@ class NukeScriptEditor(BaseScriptEditor):
         # XXX: could the user change the shortcut? if yes then what?
         QTest.keyPress(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
         QTest.keyRelease(self.input_widget, Qt.Key_Return, Qt.ControlModifier)
+
+
+class ScriptEditorController():
+    """Manipulate internal script editor."""
+
+    def __init__(self):
+        """Init method for the ScriptEditorController class.
+
+        Method will also initialize the NukeScriptEditor class.
+        """
+        self.script_editor = NukeScriptEditor()
+
+        self.initial_input = None
+        self.initial_output = None
+
+        self._save_state()
+
+    def _save_state(self):
+        """Save initial state of the editor before any modification."""
+        self.initial_input = self.script_editor.input_widget.toPlainText()
+        self.initial_output = self.script_editor.output_widget.toPlainText()
+
+    def set_input(self, text):  # type: (str) -> None
+        """Set text to the input editor.
+
+        Arguments
+            (str) text - text to insert.
+        """
+        self.script_editor.input_widget.setPlainText(text)
+
+    def set_output(self, text):  # type: (str) -> None
+        """Set text to the output editor.
+
+        Arguments
+            (str) text - text to insert.
+        """
+        self.script_editor.output_widget.setPlainText(text)
+
+    def input(self):  # type: () -> str
+        """Get input from the nuke internal script editor."""
+        return self.script_editor.input_widget.document().toPlainText()
+
+    def output(self):  # type: () -> str
+        """Get output from the nuke internal script editor."""
+        return self.script_editor.output_widget.document().toPlainText()
+
+    def clear_input(self):
+        """Delete all the text in the text edit."""
+        self.script_editor.input_widget.document().clear()
+
+    def clear_output(self):
+        """Delete all the text in the text edit."""
+        self.script_editor.output_widget.document().clear()
+
+    def execute(self):
+        """Abstract method for executing code from script editor."""
+        self.script_editor.execute()
+
+    def restore_input(self):
+        """Restore input text."""
+        self.script_editor.input_widget.setPlainText(self.initial_input)
+
+    def restore_output(self):
+        """Restore output text."""
+        self.script_editor.output_widget.setPlainText(self.initial_output)
+
+    def restore_state(self):
+        """Restore the initial text data of the editor."""
+        self.restore_input()
+        self.restore_output()

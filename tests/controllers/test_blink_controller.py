@@ -3,7 +3,7 @@ from textwrap import dedent
 
 import pytest
 
-from src.script_editor import nuke_se_controllers as se
+from src.script_editor.nuke_controllers import _BlinkController
 
 
 NUKE_CMD = dedent("""
@@ -29,12 +29,8 @@ def _blink_controller(_init_fake_editor):
 
     Before and after each tests, clear the text widgets.
     """
-    controller = se._BlinkController('file/to/tmp.cpp')
-
+    controller = _BlinkController('file/to/tmp.cpp')
     yield controller
-
-    controller.clear_input()
-    controller.clear_output()
 
 
 def test_blink_output(_blink_controller):

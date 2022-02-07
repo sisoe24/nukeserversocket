@@ -20,11 +20,13 @@ class QSocket(QObject):
     Custom signals will emit when connection status has changed.
 
     Signal:
+        (str) execution_error: emits when there is an execution error.
         (str) state_changed: emits when the connection state has changed.
         (str) received_text: emits the received text when ready.
         (str) output_text: emits the output text after code executing happened.
     """
 
+    execution_error = Signal(str)
     state_changed = Signal(str)
     received_text = Signal(str)
     output_text = Signal(str)
@@ -92,6 +94,12 @@ class QSocket(QObject):
             return
 
         editor = CodeEditor(msg_data)
+        editor._controller.execution_error.connect(
+            self.execution_error.emit
+        )
+        editor._controller.execution_error.connect(
+            self.state_changed.emit
+        )
         output_text = editor.execute()
 
         LOGGER.debug('QSocket :: sending message back.')

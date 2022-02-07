@@ -66,7 +66,6 @@ class _MainWindowWidget(QWidget):
         _layout = QVBoxLayout()
         _layout.addWidget(self.main_app)
         _layout.addWidget(self.script_editor)
-        # _layout.addWidget(SecondFakeScriptEditor(self.script_editor))
         self.setLayout(_layout)
 
     def _auto_test(self):
