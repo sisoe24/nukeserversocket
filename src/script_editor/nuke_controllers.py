@@ -12,17 +12,32 @@ import contextlib
 
 from textwrap import dedent
 
-from PySide2.QtCore import QObject
+from PySide2.QtCore import QObject, Signal
 
 from .. import nuke
 from ..utils import AppSettings, insert_time
 from .nuke_script_editor import ScriptEditorController
 
-LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
+LOGGER = logging.getLogger('NukeServerSocket.controllers')
 
 
-class _ExecuteInMainThread(object):
+class _ExecuteInMainThread(QObject):
+    """Execute code inside Nuke.
+
+    Execute code inside nuke with the method `executeInMainThreadWithResult`.
+
+    Signal:
+        (str) execution_error: emits wen there is an execution error; more
+        specifically when it fails to execute the code with the nuke internal
+        function `executeInMainThreadWithResult`. In that case will fallback to
+        the ScriptEditorController to execute the code.
+    """
+
+    execution_error = Signal(str)
+
     def __init__(self):
+        """Initialize the class and the the scriptEditorController."""
+        QObject.__init__(self)
         self.script_editor = ScriptEditorController()
 
         self._output = None
@@ -61,10 +76,15 @@ class _ExecuteInMainThread(object):
         try:
             self._output = nuke.executeInMainThreadWithResult(
                 self._exec, self._input)
-        except Exception as error:
-            LOGGER.error("Failed to executeInMainThread: %s", error)
+        except Exception:  # skipcq: PYL-W0703
+            err = "executeInMainThread Error. Fallback on ScriptEditor for now."
+            self.execution_error.emit(err)
+            LOGGER.error(err)
+
+            self.script_editor.set_input(self._input)
             self.script_editor.execute()
             self._output = self.script_editor.output()
+            self.script_editor.restore_state()
 
     def output(self):  # type: () -> str
         """Get output from the nuke command."""
@@ -89,22 +109,6 @@ class _PyController(_ExecuteInMainThread, object):
         _ExecuteInMainThread.__init__(self)
         self.settings = AppSettings()
         self._file = file
-
-    def restore_input(self):
-        """Override input editor if setting is True."""
-        if not self.settings.get_bool('options/override_input_editor'):
-            self.script_editor.restore_input()
-
-    def restore_output(self):
-        """Send text to script editor output if setting is True."""
-        if self.settings.get_bool('options/override_output_editor'):
-            self._output_to_console()
-        else:
-            self.script_editor.restore_output()
-
-    def set_input(self, text):  # type: (str) -> None
-        super(_PyController, self).set_input(text)
-        self.script_editor.set_input(text)
 
     @classmethod
     def _clear_history(cls):
@@ -173,9 +177,12 @@ class _PyController(_ExecuteInMainThread, object):
         """Get a clean version of the output editor."""
         return self._clean_output(super(_PyController, self).output())
 
-    def restore_state(self):
-        self.restore_output()
-        self.restore_input()
+    def to_console(self):
+        """Send input/output to nuke internal console."""
+        if self.settings.get_bool('options/override_input_editor'):
+            self.script_editor.set_input(self.input())
+        if self.settings.get_bool('options/override_output_editor'):
+            self._output_to_console()
 
     def _output_to_console(self):
         """Output data to Nuke internal script editor console.
@@ -196,6 +203,8 @@ class _PyController(_ExecuteInMainThread, object):
                 self._append_output(output_text)
                 self.script_editor.set_output(''.join(self.history))
                 return
+        else:
+            self.script_editor.set_output(self.output())
 
         self._clear_history()
 
@@ -336,10 +345,9 @@ class CodeEditor(QObject):
         self._controller.set_input(self.data.text)
         self._controller.execute()
 
-        output = self._controller.output()
+        send_to_console = AppSettings().get_bool('options/mirror_to_script_editor')
 
-        # TODO: add conditions that checks if main options is enabled at all
-        if isinstance(self._controller, _PyController):
-            self._controller.restore_state()
+        if isinstance(self._controller, _PyController) and send_to_console:
+            self._controller.to_console()
 
-        return output
+        return self._controller.output()
