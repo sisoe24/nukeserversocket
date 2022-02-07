@@ -62,7 +62,7 @@ def _tmp_settings_file(_package):
     """Temporary settings file path."""
     file = os.path.join('tests', 'tmp', 'fake_ini.ini')
     yield file
-    # os.remove(file)
+    os.remove(file)
 
 
 @pytest.fixture(autouse=True)
@@ -77,7 +77,6 @@ def _main_ui(qtbot):
     """Initialize Main UI Widget."""
     widget = _MainWindowWidget()
     qtbot.addWidget(widget)
-    # widget.show()
     yield widget.main_app
 
 

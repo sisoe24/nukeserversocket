@@ -7,8 +7,9 @@ import logging
 from PySide2.QtWidgets import (
     QCheckBox,
     QFormLayout,
-    QLabel,
-    QWidget
+    QWidget,
+    QGroupBox,
+    QVBoxLayout
 )
 
 from ..utils import AppSettings
@@ -24,29 +25,30 @@ class CheckBox(QCheckBox):
     connect the toggle signal to update the configuration setting value.
     """
 
-    def __init__(self, title, is_checked, tooltip, parent=None):
-        # type: (str, bool, str, QWidget | None) -> None
+    def __init__(self, title, label, default_state, tooltip, parent=None):
+        # type: (str, str, bool, str, QWidget | None) -> None
         """Init method for the CheckBox class.
 
         Args:
             title (str): title of the checkbox.
-            is_checked (bool): initial state of the checkbox if does not have
+            label (str): label of the checkbox.
+            default_state (bool): initial state of the checkbox if does not have
             already a setting value in the config file.
             tooltip (str): checkbox tooltip.
             parent (str, optional): QWidget to set as parent. Defaults to None.
         """
         QCheckBox.__init__(self, title, parent)
         self.setToolTip(tooltip)
+        self._label = label
 
         obj_name = title.lower().replace(' ', '_')
-        ini_value = 'options/%s' % obj_name
+        setting_name = 'options/%s' % obj_name
         self.setObjectName(obj_name)
 
-        self.settings = AppSettings()
-        self.setChecked(self.settings.get_bool(ini_value, is_checked))
-
+        settings = AppSettings()
+        self.setChecked(settings.get_bool(setting_name, default_state))
         self.toggled.connect(
-            lambda: self.settings.setValue(ini_value, self.isChecked())
+            lambda: settings.setValue(setting_name, self.isChecked())
         )
 
 
@@ -54,73 +56,116 @@ class SettingsWidget(QWidget):
     """Settings Widget.
 
     Class that deals mostly with showing the checkbox ui and enabling/disabling
-    certain checkboxs state.
+    certain checkboxes state.
     """
 
     def __init__(self):
         """Init method for the SettingsWidget class."""
         QWidget.__init__(self)
         self.setObjectName('SettingsWidget')
-        # TODO: refactor sections into their own classes?
 
-        # BUG: when reloading the settings widget, checkboxes that depend on
-        # `output_console` will override their original state
+        self._se_checkbox = QGroupBox('Mirror To Script Editor')
+        self._setup_group_toggle()
 
         self._output_console = CheckBox(
-            is_checked=True, title='Output To Console', parent=self,
-            tooltip='Output to internal Script Editor')
+            default_state=False, title='Override Output Editor', parent=self,
+            tooltip='Output to internal Script Editor', label='Output:')
 
         self._format_output = CheckBox(
-            is_checked=True, title='Format Text', parent=self,
+            default_state=False, title='Format Text', parent=self, label='',
             tooltip='Clean and format output console text')
 
         self._clear_output = CheckBox(
-            is_checked=True, title='Clear Output', parent=self,
+            default_state=False, title='Clear Output', parent=self, label='',
             tooltip='Clear previous output in console. Works only if Format Text is enabled')
 
-        CheckBox(is_checked=False, title='Override Input Editor', parent=self,
-                 tooltip='Override internal input text editor',)
+        self._show_path = CheckBox(
+            default_state=False, title='Show File Path', parent=self, label='',
+            tooltip='Include full path of the executed file')
 
-        CheckBox(is_checked=False, title='Show File Path', parent=self,
-                 tooltip='Include full path of the executed file')
+        self._show_unicode = CheckBox(
+            default_state=False, title='Show Unicode', parent=self, label='',
+            tooltip='include unicode character in output text')
 
-        CheckBox(is_checked=True, title='Show Unicode', parent=self,
-                 tooltip='include unicode character in output text')
+        self._override_input = CheckBox(
+            default_state=False, title='Override Input Editor', parent=self,
+            tooltip='Override internal input text editor', label='Input:')
 
-        _layout = QFormLayout()
-        _layout.setVerticalSpacing(10)
+        _layout_checkboxes = QFormLayout()
+        _layout_checkboxes.setVerticalSpacing(10)
 
-        # HACK: this is really ugly. need to think something else
-        # try to add the labels dynamically in a loop
-        labels = ('Output:', '', '', 'Input:', 'Misc:', '')
-        for label, checkbox in zip(labels, self.children()):
-            _layout.addRow(QLabel(label), checkbox)
+        for checkbox in self.findChildren(CheckBox):
+            _layout_checkboxes.addRow(checkbox._label, checkbox)
+
+        self._se_checkbox.setLayout(_layout_checkboxes)
+
+        _layout = QVBoxLayout()
+        _layout.addWidget(self._se_checkbox)
 
         self.setLayout(_layout)
 
-        self._enable_sub_options()
-        self._output_console.toggled.connect(self._enable_sub_options)
-        self._format_output.toggled.connect(self._enable_clear_console)
+        self._se_checkbox.toggled.connect(self._toggle_sub_options)
+        self._output_console.toggled.connect(self._toggle_output_options)
+        self._format_output.toggled.connect(self._toggle_clear_console)
 
-    def _enable_clear_console(self, state):  # type: (bool) -> None
-        """Set checkbox state of Clear Console option."""
-        self._clear_output.setEnabled(state)
-        self._clear_output.setChecked(state)
+    def _setup_group_toggle(self):
+        """Set initial default groupbox widget settings."""
+        self._se_checkbox.setCheckable(True)
 
-    def _enable_format_output(self, state):  # type: (bool) -> None
-        """Set checkbox state of Format Output option."""
-        self._format_output.setEnabled(state)
-        self._format_output.setChecked(state)
+        setting_name = "options/mirror_to_script_editor"
 
-    def _enable_sub_options(self):
-        """Set chcekboxes sub options state.
+        settings = AppSettings()
+        self._se_checkbox.setChecked(settings.get_bool(setting_name))
 
-        Sub options should be enabled only if Output Console is True.
+        self._se_checkbox.toggled.connect(
+            lambda: settings.setValue(
+                setting_name, self._se_checkbox.isChecked())
+        )
+
+    @staticmethod
+    def _toggle_checkboxes(checkbox, state):  # type: (CheckBox, bool) -> None
+        """Toggle checkbox state.
+
+        Args:
+            checkbox (CheckBox): Checkbox object
+            state (bool): state of the checkbox.
+        """
+        checkbox.setEnabled(state)
+        checkbox.setChecked(state)
+
+    def _toggle_clear_console(self, state):  # type: (bool) -> None
+        """Set checkbox state of Clear Console option.
+
+        Those options should be enabled only if Format Output is True.
+
+        Args:
+            state (bool): state of the checkbox.
+        """
+        self._toggle_checkboxes(self._clear_output, state)
+        self._toggle_checkboxes(self._show_unicode, state)
+        self._toggle_checkboxes(self._show_path, state)
+
+    def _toggle_output_options(self, state):
+        """Set output checkboxes sub options state.
+
+        Those options should be enabled only if Output Console is True.
 
         Args:
             state (bool): state of output_console attribute
         """
-        state = self._output_console.isChecked()
+        self._toggle_checkboxes(self._format_output, state)
+        self._toggle_checkboxes(self._clear_output, state)
+        self._toggle_checkboxes(self._show_path, state)
+        self._toggle_checkboxes(self._show_unicode, state)
 
-        self._enable_format_output(state)
-        self._enable_clear_console(state)
+    def _toggle_sub_options(self):
+        """Set checkboxes sub options state.
+
+        All sub options should be enabled only if Mirror to ScriptEditor is True.
+
+        Args:
+            state (bool): state of output_console attribute
+        """
+        state = self._se_checkbox.isChecked()
+        for checkbox in self._se_checkbox.findChildren(CheckBox):
+            self._toggle_checkboxes(checkbox, state)

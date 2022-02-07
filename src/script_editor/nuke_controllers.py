@@ -2,95 +2,100 @@
 # coding: utf-8
 from __future__ import print_function
 
+import io
 import re
 import os
+import sys
 import json
 import logging
+import contextlib
 
-from sys import getsizeof
 from textwrap import dedent
 
-from PySide2.QtCore import QObject
+from PySide2.QtCore import QObject, Signal
 
-from .nuke_se import NukeScriptEditor
+from .. import nuke
 from ..utils import AppSettings, insert_time
+from .nuke_script_editor import ScriptEditorController
+
+LOGGER = logging.getLogger('NukeServerSocket.controllers')
 
 
-LOGGER = logging.getLogger('NukeServerSocket.get_script_editor')
+class _ExecuteInMainThread(QObject):
+    """Execute code inside Nuke.
 
+    Execute code inside nuke with the method `executeInMainThreadWithResult`.
 
-class ScriptEditorController():
-    """Manipulate internal script editor."""
+    Signal:
+        (str) execution_error: emits wen there is an execution error; more
+        specifically when it fails to execute the code with the nuke internal
+        function `executeInMainThreadWithResult`. In that case will fallback to
+        the ScriptEditorController to execute the code.
+    """
+
+    execution_error = Signal(str)
 
     def __init__(self):
-        """Init method for the ScriptEditorController class.
+        """Initialize the class and the the scriptEditorController."""
+        QObject.__init__(self)
+        self.script_editor = ScriptEditorController()
 
-        Method will also initialize the NukeScriptEditor class.
+        self._output = None
+        self._input = None
+
+    @staticmethod
+    @contextlib.contextmanager
+    def stdoutIO(stdout=None):
+        """Get output from sys.stdout after executing code from `exec`.
+
+        https://stackoverflow.com/a/3906390/9392852
         """
-        # TODO: should reference input_widget and output_widget
-        self.script_editor = NukeScriptEditor()
+        old = sys.stdout
+        if stdout is None:
+            stdout = io.StringIO()
+        sys.stdout = stdout
+        yield stdout
+        sys.stdout = old
 
-        self.initial_input = None
-        self.initial_output = None
-
-        self._save_state()
-
-    def _save_state(self):
-        """Save initial state of the editor before any modification."""
-        self.initial_input = self.script_editor.input_widget.toPlainText()
-        self.initial_output = self.script_editor.output_widget.toPlainText()
+    def _exec(self, data):  # type: (str) -> str
+        """Execute a string as a callable command."""
+        with self.stdoutIO() as s:
+            exec(data)  # skipcq: PYL-W0122
+        return s.getvalue()
 
     def set_input(self, text):  # type: (str) -> None
-        """Set text to the input editor.
-
-        Arguments
-            (str) text - text to insert.
-        """
-        self.script_editor.input_widget.setPlainText(text)
-
-    def set_output(self, text):  # type: (str) -> None
-        """Set text to the output editor.
-
-        Arguments
-            (str) text - text to insert.
-        """
-        self.script_editor.output_widget.setPlainText(text)
-
-    def input(self):  # type: () -> str
-        """Get input from the nuke internal script editor."""
-        return self.script_editor.input_widget.document().toPlainText()
-
-    def output(self):  # type: () -> str
-        """Get output from the nuke internal script editor."""
-        return self.script_editor.output_widget.document().toPlainText()
-
-    def clear_input(self):
-        """Delete all the text in the text edit."""
-        self.script_editor.input_widget.document().clear()
-
-    def clear_output(self):
-        """Delete all the text in the text edit."""
-        self.script_editor.output_widget.document().clear()
+        """Set input from the nuke command."""
+        self._input = text
 
     def execute(self):
-        """Abstract method for executing code from script editor."""
-        self.script_editor.execute()
+        """Execute code in the main thread.
 
-    def restore_input(self):
-        """Restore input text."""
-        self.script_editor.input_widget.setPlainText(self.initial_input)
+        If for some reason execution fails, method will fallback on the script
+        editor execution mechanism.
+        """
+        try:
+            self._output = nuke.executeInMainThreadWithResult(
+                self._exec, self._input)
+        except Exception:  # skipcq: PYL-W0703
+            err = "executeInMainThread Error. Fallback on ScriptEditor for now."
+            self.execution_error.emit(err)
+            LOGGER.error(err)
 
-    def restore_output(self):
-        """Restore output text."""
-        self.script_editor.output_widget.setPlainText(self.initial_output)
+            self.script_editor.set_input(self._input)
+            self.script_editor.execute()
+            self._output = self.script_editor.output()
+            self.script_editor.restore_state()
 
-    def restore_state(self):
-        """Restore the initial text data of the editor."""
-        self.restore_input()
-        self.restore_output()
+    def output(self):  # type: () -> str
+        """Get output from the nuke command."""
+        return self._output
+
+    def input(self):  # type: () -> str
+        """Get output from the nuke command."""
+        return self._input
 
 
-class _PyController(ScriptEditorController, object):
+class _PyController(_ExecuteInMainThread, object):
     """Controller class that deals with python code execution."""
 
     history = []
@@ -101,21 +106,9 @@ class _PyController(ScriptEditorController, object):
         Args:
             file (str): file path of the file that is being executed.
         """
-        ScriptEditorController.__init__(self)
+        _ExecuteInMainThread.__init__(self)
         self.settings = AppSettings()
         self._file = file
-
-    def restore_input(self):
-        """Override input editor if setting is True."""
-        if not self.settings.get_bool('options/override_input_editor'):
-            super(_PyController, self).restore_input()
-
-    def restore_output(self):
-        """Send text to script editor output if setting is True."""
-        if self.settings.get_bool('options/output_to_console'):
-            self._output_to_console()
-        else:
-            super(_PyController, self).restore_output()
 
     @classmethod
     def _clear_history(cls):
@@ -134,7 +127,7 @@ class _PyController(ScriptEditorController, object):
             output_text (str): text to append into the list
         """
         cls.history.append(output_text)
-        list_size = [getsizeof(n) for n in cls.history]
+        list_size = [sys.getsizeof(n) for n in cls.history]
 
         if sum(list_size) >= 1000000:
             cls.history.pop(0)
@@ -184,6 +177,13 @@ class _PyController(ScriptEditorController, object):
         """Get a clean version of the output editor."""
         return self._clean_output(super(_PyController, self).output())
 
+    def to_console(self):
+        """Send input/output to nuke internal console."""
+        if self.settings.get_bool('options/override_input_editor'):
+            self.script_editor.set_input(self.input())
+        if self.settings.get_bool('options/override_output_editor'):
+            self._output_to_console()
+
     def _output_to_console(self):
         """Output data to Nuke internal script editor console.
 
@@ -198,16 +198,18 @@ class _PyController(ScriptEditorController, object):
             )
 
             if self.settings.get_bool('options/clear_output', True):
-                super(_PyController, self).set_output(output_text)
+                self.script_editor.set_output(output_text)
             else:
                 self._append_output(output_text)
-                super(_PyController, self).set_output(''.join(self.history))
+                self.script_editor.set_output(''.join(self.history))
                 return
+        else:
+            self.script_editor.set_output(self.output())
 
         self._clear_history()
 
 
-class _BlinkController(ScriptEditorController, object):
+class _BlinkController(_ExecuteInMainThread, object):
     """Controller that deals with blink script execution code."""
 
     def __init__(self, file):
@@ -216,7 +218,7 @@ class _BlinkController(ScriptEditorController, object):
         Args:
             file (str):  file path of the file that is being executed.
         """
-        ScriptEditorController.__init__(self)
+        _ExecuteInMainThread.__init__(self)
         self._file = file
 
     def output(self):  # type: () -> str
@@ -264,12 +266,12 @@ class _BlinkController(ScriptEditorController, object):
         """).format(**kwargs).strip()
 
 
-class _CopyNodesController(ScriptEditorController, object):
+class _CopyNodesController(_ExecuteInMainThread, object):
     """Controller that deals with copy nodes execution code."""
 
     def __init__(self):
         """Init method for the _CopyNodesController class."""
-        ScriptEditorController.__init__(self)
+        _ExecuteInMainThread.__init__(self)
 
     def output(self):  # type: () -> str
         """Override parent method.
@@ -343,7 +345,9 @@ class CodeEditor(QObject):
         self._controller.set_input(self.data.text)
         self._controller.execute()
 
-        output = self._controller.output()
-        self._controller.restore_state()
+        send_to_console = AppSettings().get_bool('options/mirror_to_script_editor')
 
-        return output
+        if isinstance(self._controller, _PyController) and send_to_console:
+            self._controller.to_console()
+
+        return self._controller.output()

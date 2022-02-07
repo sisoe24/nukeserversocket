@@ -39,8 +39,23 @@ def _get_options_keys(file):
     Returns:
         list: list with all of the options reference found.
     """
+    # TODO: this will not find the names in the test_settings_widget.py file.
     with open(file) as src_file:
         return re.findall(r'(?<=options/)\w+', src_file.read())
+
+
+def _format_name(name):
+    """Format name.
+
+    Format a name into lowercase and no space: `This Button` to `this_button`.
+
+    Args:
+        name (str): name to be formatted
+
+    Returns:
+        str: the formatted name.
+    """
+    return name.lower().replace(' ', '_')
 
 
 @pytest.fixture()
@@ -50,7 +65,14 @@ def _options_name(qtbot):
     qtbot.addWidget(widget)
 
     checkboxes = widget.findChildren(settings_widget.CheckBox)
-    return [x.text().lower().replace(' ', '_') for x in checkboxes]
+    checkboxes_names = [_format_name(_.text()) for _ in checkboxes]
+
+    group_box = widget.findChild(settings_widget.QGroupBox)
+    group_box_name = _format_name(group_box.title())
+
+    checkboxes_names.append(group_box_name)
+
+    return checkboxes_names
 
 
 def test_options_names(_package, _options_name):

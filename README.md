@@ -306,5 +306,3 @@ While it should work the same on all platforms, it has been currently only teste
 <img title="Main Window" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/main_window.png?raw=true" width="80%"/>
 
 <img title="Settings" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/settings.png?raw=trueg" width="30%"/>
-
-<img title="Vscode Manual" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/vscode_manual2.png?raw=trueg" width="90%"/>
