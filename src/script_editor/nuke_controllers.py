@@ -60,7 +60,7 @@ class _ExecuteInMainThread(QObject):
     def _exec(self, data):  # type: (str) -> str
         """Execute a string as a callable command."""
         with self.stdoutIO() as s:
-            exec(data)
+            exec(data)  # skipcq: PYL-W0122
         return s.getvalue()
 
     def set_input(self, text):  # type: (str) -> None
