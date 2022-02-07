@@ -32,9 +32,6 @@ def _py_controller(_init_fake_editor):
 
     yield controller
 
-    # controller.clear_output()
-    # controller.clear_input()
-
 
 def _show_path_settings():
     """Create a namedtuple with show_file settings values.
@@ -153,22 +150,14 @@ def _overwrite_input_editor(_py_controller, _app_settings):
             str: the controller input text.
         """
         _py_controller.set_input(text)
-        _py_controller.execute()
+
+        if value:
+            _py_controller.script_editor.set_input(text)
+
         _app_settings.setValue('options/override_input_editor', value)
-        _py_controller.restore_input()
         return _py_controller.script_editor.input()
 
     return _init_restore
-
-
-def test_restore_input_editor(_overwrite_input_editor, _py_controller):
-    """Check if input was restored.
-
-    After execution, input editor should be restored to the initial state. The
-    initial text is set from the FakeScriptEditor: 'Hello from Fake SE'.
-    """
-    input_text = _overwrite_input_editor(False, SAMPLE_WORD)
-    assert input_text == _py_controller.script_editor.input()
 
 
 def test_overwrite_input_editor(_overwrite_input_editor):
@@ -203,14 +192,11 @@ def _overwrite_output_editor(_py_controller, _app_settings):
         _app_settings.setValue('options/override_output_editor', value)
         _py_controller.to_console()
 
-        _py_controller.restore_output()
-
         return _py_controller.script_editor.output()
 
     return _restore_output
 
 
-@pytest.mark.quicktest
 def test_format_text_settings(_overwrite_output_editor, _app_settings):
     """Test Format Text option.
 
@@ -220,8 +206,6 @@ def test_format_text_settings(_overwrite_output_editor, _app_settings):
     settings._se_checkbox.setChecked(True)
 
     _app_settings.setValue('options/format_text', False)
-    print('->', _app_settings.value('options/format_text'))
-
     output = _overwrite_output_editor(True, SAMPLE_WORD)
 
     assert output.startswith(SAMPLE_WORD)
