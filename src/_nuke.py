@@ -41,7 +41,7 @@ def nodeCopy(string):
             file.write(copy_tmp)
 
 
-def executeInMainThreadWithResult(call, args):
+def executeInMainThreadWithResult(call, args):  # skipcq: PYL-W0613
     """Internal function placeholder that mimics the behavior of Nukes internal."""
     if args.startswith('nuke.nodePaste'):
         return args
