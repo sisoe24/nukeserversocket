@@ -9,8 +9,6 @@ STRING = 'nss test msg'
 TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
 
-# pytestmark = pytest.mark.connection
-
 
 def _socket_send(data):
     """Create a socket to send data.

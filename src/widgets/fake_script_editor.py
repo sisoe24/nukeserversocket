@@ -103,7 +103,6 @@ class FakeScriptEditor(QWidget):
             and event.modifiers() == Qt.CTRL
             and event.key() == Qt.Key_Return
         ):
-            # print('shortcut pressed')
             self.run_code()
             event.accept()
             return True
