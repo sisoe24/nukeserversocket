@@ -8,7 +8,7 @@ from PySide2.QtCore import QObject, Signal
 
 from .data_to_code import DataCode, InvalidData
 from ..utils import validate_output, connection_timer
-from ..script_editor import CodeEditor
+from ..controllers import CodeEditor
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 

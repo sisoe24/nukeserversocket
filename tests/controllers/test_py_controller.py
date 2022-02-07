@@ -6,7 +6,7 @@ from collections import namedtuple
 import pytest
 
 from src.utils import AppSettings
-from src.script_editor.nuke_controllers import _PyController
+from src.controllers.nuke_controllers import _PyController
 from src.widgets.settings_widget import SettingsWidget
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '

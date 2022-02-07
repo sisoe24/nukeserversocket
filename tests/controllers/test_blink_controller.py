@@ -3,7 +3,7 @@ from textwrap import dedent
 
 import pytest
 
-from src.script_editor.nuke_controllers import _BlinkController
+from src.controllers.nuke_controllers import _BlinkController
 
 
 NUKE_CMD = dedent("""

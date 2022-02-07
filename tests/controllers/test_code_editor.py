@@ -5,7 +5,7 @@ import json
 import pytest
 
 from src.connection import DataCode
-from src.script_editor import nuke_controllers as se
+from src.controllers import nuke_controllers as se
 
 
 def _data_code(file):
