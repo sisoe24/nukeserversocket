@@ -27,7 +27,6 @@ def _py_controller(_init_fake_editor):
 
     Before and after each tests, clear the text widgets.
     """
-
     controller = _PyController('path/to/file.py')
 
     yield controller
@@ -221,7 +220,6 @@ def test_restore_output(_overwrite_output_editor, _app_settings):
     Method will also set the `show_file_path` and `show_unicode` settings to
     False for simpler pattern match.
     """
-
     _app_settings.setValue('options/show_file_path', False)
     _app_settings.setValue('options/show_unicode', False)
 
