@@ -47,7 +47,7 @@ class QSocket(QObject):
         self.timer = Timer(
             int(AppSettings().value('timeout/socket', 30))
         )
-        self.timer.timer.timeout.connect(self.close_socket)
+        self.timer._timer.timeout.connect(self.close_socket)
         self.timer.time.connect(self.socket_timeout.emit)
         self.timer.start()
 

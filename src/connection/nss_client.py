@@ -85,7 +85,7 @@ class QBaseClient(QObject):
             int(AppSettings().value('timeout/client', 10))
         )
         self.timer.time.connect(self.client_timeout.emit)
-        self.timer.timer.timeout.connect(self._connection_timeout)
+        self.timer._timer.timeout.connect(self._connection_timeout)
 
     def on_connected(self):
         """When connection is establish do stuff.

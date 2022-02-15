@@ -53,7 +53,7 @@ class QServer(QObject):
             int(AppSettings().value('timeout/server', 6)) * 60
         )
         self.timer.time.connect(self.server_timeout.emit)
-        self.timer.timer.timeout.connect(self.timeout.emit)
+        self.timer._timer.timeout.connect(self.timeout.emit)
 
     def connection_state(self, state):
         """Check if connection state.
