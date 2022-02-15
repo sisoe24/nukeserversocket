@@ -9,6 +9,7 @@ from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
 from .nss_socket import QSocket
 from ..utils import AppSettings, connection_timer
+from ..widgets import Timer
 
 LOGGER = logging.getLogger('NukeServerSocket.server')
 
@@ -23,11 +24,13 @@ class QServer(QObject):
         (str) state_changed: emits when the connection state has changed
         (QSocket) socket_ready: emits the socket class that has been created
         when connection is successful.
+        (str) server_timeout: emits every second to indicate the timeout status
     """
 
     timeout = Signal()
     state_changed = Signal(str)
     socket_ready = Signal(object)
+    server_timeout = Signal(str)
 
     def __init__(self):
         """Init method for the QServer class."""
@@ -46,10 +49,11 @@ class QServer(QObject):
         self.socket = None
 
         # multiple time by 60 to get seconds
-        self.timer = connection_timer(
+        self.timer = Timer(
             int(AppSettings().value('timeout/server', 6)) * 60
         )
-        self.timer.timeout.connect(self.timeout.emit)
+        self.timer.time.connect(self.server_timeout.emit)
+        self.timer.timer.timeout.connect(self.timeout.emit)
 
     def connection_state(self, state):
         """Check if connection state.
@@ -76,6 +80,7 @@ class QServer(QObject):
         `socket_ready` signal.
         """
         while self.server.hasPendingConnections():
+            self.timer.reset()
             socket = self.server.nextPendingConnection()
             socket.stateChanged.connect(self.connection_state)
 

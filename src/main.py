@@ -118,6 +118,8 @@ class MainWindowWidget(QWidget):
             )
 
         _server = QServer()
+        _server.server_timeout.connect(
+            self.connections._timeout._server_timeout.setText)
 
         _server.timeout.connect(self._disconnect)
         _server.state_changed.connect(self.log_widgets.set_status_text)
@@ -163,6 +165,8 @@ class MainWindowWidget(QWidget):
         """
         self._client = SendNodesClient()
         self._connect_client(self.send_btn)
+        self._client.client_timeout.connect(
+            self.connections._timeout._socket_timeout.setText)
         return self._client
 
     def send_test(self):
@@ -172,6 +176,8 @@ class MainWindowWidget(QWidget):
             SendTestClient: SendTestClient object.
         """
         self._client = SendTestClient()
+        self._client.client_timeout.connect(
+            self.connections._timeout._client_timeout.setText)
         self._connect_client(self.test_btn)
         return self._client
 

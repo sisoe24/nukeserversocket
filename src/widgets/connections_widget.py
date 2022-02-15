@@ -129,6 +129,22 @@ class TcpPort(QSpinBox):
             self.settings.setValue(self.port_id, self.textFromValue(port))
 
 
+class TimeoutLabel(QFormLayout):
+    """Timeout QFormLayout widget for the timeout labels."""
+
+    def __init__(self):
+        """Initialize the form layout labels."""
+        QFormLayout.__init__(self)
+
+        self._server_timeout = QLabel('')
+        self._client_timeout = QLabel('')
+        self._socket_timeout = QLabel('')
+
+        self.addRow(QLabel('Server Timeout in:'), self._server_timeout)
+        self.addRow(QLabel('Receiver Timeout in:'), self._client_timeout)
+        self.addRow(QLabel('Send Nodes Timeout in:'), self._socket_timeout)
+
+
 class ConnectionsWidget(QWidget):
     """Class that deals with the ui connection logic."""
 
@@ -171,6 +187,10 @@ class ConnectionsWidget(QWidget):
         self._add_switch_layout()
         self._add_form_layout()
         self._add_grid_layout()
+
+        self._timeout = TimeoutLabel()
+        self._timeout.setAlignment(Qt.AlignCenter)
+        self._layout.addLayout(self._timeout)
 
         self.setLayout(self._layout)
         self._set_tooltips()

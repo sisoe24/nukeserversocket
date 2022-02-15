@@ -9,6 +9,7 @@ from PySide2.QtCore import QObject, Signal
 from .data_to_code import DataCode, InvalidData
 from ..utils import validate_output, connection_timer, AppSettings
 from ..controllers import CodeEditor
+from ..widgets import Timer
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
@@ -24,12 +25,14 @@ class QSocket(QObject):
         (str) state_changed: emits when the connection state has changed.
         (str) received_text: emits the received text when ready.
         (str) output_text: emits the output text after code executing happened.
+        (str) socket_timeout: emits every second to indicate the timeout status
     """
 
     execution_error = Signal(str)
     state_changed = Signal(str)
     received_text = Signal(str)
     output_text = Signal(str)
+    socket_timeout = Signal(str)
 
     def __init__(self, socket):
         """Init method for the socket class."""
@@ -41,10 +44,11 @@ class QSocket(QObject):
         self.socket.disconnected.connect(self.on_disconnected)
         self.socket.readyRead.connect(self.on_readyRead)
 
-        self.timer = connection_timer(
+        self.timer = Timer(
             int(AppSettings().value('timeout/socket', 30))
         )
-        self.timer.timeout.connect(self.close_socket)
+        self.timer.timer.timeout.connect(self.close_socket)
+        self.timer.time.connect(self.socket_timeout.emit)
         self.timer.start()
 
     @staticmethod
