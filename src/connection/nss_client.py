@@ -78,7 +78,9 @@ class QBaseClient(QObject):
         self.socket.error.connect(self.on_error)
         self.socket.stateChanged.connect(self.connection_state)
 
-        self.timer = connection_timer(10)
+        self.timer = connection_timer(
+            int(AppSettings().value('timeout/client', 10))
+        )
         self.timer.timeout.connect(self._connection_timeout)
 
     def on_connected(self):

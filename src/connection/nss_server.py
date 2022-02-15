@@ -45,7 +45,10 @@ class QServer(QObject):
 
         self.socket = None
 
-        self.timer = connection_timer(60 * 5)
+        # multiple time by 60 to get seconds
+        self.timer = connection_timer(
+            int(AppSettings().value('timeout/server', 6)) * 60
+        )
         self.timer.timeout.connect(self.timeout.emit)
 
     def connection_state(self, state):

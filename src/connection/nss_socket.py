@@ -7,7 +7,7 @@ import logging
 from PySide2.QtCore import QObject, Signal
 
 from .data_to_code import DataCode, InvalidData
-from ..utils import validate_output, connection_timer
+from ..utils import validate_output, connection_timer, AppSettings
 from ..controllers import CodeEditor
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
@@ -41,7 +41,9 @@ class QSocket(QObject):
         self.socket.disconnected.connect(self.on_disconnected)
         self.socket.readyRead.connect(self.on_readyRead)
 
-        self.timer = connection_timer(30)
+        self.timer = connection_timer(
+            int(AppSettings().value('timeout/socket', 30))
+        )
         self.timer.timeout.connect(self.close_socket)
         self.timer.start()
 
