@@ -16,7 +16,8 @@ from PySide2.QtWidgets import (
     QRadioButton,
     QVBoxLayout,
     QWidget,
-    QSpinBox
+    QSpinBox,
+    QToolButton,
 )
 
 from ..utils import AppSettings, get_ip
@@ -129,20 +130,24 @@ class TcpPort(QSpinBox):
             self.settings.setValue(self.port_id, self.textFromValue(port))
 
 
-class TimeoutLabel(QFormLayout):
-    """Timeout QFormLayout widget for the timeout labels."""
+class TimeoutLabels(QWidget):
+    """Timeout QWidget for the timeout labels."""
 
     def __init__(self):
         """Initialize the form layout labels."""
-        QFormLayout.__init__(self)
+        QWidget.__init__(self)
+        self.setHidden(True)
 
         self._server_timeout = QLabel('')
         self._client_timeout = QLabel('')
         self._socket_timeout = QLabel('')
 
-        self.addRow(QLabel('Server Timeout in:'), self._server_timeout)
-        self.addRow(QLabel('Receiver Timeout in:'), self._client_timeout)
-        self.addRow(QLabel('Send Nodes Timeout in:'), self._socket_timeout)
+        _layout = QFormLayout()
+        _layout.addRow(QLabel('Server Timeout in:'), self._server_timeout)
+        _layout.addRow(QLabel('Receiver Timeout in:'), self._client_timeout)
+        _layout.addRow(QLabel('Send Nodes Timeout in:'), self._socket_timeout)
+
+        self.setLayout(_layout)
 
 
 class ConnectionsWidget(QWidget):
@@ -183,14 +188,14 @@ class ConnectionsWidget(QWidget):
         self.sender_mode = QRadioButton('Sender')
         self.sender_mode.toggled.connect(self.set_label_sender)
 
+        self._timeout = TimeoutLabels()
+        self._setup_timeout_btn()
+
         self._layout = QVBoxLayout()
         self._add_switch_layout()
         self._add_form_layout()
         self._add_grid_layout()
-
-        self._timeout = TimeoutLabel()
-        self._timeout.setAlignment(Qt.AlignCenter)
-        self._layout.addLayout(self._timeout)
+        self._layout.addWidget(self._timeout)
 
         self.setLayout(self._layout)
         self._set_tooltips()
@@ -261,13 +266,32 @@ class ConnectionsWidget(QWidget):
 
         self._layout.addLayout(_form_layout)
 
+    def _setup_timeout_btn(self):
+        """Set up the show timeout button.
+
+        Set a QToolButton that will hide/unhide the timeouts label widgets.
+        """
+        def _hide_timeouts(state):
+            """Update the state of the widget and arrow type."""
+            state = not state
+            self._timeout.setHidden(state)
+            self._timeout_btn.setArrowType(
+                Qt.DownArrow if state else Qt.UpArrow)
+
+        self._timeout_btn = QToolButton()
+        self._timeout_btn.setToolTip('Show timeout timers')
+        self._timeout_btn.setArrowType(Qt.DownArrow)
+        self._timeout_btn.setCheckable(True)
+        self._timeout_btn.setChecked(False)
+        self._timeout_btn.toggled.connect(_hide_timeouts)
+
     def _add_grid_layout(self):
         """Set up the grid layout for the buttons."""
         _grid_layout = QGridLayout()
-        _grid_layout.addWidget(self.buttons.connect_btn, 0, 0, 1, 2)
-        _grid_layout.addWidget(self.buttons.test_btn, 1, 0)
-        _grid_layout.addWidget(self.buttons.send_btn, 1, 1)
-
+        _grid_layout.addWidget(self.buttons.connect_btn, 0, 0, 1, 3)
+        _grid_layout.addWidget(self._timeout_btn, 1, 0)
+        _grid_layout.addWidget(self.buttons.test_btn, 1, 1)
+        _grid_layout.addWidget(self.buttons.send_btn, 1, 2)
         self._layout.addLayout(_grid_layout)
 
     def set_label_sender(self):
