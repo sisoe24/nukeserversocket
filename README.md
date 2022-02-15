@@ -14,9 +14,7 @@
 [![license](https://img.shields.io/github/license/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE)
 
 ![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
-![x](https://img.shields.io/badge/Nuke11-success)
-![x](https://img.shields.io/badge/Nuke12-success)
-![x](https://img.shields.io/badge/Nuke13-success)
+![x](https://img.shields.io/badge/Nuke-11_|_12_|13-yellow)
 
 A Nuke plugin that will allow code execution from the local network and more.
 
