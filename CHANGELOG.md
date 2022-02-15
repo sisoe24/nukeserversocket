@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+* Configurable timeout settings.
+
 ## [0.3.0] - 2022-02-06
 
 Under the hood improvements on code execution and some refactoring.
