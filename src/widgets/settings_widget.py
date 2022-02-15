@@ -181,9 +181,9 @@ class TimeoutSettings(QGroupBox):
         _layout = QFormLayout()
         _layout.addRow(QLabel('Server (minutes)'),
                        self.set_spinbox('server', 10))
-        _layout.addRow(QLabel('Client (seconds)'),
+        _layout.addRow(QLabel('Receiver (seconds)'),
                        self.set_spinbox('client', 10))
-        _layout.addRow(QLabel('Socket (seconds)'),
+        _layout.addRow(QLabel('Send Nodes (seconds)'),
                        self.set_spinbox('socket', 30))
         self.setLayout(_layout)
 
