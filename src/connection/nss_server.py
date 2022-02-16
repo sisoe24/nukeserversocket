@@ -8,7 +8,7 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
 from .nss_socket import QSocket
-from ..utils import AppSettings, connection_timer
+from ..utils import AppSettings
 from ..widgets import Timer
 
 LOGGER = logging.getLogger('NukeServerSocket.server')

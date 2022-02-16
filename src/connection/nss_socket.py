@@ -7,7 +7,7 @@ import logging
 from PySide2.QtCore import QObject, Signal
 
 from .data_to_code import DataCode, InvalidData
-from ..utils import validate_output, connection_timer, AppSettings
+from ..utils import validate_output, AppSettings
 from ..controllers import CodeEditor
 from ..widgets import Timer
 

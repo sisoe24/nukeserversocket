@@ -11,7 +11,7 @@ from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 
 from .. import nuke
 from ..widgets import Timer
-from ..utils import AppSettings, validate_output, connection_timer
+from ..utils import AppSettings, validate_output
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
