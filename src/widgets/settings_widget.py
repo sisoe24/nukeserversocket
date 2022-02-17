@@ -9,7 +9,9 @@ from PySide2.QtWidgets import (
     QFormLayout,
     QWidget,
     QGroupBox,
-    QVBoxLayout
+    QVBoxLayout,
+    QSpinBox,
+    QLabel
 )
 
 from ..utils import AppSettings
@@ -52,19 +54,17 @@ class CheckBox(QCheckBox):
         )
 
 
-class SettingsWidget(QWidget):
-    """Settings Widget.
+class ScriptEditorSettings(QGroupBox):
+    """A QGroupBox class for the script editor settings.
 
     Class that deals mostly with showing the checkbox ui and enabling/disabling
     certain checkboxes state.
     """
 
     def __init__(self):
-        """Init method for the SettingsWidget class."""
-        QWidget.__init__(self)
-        self.setObjectName('SettingsWidget')
+        """Init method for the ScriptEditorSettings class."""
+        QGroupBox.__init__(self, 'Mirror To Script Editor')
 
-        self._se_checkbox = QGroupBox('Mirror To Script Editor')
         self._setup_group_toggle()
 
         self._output_console = CheckBox(
@@ -97,29 +97,29 @@ class SettingsWidget(QWidget):
         for checkbox in self.findChildren(CheckBox):
             _layout_checkboxes.addRow(checkbox._label, checkbox)
 
-        self._se_checkbox.setLayout(_layout_checkboxes)
+        self.setLayout(_layout_checkboxes)
 
         _layout = QVBoxLayout()
-        _layout.addWidget(self._se_checkbox)
+        _layout.addWidget(self)
 
         self.setLayout(_layout)
 
-        self._se_checkbox.toggled.connect(self._toggle_sub_options)
+        self.toggled.connect(self._toggle_sub_options)
         self._output_console.toggled.connect(self._toggle_output_options)
         self._format_output.toggled.connect(self._toggle_clear_console)
 
     def _setup_group_toggle(self):
         """Set initial default groupbox widget settings."""
-        self._se_checkbox.setCheckable(True)
+        self.setCheckable(True)
 
         setting_name = "options/mirror_to_script_editor"
 
         settings = AppSettings()
-        self._se_checkbox.setChecked(settings.get_bool(setting_name))
+        self.setChecked(settings.get_bool(setting_name))
 
-        self._se_checkbox.toggled.connect(
+        self.toggled.connect(
             lambda: settings.setValue(
-                setting_name, self._se_checkbox.isChecked())
+                setting_name, self.isChecked())
         )
 
     @staticmethod
@@ -166,6 +166,61 @@ class SettingsWidget(QWidget):
         Args:
             state (bool): state of output_console attribute
         """
-        state = self._se_checkbox.isChecked()
-        for checkbox in self._se_checkbox.findChildren(CheckBox):
+        state = self.isChecked()
+        for checkbox in self.findChildren(CheckBox):
             self._toggle_checkboxes(checkbox, state)
+
+
+class TimeoutSettings(QGroupBox):
+    """A QGroupBox class for the timeout settings."""
+
+    def __init__(self):
+        """Initialize the TimeoutSettings class."""
+        QGroupBox.__init__(self, 'Timeout')
+
+        _layout = QFormLayout()
+        _layout.addRow(QLabel('Server (minutes)'),
+                       self.set_spinbox('server', 10))
+        _layout.addRow(QLabel('Receiver (seconds)'),
+                       self.set_spinbox('client', 10))
+        _layout.addRow(QLabel('Send Nodes (seconds)'),
+                       self.set_spinbox('socket', 30))
+        self.setLayout(_layout)
+
+    @staticmethod
+    def set_spinbox(label, value):  # type: (str, int) -> QSpinBox
+        """Set a spinbox QWidgets class.
+
+        Set up a spinbox class to be used for the timeout settings.
+
+        Args:
+            label (str): the spinbox label to be used in the settings file.
+            value (int): the initial value for the spinbox.
+
+        Returns:
+            QSpinBox: The QSpinBox object.
+        """
+        label = 'timeout/%s' % label
+
+        settings = AppSettings()
+        spinbox = QSpinBox()
+        spinbox.setValue(int(settings.value(label, value)))
+        spinbox.valueChanged.connect(
+            lambda time: settings.setValue(label, time)
+        )
+        return spinbox
+
+
+class SettingsWidget(QWidget):
+    """Settings Widget."""
+
+    def __init__(self):
+        """Init method for the SettingsWidget class."""
+        QWidget.__init__(self)
+        self.setObjectName('SettingsWidget')
+
+        _layout = QVBoxLayout()
+        _layout.addWidget(ScriptEditorSettings())
+        _layout.addWidget(TimeoutSettings())
+
+        self.setLayout(_layout)

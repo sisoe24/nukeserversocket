@@ -59,9 +59,12 @@ class _ExecuteInMainThread(QObject):
 
     def _exec(self, data):  # type: (str) -> str
         """Execute a string as a callable command."""
-        with self.stdoutIO() as s:
-            exec(data)  # skipcq: PYL-W0122
-        return s.getvalue()
+        try:
+            with self.stdoutIO() as s:
+                exec(data)  # skipcq: PYL-W0122
+            return s.getvalue()
+        except Exception as err:  # skipcq: PYL-W0703
+            return "An exception occurred: `%s`" % str(err)
 
     def set_input(self, text):  # type: (str) -> None
         """Set input from the nuke command."""
