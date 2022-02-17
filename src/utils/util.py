@@ -26,22 +26,6 @@ def insert_time(text):  # type: (str) -> str
     return '[%s] %s\n' % (time, text)
 
 
-def connection_timer(timeout):  # type: (int) -> QTimer
-    """Set up a single shot connection timeout QTimer.
-
-    Args:
-        timeout (int): timeout time in seconds: 1, 10, 60
-
-    Returns:
-        QTimer: QTimer object
-    """
-    # TODO: should be cool to have a widget timer with the time left
-    _timer = QTimer()
-    _timer.setInterval(timeout * 1000)
-    _timer.setSingleShot(True)
-    return _timer
-
-
 def validate_output(data):  # type: (str) -> bytearray | QByteArray
     """Check for nuke version and return appropriate type of output data.
 

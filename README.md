@@ -14,9 +14,7 @@
 [![license](https://img.shields.io/github/license/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE)
 
 ![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
-![x](https://img.shields.io/badge/Nuke11-success)
-![x](https://img.shields.io/badge/Nuke12-success)
-![x](https://img.shields.io/badge/Nuke13-success)
+![x](https://img.shields.io/badge/Nuke-11_|_12_|13-yellow)
 
 A Nuke plugin that will allow code execution from the local network and more.
 
@@ -29,21 +27,14 @@ A Nuke plugin that will allow code execution from the local network and more.
     - [1.4.2. Receive/Send nodes](#142-receivesend-nodes)
       - [1.4.2.1. Send](#1421-send)
       - [1.4.2.2. Receive](#1422-receive)
-      - [1.4.2.3. Connection timeouts](#1423-connection-timeouts)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
-    - [1.6.1. Code Sample](#161-code-sample)
-    - [1.6.2. Port & Host address](#162-port--host-address)
   - [1.7. Test plugin locally](#17-test-plugin-locally)
-    - [1.7.1. Python 3](#171-python-3)
-    - [1.7.2. Python 2](#172-python-2)
-      - [1.7.2.1. `pipenv`](#1721-pipenv)
-      - [1.7.2.2. `virtualenv`](#1722-virtualenv)
-      - [1.7.2.3. `poetry`](#1723-poetry)
-    - [1.7.3. Testing](#173-testing)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
   - [1.10. Overview](#110-overview)
+    - [1.10.1. Execute Code](#1101-execute-code)
+    - [1.10.2. Send Nodes](#1102-send-nodes)
 
 ## 1.1. Tools
 
@@ -69,9 +60,11 @@ Save the plugin in your _.nuke_ directory or in a custom directory and then `imp
 
 ### 1.4.1. Receive incoming request
 
+[Demo](#1101-execute-code)
+
 Open the _NukeServerSocket_ panel and with the mode on **Receiver**, start the server by clicking **Connect**.
 
-  > If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", just change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already. Also when connected, you could test the receiver with the **Test Receiver** button, otherwise you are done.
+  > If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", just change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already. Also when connected, you could test the receiver with the **Test Receiver** button.
 
 When connected, NukeServerSocket will listen for incoming request on the IP Address and Port shown in the plugin.
 
@@ -79,210 +72,55 @@ Now you can send code from Visual Studio Code with [Nuke Tools](https://marketpl
 
 ### 1.4.2. Receive/Send nodes
 
+[Demo](#1102-send-nodes)
+
 #### 1.4.2.1. Send
 
 When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-receive-incoming-request)). Select the nodes you want to send a click **Send Selected Nodes**.
 
-> By default, the IP Address on the sender points to the local IP address, so if you want to send nodes between the same computer you should only specify the Port. When sending nodes to another computer you will also need to specify the IP Address of the NukeServerSocket computer you want the nodes to be sended.
+> By default, the IP Address on the sender points to the local IP address, so, if you want to send nodes between the same computer, you should only specify the Port. When sending nodes to another computer, you will also need to specify the IP Address of the computer you want to send the nodes.
 
 #### 1.4.2.2. Receive
 
-When receiving nodes just follow the steps for [Receive incoming request](#141-receive-incoming-request) for the receiving instance and the [Send](#1421-send) steps for the sending instances.
-
-#### 1.4.2.3. Connection timeouts
-
-- The server connection will shutdown after 5 minutes of inactivity.
-- The socket server will shutdown after 30 seconds if it doesn't receive any request.
-- The socket client will shutdown after 10 seconds if could not initiate a connection.
+When receiving nodes just follow the steps for [Receive incoming request](#141-receive-incoming-request) for the receiving instance and the [Send](#1421-send) steps for the sending instance.
 
 ## 1.5. Settings
 
-The plugin offers some minor settings like output text to internal script editor, format text and so on.
+The settings can be accessed from the plugin toolbar
+
+- **Mirror To Script Editor**: Allows to mirror the input/output code to the internal script editor.
+  - **Override Output Editor**: Mirror output to the internal script editor.
+  - **Format Text**: The script editor output window will received a formatted version of the code result.
+  - **Clear Output**:  The script editor output window will clear the code after each execution.
+  - **Show File Path**: The script editor output window will display the full file path of the file being executed.
+  - **Show Unicode**: The script editor output window will display a unicode character `` that indicates the start of the code execution result.
+  - **Override Input Editor**: Mirror input to the internal script editor.
+
+- **Timeout**: Terminate the connection when the server is inactive or it wasn't able to establish a successful connection, in the time specified.
+  - **Server**: Set the timeout when clicking the **Connect** button. Defaults to `10` minutes.
+  - **Receiver**: Set the timeout for when clicking the **Test Receiver** button. Defaults to `10` seconds.
+  - **Send Nodes**: Set the timeout when clicking **Send Nodes** button. Defaults to `30` seconds.
 
 ## 1.6. Extendibility
 
-At its core, the plugin is just a server socket that awaits for an incoming request, performs the operations inside Nuke and returns the result. Nothing ties it to any application per se.
+At its core, the plugin is just a server socket that awaits for an incoming request,
+performs the operations inside Nuke and returns the result. Nothing ties it to any
+application per se.
 
-The only requirement is that the code received should be inside a string.
+This makes it very easy to implement a new client, without the need to modify NukeServerSocket source code. The client needs only to send the data at the specified address inside NukeServerSocket.
 
-From the client point of view, the code can be sent either inside a _stringified_ associative array or inside a simple string, with the latter being valid only when sending Python code.
-
-The associative array should have the following keys: `text` and an optional `file`.
-
-- `text`: Must contain the code to be executed as a string.
-- `file`: Could contain the file path of the script that is being executed.
-
-Although the associative array is optional when executing Python code, it is a requirement when executing BlinkScript. The key **file** must contain a valid file extension: `.cpp` or `.blink` in order for the plugin to know where to delegate the job.
-
-> When sending a stringified array, the plugin will try to deserialize it with `json.loads()`.
-
-### 1.6.1. Code Sample
-
-```py
-"""Python Send data example."""
-from __future__ import print_function
-
-import json
-import socket
-
-s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-# connection host and port must match information inside Nuke plugin
-# 127.0.0.1 == localhost
-s.connect(('127.0.0.1', 54321))
-
-data = "print('Hello World from py')"
-# or
-data = {
-    "text": "print('Hello World from py')",
-    "file" : "path/to/file.py" # optional
-}
-
-# if data is a simple string json.dumps is not required
-data = json.dumps(data)
-
-s.sendall(bytearray(data))
-
-# the returned data from NukeServerSocket
-data = s.recv(1024)
-
-s.close()
-
-print("Result :", data) # Hello World from py
-```
-
-```js
-// Node.js Send data example.
-
-let socket = new require('net').Socket();
-
-// connection host and port must match information inside Nuke plugin
-  socket.connect(54321, '127.0.0.1', function () {
-
-    const data = {
-        "text": "print('Hello World from node.js')",
-    };
-
-    // stringify the object before sending
-      socket.write(JSON.stringify(data));
-});
-
-// the returned data from NukeServerSocket
-  socket.on('data', function (data) {
-    // data could be <Buffer> | <string> | <any>
-    console.log(data.toString('utf8'));
-      socket.destroy();
-});
-```
-
-### 1.6.2. Port & Host address
-
-NukeServerSocket by default will listen on any host address.
-
-When connecting locally (same computer) you can just specify the local host address (eg.`127.0.0.1`) in your socket client code. When connecting from a different computer you also specify the exact IP Address (eg `192.168.1.10`).
-
-The port value is written to _.nuke/NukeServerSocket.ini_ inside the `server/port` field. Each time the user changes it, it gets update automatically. If used locally, this can be used from your extension to pick at which port to connect.
-
-This is pretty much all you need to start your own extension for your favorite text editor or any other method you prefer.
-
-If you still have some problems, please feel free to reach out for any questions.
+More information and examples on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client).
 
 ## 1.7. Test plugin locally
 
-The plugin can be launched locally. This is useful for testing code and implementing new features.
-Also the local plugin offers a simple emulation of the Nuke's internal Script Editor layout.
+The plugin can be launched locally outside the Nuke application. This is useful for testing code and implementing new features more rapidly.
 
-The project default interpreter is Python 3 but it can also be build with Python 2.
-Python 3 version is required to be `<=3.7.7` as in newer versions there is a Qt related bug that was solved only in versions newer that the one inside Nuke.
-
-After each new feature, the project is required to pass both Python 2 and Python 3 tests.
-
-
-### 1.7.1. Python 3
-
-Poetry package manager is used to build the project for Python 3. A different virtualenv wrapper could be used instead as is just a matter of personal preference.
-
-```sh
-# clone the repo
-
-# install packages
-poetry install
-
-# run app locally
-poetry run python -m src.run_local
-
-# run tests
-poetry run python -m pytest
-```
-
-### 1.7.2. Python 2
-
-There are a few ways to create a second virtual environment for Python2:
-
-- [pipenv](#1722-pipenv): The most straightforward.
-- [virtualenv](#1722-virtualenv): Python 2 does not include `virtualenv` by default and on some system not even `pip`.
-- [poetry](#1723-poetry): Poetry could create a second env but will have package compatibility issues.
-- and probably more...
-  
-> If the virtualenv created is inside root, poetry must change its configuration value to not use the in root venv: `poetry config virtualenvs.in-project false`
-
-#### 1.7.2.1. `pipenv`
-
-```sh
-# install packages for python 2
-pipenv install --two 
-
-# run app locally
-pipenv run python -m src.run_local
-
-# run tests for python 2
-pipenv run python -m pytest
-```
-
-#### 1.7.2.2. `virtualenv`
-
-```sh
-# Download and setup pip for python 2.
-curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py && python2 $_
-
-# install virtualenv
-python2 -m pip install virtualenv
-
-# setup a virtualenv for python2
-python2 -m virtualenv .venv/
-
-# activate the env with .venv/bin/activate or call it directly
-# install package dependencies
-.venv/bin/pip install -r requirements.txt
-
-# run locally
-.venv/bin/python -m src.run_local
-
-# run tests
-.venv/bin/python -m pytest
-```
-
-#### 1.7.2.3. `poetry`
-
-Discouraged.
-
-Because `poetry` allows multiple environment, one could change the _pyproject.toml_ python requirements to satisfy both python 2 and 3: `>=2.7.18, <=3.7.7`. This has the drawback that will only install the latest package version compatible for python2.
-
-### 1.7.3. Testing
-
-The repo includes a `git` hook script that is launched pre-push. The script will execute the tests for Python 2 and 3. If one fails, will exit and abort the push.
-
-```sh
-# to activate the .githooks folder as the default hooks folder for the repo
-git config core.hooksPath .githooks
-```
-
-The script will assume that `poetry` is used for python 3 and that python 2 executable is inside `root/.venv/bin/`. If this is not the case, change `python2path` and `python3path`.
+More information on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Test-Plugin-locally).
 
 ## 1.8. Known Issues
 
 - Settings window doesn't display the tooltip text.
-- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. One way to force close all of the connections is to restart Nuke, or wait for the connection timeout: `5` minutes.
+- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. One way to force close all of the connections is to restart Nuke, or you can wait for the connection timeout.
 
 ## 1.9. Compatibility
 
@@ -301,8 +139,10 @@ While it should work the same on all platforms, it has been currently only teste
 
 ## 1.10. Overview
 
+### 1.10.1. Execute Code
+
 <img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true" width="100%"/>
 
-<img title="Main Window" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/main_window.png?raw=true" width="80%"/>
+### 1.10.2. Send Nodes
 
-<img title="Settings" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/settings.png?raw=trueg" width="30%"/>
+<img title="Send Nodes" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true" width="100%"/>

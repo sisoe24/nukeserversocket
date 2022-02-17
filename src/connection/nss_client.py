@@ -10,7 +10,8 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 
 from .. import nuke
-from ..utils import AppSettings, validate_output, connection_timer
+from ..widgets import Timer
+from ..utils import AppSettings, validate_output
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
@@ -47,11 +48,13 @@ class QBaseClient(QObject):
         () timeout: emits when connection timeout has been triggered.
         (str) state_changed: emits when connection state has changed.
         (bool) client_ready: emits when client is ready to connect again.
+        (str) client_timeout: emits every second to indicate the timeout status
     """
 
     timeout = Signal()
     state_changed = Signal(str)
     client_ready = Signal(bool)
+    client_timeout = Signal(str)
 
     def __init__(self, hostname, port):  # type: (str, int) -> None
         """Init method for the QBaseClient class.
@@ -78,8 +81,11 @@ class QBaseClient(QObject):
         self.socket.error.connect(self.on_error)
         self.socket.stateChanged.connect(self.connection_state)
 
-        self.timer = connection_timer(10)
-        self.timer.timeout.connect(self._connection_timeout)
+        self.timer = Timer(
+            int(AppSettings().value('timeout/client', 10))
+        )
+        self.timer.time.connect(self.client_timeout.emit)
+        self.timer._timer.timeout.connect(self._connection_timeout)
 
     def on_connected(self):
         """When connection is establish do stuff.

@@ -37,3 +37,4 @@ if ! $python3path run pytest --cov=src --cov-report=html:coverage --cov-report=x
 fi
 
 # TODO: add coverage report
+# TODO: check pyproject version match with current version
