@@ -1,10 +1,15 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.0] - 2022-06-17
 
 ### Added
 
 * Configurable timeout settings.
+* Display timeout timers inside UI.
+
+### Fixed
+
+* Exceptions happening in Nuke's thread, will now display in the extension output.
 
 ## [0.3.0] - 2022-02-06
 
