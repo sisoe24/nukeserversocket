@@ -60,11 +60,11 @@ Save the plugin in your _.nuke_ directory or in a custom directory and then `imp
 
 ### 1.4.1. Receive incoming request
 
-[demo](#1101-execute-code)
+[Demo](#1101-execute-code)
 
 Open the _NukeServerSocket_ panel and with the mode on **Receiver**, start the server by clicking **Connect**.
 
-  > If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", just change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already. Also when connected, you could test the receiver with the **Test Receiver** button, otherwise you are done.
+  > If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", just change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already. Also when connected, you could test the receiver with the **Test Receiver** button.
 
 When connected, NukeServerSocket will listen for incoming request on the IP Address and Port shown in the plugin.
 
@@ -72,18 +72,17 @@ Now you can send code from Visual Studio Code with [Nuke Tools](https://marketpl
 
 ### 1.4.2. Receive/Send nodes
 
-[demo](#1102-send-nodes)
+[Demo](#1102-send-nodes)
 
 #### 1.4.2.1. Send
 
-
 When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-receive-incoming-request)). Select the nodes you want to send a click **Send Selected Nodes**.
 
-> By default, the IP Address on the sender points to the local IP address, so if you want to send nodes between the same computer you should only specify the Port. When sending nodes to another computer you will also need to specify the IP Address of the NukeServerSocket computer you want the nodes to be sended.
+> By default, the IP Address on the sender points to the local IP address, so, if you want to send nodes between the same computer, you should only specify the Port. When sending nodes to another computer, you will also need to specify the IP Address of the computer you want to send the nodes.
 
 #### 1.4.2.2. Receive
 
-When receiving nodes just follow the steps for [Receive incoming request](#141-receive-incoming-request) for the receiving instance and the [Send](#1421-send) steps for the sending instances.
+When receiving nodes just follow the steps for [Receive incoming request](#141-receive-incoming-request) for the receiving instance and the [Send](#1421-send) steps for the sending instance.
 
 ## 1.5. Settings
 
@@ -97,7 +96,7 @@ The settings can be accessed from the plugin toolbar
   - **Show Unicode**: The script editor output window will display a unicode character `` that indicates the start of the code execution result.
   - **Override Input Editor**: Mirror input to the internal script editor.
 
-- **Timeout**: Terminate the connection when the server is inactive or it wasn't able to establish a successful connection, for the time specified.
+- **Timeout**: Terminate the connection when the server is inactive or it wasn't able to establish a successful connection, in the time specified.
   - **Server**: Set the timeout when clicking the **Connect** button. Defaults to `10` minutes.
   - **Receiver**: Set the timeout for when clicking the **Test Receiver** button. Defaults to `10` seconds.
   - **Send Nodes**: Set the timeout when clicking **Send Nodes** button. Defaults to `30` seconds.
@@ -106,9 +105,9 @@ The settings can be accessed from the plugin toolbar
 
 At its core, the plugin is just a server socket that awaits for an incoming request,
 performs the operations inside Nuke and returns the result. Nothing ties it to any
-application per se. 
+application per se.
 
-This makes it very easy to implement a new client straight away, without the need to modify NukeServerSocket source code. The client needs only to send the data at the specified address inside NukeServerSocket.
+This makes it very easy to implement a new client, without the need to modify NukeServerSocket source code. The client needs only to send the data at the specified address inside NukeServerSocket.
 
 More information and examples on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client).
 
@@ -121,7 +120,7 @@ More information on the [wiki page](https://github.com/sisoe24/NukeServerSocket/
 ## 1.8. Known Issues
 
 - Settings window doesn't display the tooltip text.
-- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. One way to force close all of the connections is to restart Nuke, or wait for the connection timeout.
+- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. One way to force close all of the connections is to restart Nuke, or you can wait for the connection timeout.
 
 ## 1.9. Compatibility
 
