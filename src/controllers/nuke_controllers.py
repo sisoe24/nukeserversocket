@@ -80,6 +80,7 @@ class _ExecuteInMainThread(QObject):
             try:
                 self._output = nuke.executeInMainThreadWithResult(
                     self._exec, self._input)
+                LOGGER.debug('execute internal')
             except Exception:  # skipcq: PYL-W0703
                 err = "executeInMainThread Error. Fallback on ScriptEditor for now."
                 self.execution_error.emit(err)
@@ -90,6 +91,7 @@ class _ExecuteInMainThread(QObject):
 
     def _execute_script_editor(self):
         """Execute code from the internal script editor widget."""
+        LOGGER.debug('execute script editor')
         self.script_editor.set_input(self._input)
         self.script_editor.execute()
         self._output = self.script_editor.output()
