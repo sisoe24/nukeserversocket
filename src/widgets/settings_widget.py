@@ -4,6 +4,7 @@ from __future__ import print_function
 
 import logging
 
+from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (
     QCheckBox,
     QFormLayout,
@@ -11,12 +12,27 @@ from PySide2.QtWidgets import (
     QGroupBox,
     QVBoxLayout,
     QSpinBox,
-    QLabel
+    QLabel,
+    QRadioButton
 )
 
 from ..utils import AppSettings
 
 LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
+
+
+def _format_name(name):
+    """Format name.
+
+    Format a name into lowercase and no space: `This Button` to `this_button`.
+
+    Args:
+        name (str): name to be formatted
+
+    Returns:
+        str: the formatted name.
+    """
+    return name.lower().replace(' ', '_')
 
 
 class CheckBox(QCheckBox):
@@ -43,7 +59,7 @@ class CheckBox(QCheckBox):
         self.setToolTip(tooltip)
         self._label = label
 
-        obj_name = title.lower().replace(' ', '_')
+        obj_name = _format_name(title)
         setting_name = 'options/%s' % obj_name
         self.setObjectName(obj_name)
 
@@ -91,16 +107,12 @@ class ScriptEditorSettings(QGroupBox):
             default_state=False, title='Override Input Editor', parent=self,
             tooltip='Override internal input text editor', label='Input:')
 
-        _layout_checkboxes = QFormLayout()
-        _layout_checkboxes.setVerticalSpacing(10)
+        _layout = QFormLayout()
+        _layout.setAlignment(Qt.AlignCenter)
+        _layout.setVerticalSpacing(10)
 
         for checkbox in self.findChildren(CheckBox):
-            _layout_checkboxes.addRow(checkbox._label, checkbox)
-
-        self.setLayout(_layout_checkboxes)
-
-        _layout = QVBoxLayout()
-        _layout.addWidget(self)
+            _layout.addRow(checkbox._label, checkbox)
 
         self.setLayout(_layout)
 
@@ -179,6 +191,7 @@ class TimeoutSettings(QGroupBox):
         QGroupBox.__init__(self, 'Timeout')
 
         _layout = QFormLayout()
+        _layout.setAlignment(Qt.AlignCenter)
         _layout.addRow(QLabel('Server (minutes)'),
                        self.set_spinbox('server', 10))
         _layout.addRow(QLabel('Receiver (seconds)'),
@@ -211,6 +224,54 @@ class TimeoutSettings(QGroupBox):
         return spinbox
 
 
+class CodeEngineSettings(QGroupBox):
+    """A QGroupBox class for the code execution engine settings.
+
+    Settings will allow the user to choose which engine to use when executing
+    code:
+        * Nuke internal: nukeExecuteInMainThread.
+        * Script Editor: Qt scriptEditor widget.
+    """
+
+    def __init__(self):
+        """Initialize the CodeEngineSettings class."""
+        QGroupBox.__init__(self, 'Code Execution Engine')
+
+        _layout = QVBoxLayout()
+        _layout.setAlignment(Qt.AlignCenter)
+        _layout.addWidget(self.setup_button('Nuke Internal', True))
+        _layout.addWidget(self.setup_button('Script Editor', False))
+
+        self.setLayout(_layout)
+
+    @staticmethod
+    def setup_button(label, default_state):  # type: (str, bool) -> QRadioButton
+        """Set a QRadioButton widget.
+
+        Set up a QRadioButton widget default state and connects its toggle
+        signal to the application settings.
+
+        Args:
+            label (str): label of the radiobutton
+            default_state (bool): default state of the button if no settings is
+            found.
+
+        Returns:
+            _type_: A QRadioButton object.
+        """
+        settings = AppSettings()
+        setting_name = 'engine/%s' % _format_name(label)
+
+        radiobutton = QRadioButton(label)
+        radiobutton.setChecked(settings.get_bool(setting_name, default_state))
+
+        radiobutton.toggled.connect(
+            lambda state: settings.setValue(setting_name, state)
+        )
+
+        return radiobutton
+
+
 class SettingsWidget(QWidget):
     """Settings Widget."""
 
@@ -220,6 +281,7 @@ class SettingsWidget(QWidget):
         self.setObjectName('SettingsWidget')
 
         _layout = QVBoxLayout()
+        _layout.addWidget(CodeEngineSettings())
         _layout.addWidget(ScriptEditorSettings())
         _layout.addWidget(TimeoutSettings())
 

@@ -9,7 +9,10 @@ import re
 
 import pytest
 
-from src.widgets import settings_widget
+from PySide2.QtWidgets import QRadioButton
+from src.widgets.settings_widget import (
+    _format_name, SettingsWidget, CheckBox, ScriptEditorSettings
+)
 
 pytestmark = pytest.mark.settings_name
 
@@ -44,6 +47,17 @@ def _get_options_keys(file):
         return re.findall(r'(?<=options/)\w+', src_file.read())
 
 
+def _get_engine_keys(file):
+    """Get all of the options reference inside the source file.
+
+    Returns:
+        list: list with all of the options reference found.
+    """
+    # TODO: this will not find the names in the test_settings_widget.py file.
+    with open(file) as src_file:
+        return re.findall(r'(?<=engine/)\w+', src_file.read())
+
+
 def _format_name(name):
     """Format name.
 
@@ -61,18 +75,39 @@ def _format_name(name):
 @pytest.fixture()
 def _options_name(qtbot):
     """Get the options name from the SettingsWidget."""
-    widget = settings_widget.SettingsWidget()
+    widget = SettingsWidget()
     qtbot.addWidget(widget)
 
-    checkboxes = widget.findChildren(settings_widget.CheckBox)
-    checkboxes_names = [_format_name(_.text()) for _ in checkboxes]
+    checkboxes = widget.findChildren(CheckBox)
+    options_names = [_format_name(_.text()) for _ in checkboxes]
 
-    group_box = widget.findChild(settings_widget.QGroupBox)
-    group_box_name = _format_name(group_box.title())
+    # add the groupbox title name since it being used as a setting value
+    options_names.append(_format_name(
+        ScriptEditorSettings().title()))
 
-    checkboxes_names.append(group_box_name)
+    return options_names
 
-    return checkboxes_names
+
+@pytest.fixture()
+def _engine_name(qtbot):
+    """Get the options name from the SettingsWidget."""
+    widget = SettingsWidget()
+    qtbot.addWidget(widget)
+
+    radio_buttons = widget.findChildren(QRadioButton)
+    return [_format_name(_.text()) for _ in radio_buttons]
+
+
+def test_engine_names(_package, _engine_name):
+    """Test that options name are valid.
+
+    Search for the files that are using the setting system, and confirm that
+    names are valid.
+    """
+    for file in _traverse_dir(_package):
+        for opt in _get_engine_keys(file):
+            msg = 'Option name was not update in file: {}'.format(file)
+            assert opt in _engine_name, msg
 
 
 def test_options_names(_package, _options_name):

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1] - 2022-06-18
+
+### Added
+
+* New settings to switch che code execution engine.
+
 ## [0.4.0] - 2022-06-17
 
 ### Added
@@ -14,6 +20,10 @@
 ## [0.3.0] - 2022-02-06
 
 Under the hood improvements on code execution and some refactoring.
+
+### Changed
+
+* Changed default way to execute code to `executeInMainThread` function.
 
 ## [0.2.0] - 2021-10-29
 

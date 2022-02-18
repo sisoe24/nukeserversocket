@@ -88,6 +88,10 @@ When receiving nodes just follow the steps for [Receive incoming request](#141-r
 
 The settings can be accessed from the plugin toolbar
 
+- **Code Execution Engine**: Change the engine that is executing the code.
+  - **Nuke Internal**: Nuke `executeInMainThread` function.
+  - **Script Editor**: Nuke Script Editor widget.
+
 - **Mirror To Script Editor**: Allows to mirror the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
   - **Format Text**: The script editor output window will received a formatted version of the code result.
@@ -119,6 +123,7 @@ More information on the [wiki page](https://github.com/sisoe24/NukeServerSocket/
 
 ## 1.8. Known Issues
 
+- Creating a modal window with the Nuke internal code execution engine, will cause Nuke to freeze. A workaround is to switch to the Script Editor engine.
 - Settings window doesn't display the tooltip text.
 - When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. One way to force close all of the connections is to restart Nuke, or you can wait for the connection timeout.
 
