@@ -21,6 +21,20 @@ from ..utils import AppSettings
 LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
 
 
+def _format_name(name):
+    """Format name.
+
+    Format a name into lowercase and no space: `This Button` to `this_button`.
+
+    Args:
+        name (str): name to be formatted
+
+    Returns:
+        str: the formatted name.
+    """
+    return name.lower().replace(' ', '_')
+
+
 class CheckBox(QCheckBox):
     """Custom QCheckBox class.
 
@@ -45,7 +59,7 @@ class CheckBox(QCheckBox):
         self.setToolTip(tooltip)
         self._label = label
 
-        obj_name = title.lower().replace(' ', '_')
+        obj_name = _format_name(title)
         setting_name = 'options/%s' % obj_name
         self.setObjectName(obj_name)
 
@@ -93,16 +107,12 @@ class ScriptEditorSettings(QGroupBox):
             default_state=False, title='Override Input Editor', parent=self,
             tooltip='Override internal input text editor', label='Input:')
 
-        _layout_checkboxes = QFormLayout()
-        _layout_checkboxes.setVerticalSpacing(10)
+        _layout = QFormLayout()
+        _layout.setAlignment(Qt.AlignCenter)
+        _layout.setVerticalSpacing(10)
 
         for checkbox in self.findChildren(CheckBox):
-            _layout_checkboxes.addRow(checkbox._label, checkbox)
-
-        self.setLayout(_layout_checkboxes)
-
-        _layout = QVBoxLayout()
-        _layout.addWidget(self)
+            _layout.addRow(checkbox._label, checkbox)
 
         self.setLayout(_layout)
 
@@ -181,6 +191,7 @@ class TimeoutSettings(QGroupBox):
         QGroupBox.__init__(self, 'Timeout')
 
         _layout = QFormLayout()
+        _layout.setAlignment(Qt.AlignCenter)
         _layout.addRow(QLabel('Server (minutes)'),
                        self.set_spinbox('server', 10))
         _layout.addRow(QLabel('Receiver (seconds)'),
@@ -225,9 +236,9 @@ class CodeEngineSettings(QGroupBox):
     def __init__(self):
         """Initialize the CodeEngineSettings class."""
         QGroupBox.__init__(self, 'Code Execution Engine')
-        self.setAlignment(Qt.AlignCenter)
 
         _layout = QVBoxLayout()
+        _layout.setAlignment(Qt.AlignCenter)
         _layout.addWidget(self.setup_button('Nuke Internal', True))
         _layout.addWidget(self.setup_button('Script Editor', False))
 
@@ -249,7 +260,7 @@ class CodeEngineSettings(QGroupBox):
             _type_: A QRadioButton object.
         """
         settings = AppSettings()
-        setting_name = 'engine/%s' % label.lower().replace(' ', '_')
+        setting_name = 'engine/%s' % _format_name(label)
 
         radiobutton = QRadioButton(label)
         radiobutton.setChecked(settings.get_bool(setting_name, default_state))
