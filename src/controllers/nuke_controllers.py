@@ -76,18 +76,24 @@ class _ExecuteInMainThread(QObject):
         If for some reason execution fails, method will fallback on the script
         editor execution mechanism.
         """
-        try:
-            self._output = nuke.executeInMainThreadWithResult(
-                self._exec, self._input)
-        except Exception:  # skipcq: PYL-W0703
-            err = "executeInMainThread Error. Fallback on ScriptEditor for now."
-            self.execution_error.emit(err)
-            LOGGER.error(err)
+        if AppSettings().get_bool('engine/nuke_internal', True):
+            try:
+                self._output = nuke.executeInMainThreadWithResult(
+                    self._exec, self._input)
+            except Exception:  # skipcq: PYL-W0703
+                err = "executeInMainThread Error. Fallback on ScriptEditor for now."
+                self.execution_error.emit(err)
+                LOGGER.error(err)
+                self._execute_script_editor()
+        else:
+            self._execute_script_editor()
 
-            self.script_editor.set_input(self._input)
-            self.script_editor.execute()
-            self._output = self.script_editor.output()
-            self.script_editor.restore_state()
+    def _execute_script_editor(self):
+        """Execute code from the internal script editor widget."""
+        self.script_editor.set_input(self._input)
+        self.script_editor.execute()
+        self._output = self.script_editor.output()
+        self.script_editor.restore_state()
 
     def output(self):  # type: () -> str
         """Get output from the nuke command."""
