@@ -59,9 +59,9 @@ class QServer(QObject):
     @staticmethod
     def _init_server():
         """Initialize the server type based on settings."""
-        if AppSettings().get_bool('connection_type/tcp'):
-            return QTcpServer()
-        return QWebSocketServer('NukeServerSocket', QWebSocketServer.NonSecureMode)
+        if AppSettings().get_bool('connection_type/websocket'):
+            return QWebSocketServer('NukeServerSocket', QWebSocketServer.NonSecureMode)
+        return QTcpServer()
 
     def connection_state(self, state):
         """Check if connection state.
