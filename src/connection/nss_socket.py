@@ -84,8 +84,6 @@ class QSocket(QObject):
         self.socket = MySocket(socket)
 
         self._socket_message = None
-        self.is_websocket = isinstance(self.socket, QWebSocket)
-
         self.socket.messageReceived.connect(self.on_readyRead)
 
         self.timer = Timer(
