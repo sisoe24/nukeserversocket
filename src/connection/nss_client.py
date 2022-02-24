@@ -216,7 +216,7 @@ class SendNodesClient(QBaseClient):
             hostname (str, optional): hostname to connect. Defaults to None.
             port (int, optional): port to connect. Defaults to None.
         """
-        LOGGER.debug('Client :: Sending nodes...')
+        LOGGER.debug('SendNodesClient :: Sending nodes...')
 
         addresses = NetworkAddresses()
         hostname = hostname or addresses.send_address
@@ -254,6 +254,7 @@ class SendNodesClient(QBaseClient):
             nuke.nodeCopy(transfer_file)
         except RuntimeError:
             self.state_changed.emit('No nodes selected.')
+            LOGGER.error('SendNodesClient :: NodesNotSelected error.')
             raise NodesNotSelectedError
         else:
             with open(transfer_file) as file:
