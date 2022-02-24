@@ -1,13 +1,16 @@
 """Test sending nodes module."""
+from enum import Flag
 import os
 import configparser
 
 from shutil import rmtree
 
 import pytest
+from src.connection.nss_client import NodesNotSelectedError
 
 from src.main import init_settings
 from src.connection import SendNodesClient
+from src.utils import AppSettings
 
 
 TRANSFER_NODES_FILE = """
@@ -60,6 +63,22 @@ def _transfer_node_file(_tmp_settings_file):
 def test_transfer_dir_exists(_transfer_node_file):
     """Check if tmp dir for transfer node file got created."""
     assert os.path.exists(os.path.dirname(_transfer_node_file))
+
+
+def test_raise_nodeNotSelected(_main_ui):
+    """Raise not NodesNotSelectedError if nodes are not selected.
+
+    In this case I am forcing the exception by changing a file path inside the
+    nuke internal module which will raise a RuntimeError
+     """
+    AppSettings().setValue('path/transfer_file', False)
+    _main_ui.toggle_connection(True)
+
+    client = SendNodesClient()
+    with pytest.raises(NodesNotSelectedError):
+        client.transfer_file_content()
+
+    _main_ui._server.close_server()
 
 
 def test_received_was_successful(_main_ui, qtbot):
