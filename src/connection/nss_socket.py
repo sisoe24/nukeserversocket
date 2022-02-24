@@ -15,11 +15,29 @@ from ..widgets import Timer
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
 
-class MySocket(QObject):
+class _AbstractSocket(QObject):
+    """Abstract socket class QObject.
+
+    The class mostly resembles a TcpSocket object, so the same naming methods
+    are used. Because the socket type used to initialize the class could be
+    a websocket or tcpsocket, the methods expose will deal with both behavior
+    behind the scene.
+
+    The internal socket object is accessible via `self.socket` and the type
+    will vary based on the application settings.
+
+    Signals:
+        (str) messageReceived: emits when socket message is ready.
+    """
+
     messageReceived = Signal(str)
 
     def __init__(self, socket):
-        """Init method for the socket class."""
+        """Init method for the socket class.
+
+        Args:
+            socket (QWebSocket | QTcpSocket): The socket for the connection.
+        """
         QObject.__init__(self)
 
         self.socket = socket
@@ -31,12 +49,14 @@ class MySocket(QObject):
         self._connect_message_received()
 
     def _connect_message_received(self):
+        """Emit message when socket message is ready."""
         if self.is_websocket:
             self.socket.textMessageReceived.connect(self.messageReceived.emit)
         else:
             self.socket.readyRead.connect(self._set_tcp_message)
 
     def _set_tcp_message(self):
+        """Emit message to the tcp socket client."""
         self.messageReceived.emit(self.socket.readAll().data().decode('utf-8'))
 
     def write(self, text):
@@ -47,12 +67,19 @@ class MySocket(QObject):
             self.socket.write(validate_output(text))
 
     def _connect(self, host, port):
+        """Connect socket.
+
+        Args:
+            host (str): hostname
+            port (int): port
+        """
         if self.is_websocket:
             self.socket.open(QUrl('ws://%s:%s' % (host, port)))
         else:
             self.socket.connectToHost(host, port)
 
     def close(self):
+        """Flush content and close socket."""
         self.socket.flush()
         if self.is_websocket:
             self.socket.close()
@@ -95,7 +122,7 @@ class QSocket(QObject):
         QObject.__init__(self)
         LOGGER.debug('QSocket :: Listening...')
 
-        self.socket = MySocket(socket)
+        self.socket = _AbstractSocket(socket)
         self.socket.messageReceived.connect(self.on_readyRead)
 
         self.timer = Timer(

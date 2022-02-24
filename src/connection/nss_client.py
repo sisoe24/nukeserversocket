@@ -13,7 +13,7 @@ from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 from .. import nuke
 from ..widgets import Timer
 from ..utils import AppSettings
-from .nss_socket import MySocket
+from .nss_socket import _AbstractSocket
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
@@ -74,7 +74,7 @@ class QBaseClient(QObject):
         self.tcp_host = hostname
         self.tcp_port = port
 
-        self.socket = MySocket(self._socket_constructor())
+        self.socket = _AbstractSocket(self._socket_constructor())
         LOGGER.debug('Initialize QBaseClient socket: %s', self.socket._type)
 
         self.socket.socket.connected.connect(self.on_connected)
