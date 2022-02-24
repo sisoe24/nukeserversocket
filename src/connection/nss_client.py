@@ -7,11 +7,13 @@ import random
 import logging
 
 from PySide2.QtCore import QObject, Signal
+from PySide2.QtWebSockets import QWebSocket
 from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 
 from .. import nuke
 from ..widgets import Timer
-from ..utils import AppSettings, validate_output
+from ..utils import AppSettings
+from .nss_socket import MySocket
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
@@ -72,20 +74,25 @@ class QBaseClient(QObject):
         self.tcp_host = hostname
         self.tcp_port = port
 
-        # TODO should make a custom tcp class
-        self.socket = QTcpSocket()
+        self.socket = MySocket(self._socket_constructor())
+        LOGGER.debug('Initialize QBaseClient socket: %s', self.socket._type)
 
-        self.socket.readyRead.connect(self.read_data)
-        self.socket.connected.connect(self.on_connected)
-        self.socket.disconnected.connect(self.on_disconnect)
-        self.socket.error.connect(self.on_error)
-        self.socket.stateChanged.connect(self.connection_state)
+        self.socket.socket.connected.connect(self.on_connected)
+        self.socket.socket.error.connect(self.on_error)
+        self.socket.socket.stateChanged.connect(self.connection_state)
 
         self.timer = Timer(
             int(AppSettings().value('timeout/client', 10))
         )
         self.timer.time.connect(self.client_timeout.emit)
         self.timer._timer.timeout.connect(self._connection_timeout)
+
+    @staticmethod
+    def _socket_constructor():
+        """Initialize the socket type based on app settings."""
+        if AppSettings().get_bool('connection_type/websocket'):
+            return QWebSocket()
+        return QTcpSocket()
 
     def on_connected(self):
         """When connection is establish do stuff.
@@ -94,6 +101,17 @@ class QBaseClient(QObject):
         needs to implement.
         """
         raise NotImplementedError('Child class must implement method.')
+
+    def on_error(self, error):
+        """Error connection event.
+
+        This can happen when the host address is wrong. When error occurs,
+        stop the timeout timer and emit a `state_changed`: 'Error...'.
+        """
+        self.timer.stop()
+        self.state_changed.emit('Error: %s\n----' %
+                                self.socket.socket.errorString())
+        LOGGER.error("QBaseClient Error: %s", error)
 
     def connection_state(self, socket_state):
         """Check che socket connection state.
@@ -117,7 +135,7 @@ class QBaseClient(QObject):
     def _disconnect(self):
         """Abort socket connection."""
         self.timer.stop()
-        self.socket.abort()
+        self.socket.socket.abort()
 
     def _connection_timeout(self):
         """Trigger connection timeout event.
@@ -126,7 +144,7 @@ class QBaseClient(QObject):
         'Connection timeout' and close the socket.
         """
         self.state_changed.emit('Connection timeout.\n----')
-        LOGGER.debug('Connection Timeout')
+        LOGGER.debug('QBaseClient :: Connection Timeout')
         self._disconnect()
 
     def write_data(self, data):  # type: (dict) -> None
@@ -136,36 +154,15 @@ class QBaseClient(QObject):
             data (dict): valid dict type that is used from the socket class to
             initialize the code execution.
         """
-        self.socket.write(validate_output(json.dumps(data)))
-
-        self.socket.flush()
-        self.socket.disconnectFromHost()
-
-    @staticmethod
-    def on_disconnect():
-        """Disconnect event."""
-        LOGGER.debug('Client :: Disconnected from host')
+        self.socket.write(json.dumps(data))
+        self.socket.close()
 
     def connect_to_host(self):
         """Connect to host and start the timeout timer."""
-        LOGGER.debug('Client :: Connecting to host: %s %s',
+        LOGGER.debug('QBaseClient :: Connecting to host: %s %s',
                      self.tcp_host, self.tcp_port)
-        self.socket.connectToHost(self.tcp_host, self.tcp_port)
+        self.socket._connect(self.tcp_host, self.tcp_port)
         self.timer.start()
-
-    def on_error(self, error):
-        """Error connection event.
-
-        When error occurs, stop the timeout timer and emit a `state_changed`:
-        'Error...'.
-        """
-        self.timer.stop()
-        self.state_changed.emit('Error: %s\n----' % self.socket.errorString())
-        LOGGER.error("QBaseClient Error: %s", error)
-
-    def read_data(self):
-        """Read data ready event."""
-        LOGGER.debug('Reading data: %s', self.socket.readAll())
 
 
 class SendTestClient(QBaseClient):
@@ -192,9 +189,8 @@ class SendTestClient(QBaseClient):
 
         When connection is establish write data to socket.
         """
-        LOGGER.debug('SendTestClient :: Connection successful.')
+        LOGGER.debug('SendTestClient :: Handshake successful.')
         r = random.randint(1, 50)
-
         output_text = {
             "text": "from __future__ import print_function; print('Hello from Test Client', %s)" % r,
             "file": "path/to/tmp_file.py"
@@ -234,7 +230,7 @@ class SendNodesClient(QBaseClient):
         When connection is establish write the content of the transfer file to
         the socket.
         """
-        LOGGER.debug('Client :: Send nodes connection successful.')
+        LOGGER.debug('SendNodesClient :: Handshake successful.')
         try:
             self.write_data(self.transfer_file_content())
         except NodesNotSelectedError:
