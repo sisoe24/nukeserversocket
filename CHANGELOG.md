@@ -1,12 +1,18 @@
 # Changelog
 
-## [0.4.1] - 2022-06-18
+## [0.5.0] - 2022-02-24
+
+### Added
+
+* New WebSocket connection type.
+
+## [0.4.1] - 2022-02-18
 
 ### Added
 
 * New settings to switch che code execution engine.
 
-## [0.4.0] - 2022-06-17
+## [0.4.0] - 2022-02-17
 
 ### Added
 
