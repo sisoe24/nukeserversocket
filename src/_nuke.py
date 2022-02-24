@@ -31,6 +31,11 @@ def nodeCopy(string):
     ypos -301
     }
     """).strip()
+
+    # raise an exception for testing purposes
+    if isinstance(string, bool):
+        raise RuntimeError
+
     if re.match(r'^%.+%$', string):
         clipboard = QClipboard()
         clipboard.setText(copy_tmp)
