@@ -50,10 +50,10 @@ def set_debug():
 def set_console():
     """Init function for the console handler logger."""
     console_format = logging.Formatter(
-        '%(name)s %(levelname)-8s %(module)-10s%(funcName)-15sL:%(lineno)-5d :: %(message)s')
+        '%(module)s:%(lineno)-5s %(funcName)-15s :: %(message)s')
     console = logging.StreamHandler(stream=sys.stdout)
     console.set_name('Console')
-    console.setLevel(logging.WARNING)
+    console.setLevel(logging.INFO)
     console.setFormatter(console_format)
     return console
 
