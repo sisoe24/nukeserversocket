@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import QObject, Signal, QUrl
 from PySide2.QtWebSockets import QWebSocket
 
 from .data_to_code import DataCode, InvalidData
@@ -23,6 +23,7 @@ class MySocket(QObject):
         QObject.__init__(self)
 
         self.socket = socket
+        self._type = type(self.socket)
         self.is_websocket = isinstance(self.socket, QWebSocket)
 
         self.socket.connected.connect(self.on_connected)
@@ -44,6 +45,19 @@ class MySocket(QObject):
             self.socket.sendTextMessage(text)
         else:
             self.socket.write(validate_output(text))
+
+    def _connect(self, host, port):
+        if self.is_websocket:
+            self.socket.open(QUrl('ws://%s:%s' % (host, port)))
+        else:
+            self.socket.connectToHost(host, port)
+
+    def close(self):
+        self.socket.flush()
+        if self.is_websocket:
+            self.socket.close()
+        else:
+            self.socket.disconnectFromHost()
 
     @staticmethod
     def on_connected():
@@ -82,8 +96,6 @@ class QSocket(QObject):
         LOGGER.debug('QSocket :: Listening...')
 
         self.socket = MySocket(socket)
-
-        self._socket_message = None
         self.socket.messageReceived.connect(self.on_readyRead)
 
         self.timer = Timer(
@@ -99,7 +111,7 @@ class QSocket(QObject):
         When data received is ready, method will pass the job to the CodeEditor
         class that will execute the received code.
         """
-        LOGGER.debug('QSocket :: Message ready')
+        LOGGER.debug('QSocket :: Message received')
         self.state_changed.emit("Message received.")
         self.timer.start()
 
