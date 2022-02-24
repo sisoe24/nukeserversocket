@@ -16,7 +16,7 @@
 ![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
 ![x](https://img.shields.io/badge/Nuke-11_|_12_|13-yellow)
 
-A Nuke plugin that will allow code execution from the local network and more.
+A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
   - [1.1. Tools](#11-tools)
@@ -49,6 +49,7 @@ Tools that are using NukeServerSocket:
 - Multiple computers can connect to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
 - Not bound to any application. (more on [Extendibility](#16-extendibility))
+- WebSocket compatible for browser-based text editors.
 
 ## 1.3. Installation
 
@@ -91,6 +92,10 @@ The settings can be accessed from the plugin toolbar
 - **Code Execution Engine**: Change the engine that is executing the code.
   - **Nuke Internal**: Nuke `executeInMainThread` function.
   - **Script Editor**: Nuke Script Editor widget.
+
+- **Connection Type**: Change the internal connection protocol for the client-server.
+  - **TCP**: The default type of connection. If unsure, use this.
+  - **WebSocket**: Similar to the TCP, allows two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
 
 - **Mirror To Script Editor**: Allows to mirror the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
