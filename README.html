@@ -17,30 +17,34 @@
         : 'default'
     });
   </script>
-    <h1 id="1-nukeserversocket-readme">Changelog</h1>
-    <h2>v0.4.1 2022-02-18</h2>
-    <li>Switch code execution engine settings.</li>
+  <h1 id="1-nukeserversocket-readme">Changelog</h1>
+  <h2>v0.5.0 2022-02-25</h2>
+  <li>WebSocket communication protocol for browser-based text editors.</li>
 
-    <h2>v0.4.0 2022-02-17</h2>
-    <li>Intercept exceptions inside Nuke's thread to extension output.</li>
-    <li>Configurable timeout settings.</li>
-    <li>Display timeout timers in UI.</li>
+  <h2>v0.4.1 2022-02-18</h2>
+  <li>Switch code execution engine settings.</li>
 
-    <h2>v0.3.0 2022-02-06</h2>
-    <li>Various fixes and optimizations for code execution.</li>
+  <h2>v0.4.0 2022-02-17</h2>
+  <li>Intercept exceptions inside Nuke's thread to extension output.</li>
+  <li>Configurable timeout settings.</li>
+  <li>Display timeout timers in UI.</li>
 
-    <h2>v0.2.0 2021-10-29</h2>
-    <li>Connections timeouts.</li>
-    <li>Various fixes and optimizations.</li>
-  
-    <h2>v0.1.0 2021-09-23</h2>
-    <li>Execute BlinkScript code.</li>
-    <li>Send/Receive Nodes from another instance.</li>
-    <li>New About widget.</li>
-    <li>API now accepts also simple strings when sending a request.</li>
-    <li>Under the hood optimizations.</li>
+  <h2>v0.3.0 2022-02-06</h2>
+  <li>Various fixes and optimizations for code execution.</li>
+
+  <h2>v0.2.0 2021-10-29</h2>
+  <li>Connections timeouts.</li>
+  <li>Various fixes and optimizations.</li>
+
+  <h2>v0.1.0 2021-09-23</h2>
+  <li>Execute BlinkScript code.</li>
+  <li>Send/Receive Nodes from another instance.</li>
+  <li>New About widget.</li>
+  <li>API now accepts also simple strings when sending a request.</li>
+  <li>Under the hood optimizations.</li>
   
   <h1 id="1-nukeserversocket-readme">1. NukeServerSocket README</h1>
+  
   <p><a href="https://github.com/sisoe24/NukeServerSocket/releases"><img
         src="https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable" alt="Main Build"></a>
     <a href="https://github.com/sisoe24/NukeServerSocket/releases"><img
@@ -68,11 +72,11 @@
   <p><img src="https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success" alt="x">
     <img src="https://img.shields.io/badge/Nuke-11_|_12_|13-yellow" alt="x">
   </p>
-  <p>A Nuke plugin that will allow code execution from the local network and more.</p>
+  <p>A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more.</p>
   <ul>
     <li><a href="#1-nukeserversocket-readme">1. NukeServerSocket README</a>
       <ul>
-        <li><a href="#11-tools">1.1. Tools</a></li>
+        <li><a href="#11-client-applications">1.1. Client applications</a></li>
         <li><a href="#12-features">1.2. Features</a></li>
         <li><a href="#13-installation">1.3. Installation</a></li>
         <li><a href="#14-usage">1.4. Usage</a>
@@ -91,21 +95,18 @@
         <li><a href="#17-test-plugin-locally">1.7. Test plugin locally</a></li>
         <li><a href="#18-known-issues">1.8. Known Issues</a></li>
         <li><a href="#19-compatibility">1.9. Compatibility</a></li>
-        <li><a href="#110-overview">1.10. Overview</a>
-          <ul>
-            <li><a href="#1101-execute-code">1.10.1. Execute Code</a></li>
-            <li><a href="#1102-send-nodes">1.10.2. Send Nodes</a></li>
-          </ul>
-        </li>
+        <li><a href="#110-demo">1.10. Demo</a></li>
       </ul>
     </li>
   </ul>
-  <h2 id="11-tools">1.1. Tools</h2>
-  <p>Tools that are using NukeServerSocket:</p>
+  <h2 id="11-client-applications">1.1. Client applications</h2>
+  <p>Client applications that can use NukeServerSocket:</p>
   <ul>
     <li><a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a> - Visual
       Studio Code extension.</li>
     <li><a href="https://packagecontrol.io/packages/NukeToolsST">Nuke Tools ST</a> - Sublime Text package.</li>
+    <li><a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket">DCC WebSocket</a> -
+      Visual Studio Code Web extension.</li>
   </ul>
   <h2 id="12-features">1.2. Features</h2>
   <ul>
@@ -113,6 +114,7 @@
     <li>Multiple computers can connect to the same Nuke instance.</li>
     <li>Receive/Send nodes from another Nuke instance in your local network.</li>
     <li>Not bound to any application. (more on <a href="#16-extendibility">Extendibility</a>)</li>
+    <li>WebSocket compatible for browser-based text editors.</li>
   </ul>
   <h2 id="13-installation">1.3. Installation</h2>
   <p>Save the plugin in your <em>.nuke</em> directory or in a custom directory and then
@@ -159,6 +161,24 @@
   <p>The settings can be accessed from the plugin toolbar</p>
   <ul>
     <li>
+      <p><strong>Code Execution Engine</strong>: Change the engine that is executing the code.</p>
+      <ul>
+        <li><strong>Nuke Internal</strong>: Nuke <code>executeInMainThread</code> function.</li>
+        <li><strong>Script Editor</strong>: Nuke Script Editor widget.</li>
+      </ul>
+    </li>
+    <li>
+      <p><strong>Connection Type</strong>: Change the internal connection protocol for the client-server.</p>
+      <ul>
+        <li><strong>TCP</strong>: The default type of connection. If unsure, use this.</li>
+        <li><strong>WebSocket</strong>: Similar to the TCP, allows two-way interactive communication session between the
+          user's browser and the internal server. Use this when using a browser-based text editor.</li>
+      </ul>
+      <blockquote>
+        <p>Changing connection type while connected, could cause some errors.</p>
+      </blockquote>
+    </li>
+    <li>
       <p><strong>Mirror To Script Editor</strong>: Allows to mirror the input/output code to the internal script editor.
       </p>
       <ul>
@@ -202,6 +222,8 @@
       page</a>.</p>
   <h2 id="18-known-issues">1.8. Known Issues</h2>
   <ul>
+    <li>Creating a modal window with the Nuke internal code execution engine, will cause Nuke to freeze. A workaround is
+      to switch to the Script Editor engine.</li>
     <li>Settings window doesn't display the tooltip text.</li>
     <li>When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI
       state. This would look as if the previous connection has been closed, where in reality is still open and
@@ -223,18 +245,18 @@
     <li>MacOS:
       <ul>
         <li>Mojave 10.14.06</li>
-        <li>Catalina 10.15.06</li>
+        <li>Catalina 10.15.07</li>
       </ul>
     </li>
     <li>Windows 10</li>
   </ul>
-  <h2 id="110-overview">1.10. Overview</h2>
-  <h3 id="1101-execute-code">1.10.1. Execute Code</h3>
-  <img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true"
-    width="100%" />
-  <h3 id="1102-send-nodes">1.10.2. Send Nodes</h3>
-  <img title="Send Nodes" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true"
-    width="100%" />
+  <h2 id="110-demo">1.10. Demo</h2>
+  <p>Execute code from Visual Studio Code</p>
+  <p><img src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true"
+      alt="Execute Code"></p>
+  <p>Send nodes</p>
+  <p><img src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true" alt="Send Nodes">
+  </p>
 
 </body>
 
