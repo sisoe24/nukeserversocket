@@ -19,7 +19,7 @@
 A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
-  - [1.1. Tools](#11-tools)
+  - [1.1. Client applications](#11-client-applications)
   - [1.2. Features](#12-features)
   - [1.3. Installation](#13-installation)
   - [1.4. Usage](#14-usage)
@@ -32,16 +32,17 @@ A Nuke plugin that will allow code execution from the local network via TCP/WebS
   - [1.7. Test plugin locally](#17-test-plugin-locally)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
-  - [1.10. Overview](#110-overview)
+  - [1.10. Demo](#110-demo)
     - [1.10.1. Execute Code](#1101-execute-code)
     - [1.10.2. Send Nodes](#1102-send-nodes)
 
-## 1.1. Tools
+## 1.1. Client applications
 
-Tools that are using NukeServerSocket:
+Client applications that can use NukeServerSocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
+- [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension.
 
 ## 1.2. Features
 
@@ -97,6 +98,8 @@ The settings can be accessed from the plugin toolbar
   - **TCP**: The default type of connection. If unsure, use this.
   - **WebSocket**: Similar to the TCP, allows two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
 
+  > Changing connection type while connected, could cause some errors.
+
 - **Mirror To Script Editor**: Allows to mirror the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
   - **Format Text**: The script editor output window will received a formatted version of the code result.
@@ -147,7 +150,7 @@ While it should work the same on all platforms, it has been currently only teste
   - Catalina 10.15.06
 - Windows 10
 
-## 1.10. Overview
+## 1.10. Demo
 
 ### 1.10.1. Execute Code
 
