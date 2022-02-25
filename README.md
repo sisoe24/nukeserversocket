@@ -33,8 +33,6 @@ A Nuke plugin that will allow code execution from the local network via TCP/WebS
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
   - [1.10. Demo](#110-demo)
-    - [1.10.1. Execute Code](#1101-execute-code)
-    - [1.10.2. Send Nodes](#1102-send-nodes)
 
 ## 1.1. Client applications
 
@@ -147,15 +145,15 @@ While it should work the same on all platforms, it has been currently only teste
   - CentOS 8
 - MacOS:
   - Mojave 10.14.06
-  - Catalina 10.15.06
+  - Catalina 10.15.07
 - Windows 10
 
 ## 1.10. Demo
 
-### 1.10.1. Execute Code
+Execute code from Visual Studio Code
 
-<img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true" width="100%"/>
+![Execute Code](https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true)
 
-### 1.10.2. Send Nodes
+Send nodes
 
-<img title="Send Nodes" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true" width="100%"/>
+![Send Nodes](https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true)
