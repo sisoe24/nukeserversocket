@@ -59,4 +59,3 @@ class TestCodeEditor:
 
         # when bypassing the main execute function, need to set the input
         controller = editor._controller
-        print("➡ controller.output() :", controller.output())

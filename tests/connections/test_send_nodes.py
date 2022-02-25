@@ -1,5 +1,4 @@
 """Test sending nodes module."""
-from enum import Flag
 import os
 import configparser
 
