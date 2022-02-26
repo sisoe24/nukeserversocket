@@ -5,6 +5,7 @@ from __future__ import print_function
 import logging
 
 from PySide2.QtCore import QObject, Signal
+from PySide2.QtWebSockets import QWebSocketServer
 from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
 from .nss_socket import QSocket
@@ -40,7 +41,7 @@ class QServer(QObject):
 
         self.tcp_port = int(self.settings.value('server/port', '54321'))
 
-        self.server = QTcpServer()
+        self.server = self._init_server()
         self.server.newConnection.connect(self._create_connection)
         self.server.acceptError.connect(
             lambda err: LOGGER.error('QServer error: %s', err)
@@ -54,6 +55,13 @@ class QServer(QObject):
         )
         self.timer.time.connect(self.server_timeout.emit)
         self.timer._timer.timeout.connect(self.timeout.emit)
+
+    @staticmethod
+    def _init_server():
+        """Initialize the server type based on settings."""
+        if AppSettings().get_bool('connection_type/websocket'):
+            return QWebSocketServer('NukeServerSocket', QWebSocketServer.NonSecureMode)
+        return QTcpServer()
 
     def connection_state(self, state):
         """Check if connection state.

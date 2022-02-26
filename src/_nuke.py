@@ -3,8 +3,6 @@
 from __future__ import print_function
 
 import re
-import sys
-import subprocess
 from textwrap import dedent
 
 from PySide2.QtGui import QClipboard
@@ -33,6 +31,11 @@ def nodeCopy(string):
     ypos -301
     }
     """).strip()
+
+    # raise an exception for testing purposes
+    if isinstance(string, bool):
+        raise RuntimeError
+
     if re.match(r'^%.+%$', string):
         clipboard = QClipboard()
         clipboard.setText(copy_tmp)
@@ -41,10 +44,6 @@ def nodeCopy(string):
             file.write(copy_tmp)
 
 
-def executeInMainThreadWithResult(call, args):  # skipcq: PYL-W0613
+def executeInMainThreadWithResult(call, args):    # skipcq: PYL-W0613
     """Internal function placeholder that mimics the behavior of Nukes internal."""
-    if args.startswith('nuke.nodePaste'):
-        return args
-
-    code = subprocess.check_output([sys.executable, '-c', args])
-    return pyDecoder(code)
+    return args if args.startswith('nuke.nodePaste') else pyDecoder(call(args))
