@@ -55,7 +55,7 @@ def _get_engine_keys(file):
     """
     # TODO: this will not find the names in the test_settings_widget.py file.
     with open(file) as src_file:
-        return re.findall(r'(?<=engine/)\w+', src_file.read())
+        return re.findall(r'(?<=code_execution_engine/)\w+', src_file.read())
 
 
 def _format_name(name):
