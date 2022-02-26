@@ -2,14 +2,12 @@
 # coding: utf-8
 from __future__ import print_function
 
-import io
 import re
 import os
 import sys
 import json
 import logging
 import contextlib
-
 from textwrap import dedent
 
 from PySide2.QtCore import QObject, Signal
@@ -17,6 +15,11 @@ from PySide2.QtCore import QObject, Signal
 from .. import nuke
 from ..utils import AppSettings, insert_time
 from .nuke_script_editor import ScriptEditorController
+
+if sys.version_info > (3, 0):
+    import io as stringIO
+else:
+    import StringIO as stringIO
 
 LOGGER = logging.getLogger('NukeServerSocket.controllers')
 
@@ -52,7 +55,7 @@ class _ExecuteInMainThread(QObject):
         """
         old = sys.stdout
         if stdout is None:
-            stdout = io.StringIO()
+            stdout = stringIO.StringIO()
         sys.stdout = stdout
         yield stdout
         sys.stdout = old
