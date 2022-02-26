@@ -191,8 +191,13 @@ class SendTestClient(QBaseClient):
         """
         LOGGER.debug('SendTestClient :: Handshake successful.')
         r = random.randint(1, 50)
+
+        client = 'WebSocket' if self.socket.is_websocket else 'TCP'
+        code = ("from __future__ import print_function\n"
+                "print('Hello from Test %s Client', %s)") % (client, r)
+
         output_text = {
-            "text": "from __future__ import print_function; print('Hello from Test Client', %s)" % r,
+            "text": code,
             "file": "path/to/tmp_file.py"
         }
 
