@@ -87,7 +87,7 @@ def about_links():
         ('Issues', github_web + '/issues'),
         ('Nukepedia', 'https://www.nukepedia.com/python/misc/nukeserversocket'),
         ('Logs', 'file:///%s/src/log' % _get_root()),
-        ('External Tools', 'https://github.com/sisoe24/NukeServerSocket#11-tools'),
+        ('Client apps', 'https://github.com/sisoe24/NukeServerSocket#11-client-applications'),
         ('Other', '')
     )
 

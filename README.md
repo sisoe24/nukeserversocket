@@ -16,10 +16,10 @@
 ![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
 ![x](https://img.shields.io/badge/Nuke-11_|_12_|13-yellow)
 
-A Nuke plugin that will allow code execution from the local network and more.
+A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
-  - [1.1. Tools](#11-tools)
+  - [1.1. Client applications](#11-client-applications)
   - [1.2. Features](#12-features)
   - [1.3. Installation](#13-installation)
   - [1.4. Usage](#14-usage)
@@ -32,16 +32,15 @@ A Nuke plugin that will allow code execution from the local network and more.
   - [1.7. Test plugin locally](#17-test-plugin-locally)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
-  - [1.10. Overview](#110-overview)
-    - [1.10.1. Execute Code](#1101-execute-code)
-    - [1.10.2. Send Nodes](#1102-send-nodes)
+  - [1.10. Demo](#110-demo)
 
-## 1.1. Tools
+## 1.1. Client applications
 
-Tools that are using NukeServerSocket:
+Client applications that can use NukeServerSocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
+- [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension.
 
 ## 1.2. Features
 
@@ -49,6 +48,7 @@ Tools that are using NukeServerSocket:
 - Multiple computers can connect to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
 - Not bound to any application. (more on [Extendibility](#16-extendibility))
+- WebSocket compatible for browser-based text editors.
 
 ## 1.3. Installation
 
@@ -91,6 +91,12 @@ The settings can be accessed from the plugin toolbar
 - **Code Execution Engine**: Change the engine that is executing the code.
   - **Nuke Internal**: Nuke `executeInMainThread` function.
   - **Script Editor**: Nuke Script Editor widget.
+
+- **Connection Type**: Change the internal connection protocol for the client-server.
+  - **TCP**: The default type of connection. If unsure, use this.
+  - **WebSocket**: Similar to the TCP, allows two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
+
+  > Changing connection type while connected, could cause some errors.
 
 - **Mirror To Script Editor**: Allows to mirror the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
@@ -139,15 +145,15 @@ While it should work the same on all platforms, it has been currently only teste
   - CentOS 8
 - MacOS:
   - Mojave 10.14.06
-  - Catalina 10.15.06
+  - Catalina 10.15.07
 - Windows 10
 
-## 1.10. Overview
+## 1.10. Demo
 
-### 1.10.1. Execute Code
+Execute code from Visual Studio Code
 
-<img title="Execute Code" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true" width="100%"/>
+![Execute Code](https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true)
 
-### 1.10.2. Send Nodes
+Send nodes
 
-<img title="Send Nodes" src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true" width="100%"/>
+![Send Nodes](https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true)

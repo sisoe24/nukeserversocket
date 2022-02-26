@@ -14,8 +14,6 @@ CONFIG_FILE = os.path.join(
     os.path.expanduser('~'), '.nuke', 'NukeServerSocket.ini'
 )
 
-# TODO: should merge this into settings_widget.py
-
 
 class AppSettings(QSettings):
     """Custom QSettings app."""
