@@ -49,13 +49,3 @@ class TestCodeEditor:
         controller.set_input(code)
         controller._execute_script_editor()
         assert controller.output() == 'HELLO\n'
-
-    @pytest.mark.skip(reason='cant create an exception')
-    def test_execute_code_exception(self):
-        """Test executing code from the script editor instead of nuke internal."""
-        code = 'import False'
-        editor = se.CodeEditor(_data_code(code, 'tmp.py'))
-        editor.execute()
-
-        # when bypassing the main execute function, need to set the input
-        controller = editor._controller
