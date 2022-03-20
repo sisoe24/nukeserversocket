@@ -19,20 +19,26 @@
 A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
-  - [1.1. Client applications](#11-client-applications)
   - [1.2. Features](#12-features)
+  - [1.1. Client applications](#11-client-applications)
   - [1.3. Installation](#13-installation)
   - [1.4. Usage](#14-usage)
-    - [1.4.1. Receive incoming request](#141-receive-incoming-request)
+    - [1.4.1.Execute code](#141execute-code)
     - [1.4.2. Receive/Send nodes](#142-receivesend-nodes)
-      - [1.4.2.1. Send](#1421-send)
-      - [1.4.2.2. Receive](#1422-receive)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
   - [1.7. Test plugin locally](#17-test-plugin-locally)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
   - [1.10. Demo](#110-demo)
+
+## 1.2. Features
+
+- Send Python or BlinkScript code to be executed inside Nuke from your local network.
+- Multiple computers can connect to the same Nuke instance.
+- Receive/Send nodes from another Nuke instance in your local network.
+- Easy integration with custom clients. (more on [Extendibility](#16-extendibility))
+- WebSocket compatible for browser-based text editors.
 
 ## 1.1. Client applications
 
@@ -42,61 +48,67 @@ Client applications that can use NukeServerSocket:
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
 - [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension.
 
-## 1.2. Features
-
-- Send Python or BlinkScript code to be executed inside Nuke from your local network.
-- Multiple computers can connect to the same Nuke instance.
-- Receive/Send nodes from another Nuke instance in your local network.
-- Not bound to any application. (more on [Extendibility](#16-extendibility))
-- WebSocket compatible for browser-based text editors.
-
 ## 1.3. Installation
 
-Save the plugin in your _.nuke_ directory or in a custom directory and then `import NukeServerSocket` in your _menu.py_.  
-**Remember**: If you use a custom plugin path, add the path in your init.py: `nuke.pluginAddPath('custom/path')`.
-> N.B. if your downloaded  zip folder has a different name (NukeServerSocket-master, NukeServerSocket-0.0.2 etc._), then you **need to rename it to just NukeServerSocket**.
+1. Download the repository via the releases page or by cloning it from github.
+2. Move the folder inside your _~/.nuke_ directory or in a custom one.
+3. Write `import NukeServerSocket` into your _menu.py_.  
+
+NOTES
+
+- If you use a custom plugin path, add the path in your init.py: `nuke.pluginAddPath('custom/path')`
+- The folder name must be named **NukeServerSocket**.
 
 ## 1.4. Usage
 
-### 1.4.1. Receive incoming request
+### 1.4.1.Execute code
 
-[Demo](#1101-execute-code)
+![Execute Code](images/execute_code.gif)
 
-Open the _NukeServerSocket_ panel and with the mode on **Receiver**, start the server by clicking **Connect**.
+1. Open the NukeServerSocket panel inside Nuke and with the mode on **Receiver**, start the server by clicking **Connect**.
+2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
-  > If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", just change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already. Also when connected, you could test the receiver with the **Test Receiver** button.
+NOTES:
 
-When connected, NukeServerSocket will listen for incoming request on the IP Address and Port shown in the plugin.
-
-Now you can send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
+- You can troubleshoot the connection with the **Test Receiver** button.
+- If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already.
 
 ### 1.4.2. Receive/Send nodes
 
-[Demo](#1102-send-nodes)
+![Send Nodes](images/send_nodes.gif)
 
-#### 1.4.2.1. Send
+- Receive
 
-When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-receive-incoming-request)). Select the nodes you want to send a click **Send Selected Nodes**.
+  When receiving nodes, just connect the server ([Receive incoming request](#141-receive-incoming-request)).
 
-> By default, the IP Address on the sender points to the local IP address, so, if you want to send nodes between the same computer, you should only specify the Port. When sending nodes to another computer, you will also need to specify the IP Address of the computer you want to send the nodes.
+- Send
 
-#### 1.4.2.2. Receive
+  1. When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-receive-incoming-request)).
+  2. Select the nodes you want to send a click **Send Selected Nodes**.
 
-When receiving nodes just follow the steps for [Receive incoming request](#141-receive-incoming-request) for the receiving instance and the [Send](#1421-send) steps for the sending instance.
+NOTES:
+
+- When sending nodes on the same computer, only the **Port** value must match the two Nuke instances.
+- When sending nodes between different computers, both **IP Address** and **Port** must match the two Nuke instances.
 
 ## 1.5. Settings
 
 The settings can be accessed from the plugin toolbar
 
-- **Code Execution Engine**: Change the engine that is executing the code.
-  - **Nuke Internal**: Nuke `executeInMainThread` function.
+- **Code Execution Engine**: Change the engine that will executing the code.
+  - **Nuke Internal**: Nuke `executeInMainThread` function. [**Default**]
   - **Script Editor**: Nuke Script Editor widget.
 
+  > Why use one over the other?
+  >
+  > - Nuke Internal is a more direct and fast approach but it does not handle well unknown errors and modal windows.
+  > - Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.
+
 - **Connection Type**: Change the internal connection protocol for the client-server.
-  - **TCP**: The default type of connection. If unsure, use this.
+  - **TCP**: The default type of connection. If unsure, use this. [**Default**] 
   - **WebSocket**: Similar to the TCP, allows two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
 
-  > Changing connection type while connected, could cause some errors.
+  **NOTE**: Changing connection type while connected, could cause some errors.
 
 - **Mirror To Script Editor**: Allows to mirror the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
@@ -152,8 +164,8 @@ While it should work the same on all platforms, it has been currently only teste
 
 Execute code from Visual Studio Code
 
-![Execute Code](https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true)
+![Execute Code](images/execute_code.gif)
 
 Send nodes
 
-![Send Nodes](https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true)
+![Send Nodes](images/send_nodes.gif)
