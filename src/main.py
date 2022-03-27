@@ -9,7 +9,8 @@ from PySide2.QtWidgets import (
     QMainWindow,
     QStatusBar,
     QVBoxLayout,
-    QWidget
+    QWidget,
+    QPushButton
 )
 
 from .utils import AppSettings
@@ -26,14 +27,13 @@ LOGGER.debug(' -*- START APPLICATION -*-')
 
 
 def init_settings():
-    """Set up some settings in the config file.
+    """Set up initial settings for the application.
 
-    Function will create the tmp folder if doesn't exists already, and write
-    the path to the application settings file. Function will also validate the
-    port configuration.
+    When called, will:
+      1. Create the src/.tmp folder if doesn't exists.
+      2. Set the transfer_nodes.tmp file path in the configuration file.
+      3. Validate the server port value in the configuration file.
     """
-    # ! TODO: need to re think this
-
     tmp_folder = os.path.join(
         os.path.abspath(os.path.dirname(__file__)), '.tmp'
     )
@@ -42,12 +42,12 @@ def init_settings():
         os.mkdir(tmp_folder)
 
     settings = AppSettings()
-    LOGGER.debug('Main :: settings file : %s', settings.fileName())
     settings.validate_port_settings()
+    settings.setValue('dialog/dont_show', False)
     settings.setValue('path/transfer_file',
                       os.path.join(tmp_folder, 'transfer_nodes.tmp'))
 
-    settings.setValue('dialog/dont_show', False)
+    LOGGER.debug('Main :: settings file : %s', settings.fileName())
 
 
 class MainWindowWidget(QWidget):
@@ -61,8 +61,6 @@ class MainWindowWidget(QWidget):
         """Init method for MainWindowWidget."""
         QWidget.__init__(self)
         LOGGER.debug('Main :: init')
-        # ! TODO: Refactor needed
-
         init_settings()
 
         self.connections = ConnectionsWidget(parent=self)
@@ -87,7 +85,7 @@ class MainWindowWidget(QWidget):
         self._server = None
         self._client = None
 
-    def _enable_connection_mod(self, state):  # type: (bool) -> None
+    def _toggle_widget_modification(self, state):  # type: (bool) -> None
         """Enable/disable connection widgets modification.
 
         When connected the port and the sender mode will be disabled.
@@ -99,7 +97,12 @@ class MainWindowWidget(QWidget):
         self.connections.sender_mode.setEnabled(state)
 
     def _disconnect(self):
-        """If server connection gets timeout then close it and reset UI."""
+        """Disconnet server.
+
+        Set the connection button state to `False`, which will trigger a signal
+        that toggles the connection with a falsy value.
+        """
+        # Review: why not calling directly toggle_connection(False)?
         self.connect_btn.setChecked(False)
 
     def setup_server(self):
@@ -141,7 +144,7 @@ class MainWindowWidget(QWidget):
                 return False
             else:
                 LOGGER.debug('server is connected: %s', status)
-                self._enable_connection_mod(False)
+                self._toggle_widget_modification(False)
 
             return bool(status)
 
@@ -155,7 +158,7 @@ class MainWindowWidget(QWidget):
             # hasn't been declared yet
             pass
 
-        self._enable_connection_mod(True)
+        self._toggle_widget_modification(True)
 
     def send_nodes(self):
         """Send the selected Nuke Nodes using the internal client.
@@ -176,12 +179,12 @@ class MainWindowWidget(QWidget):
             SendTestClient: SendTestClient object.
         """
         self._client = SendTestClient()
+        self._connect_client(self.test_btn)
         self._client.client_timeout.connect(
             self.connections._timeout._client_timeout.setText)
-        self._connect_client(self.test_btn)
         return self._client
 
-    def _connect_client(self, client_btn):
+    def _connect_client(self, client_btn):  # type: (QPushButton) -> None
         """Connect the client to host and update status log.
 
         Args:

@@ -24,10 +24,8 @@ else:
 LOGGER = logging.getLogger('NukeServerSocket.controllers')
 
 
-class _ExecuteInMainThread(QObject):
+class _ExecuteCode(QObject):
     """Execute code inside Nuke.
-
-    Execute code inside nuke with the method `executeInMainThreadWithResult`.
 
     Signal:
         (str) execution_error: emits wen there is an execution error; more
@@ -109,7 +107,7 @@ class _ExecuteInMainThread(QObject):
         return self._input
 
 
-class _PyController(_ExecuteInMainThread, object):
+class _PyController(_ExecuteCode, object):
     """Controller class that deals with python code execution."""
 
     history = []
@@ -120,7 +118,7 @@ class _PyController(_ExecuteInMainThread, object):
         Args:
             file (str): file path of the file that is being executed.
         """
-        _ExecuteInMainThread.__init__(self)
+        _ExecuteCode.__init__(self)
         self.settings = AppSettings()
         self._file = file
 
@@ -223,7 +221,7 @@ class _PyController(_ExecuteInMainThread, object):
         self._clear_history()
 
 
-class _BlinkController(_ExecuteInMainThread, object):
+class _BlinkController(_ExecuteCode, object):
     """Controller that deals with blink script execution code."""
 
     def __init__(self, file):
@@ -232,7 +230,7 @@ class _BlinkController(_ExecuteInMainThread, object):
         Args:
             file (str):  file path of the file that is being executed.
         """
-        _ExecuteInMainThread.__init__(self)
+        _ExecuteCode.__init__(self)
         self._file = file
 
     def output(self):  # type: () -> str
@@ -280,12 +278,12 @@ class _BlinkController(_ExecuteInMainThread, object):
         """).format(**kwargs).strip()
 
 
-class _CopyNodesController(_ExecuteInMainThread, object):
+class _CopyNodesController(_ExecuteCode, object):
     """Controller that deals with copy nodes execution code."""
 
     def __init__(self):
         """Init method for the _CopyNodesController class."""
-        _ExecuteInMainThread.__init__(self)
+        _ExecuteCode.__init__(self)
 
     def output(self):  # type: () -> str
         """Override parent method.

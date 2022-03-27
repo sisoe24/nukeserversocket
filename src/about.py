@@ -97,10 +97,7 @@ def about_links():
 def get_about_key(key):
     """Get a specific key in about. return empty string if not found."""
     abouts = about() + about_links()
-    for item in abouts:
-        if key in item:
-            return item[1]
-    return ''
+    return next((item[1] for item in abouts if key in item), '')
 
 
 def about_to_string(exclude=None):
