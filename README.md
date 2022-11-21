@@ -96,12 +96,12 @@ NOTES:
 The settings can be accessed from the plugin toolbar
 
 - **Code Execution Engine**: Change the engine that will executing the code.
-  - **Nuke Internal**: Nuke `executeInMainThread` function. [**Default**]
-  - **Script Editor**: Nuke Script Editor widget.
+  - **Nuke Internal**: Nuke `executeInMainThread` function.
+  - **Script Editor**: Nuke Script Editor widget. [**Default**]
 
   > Why use one over the other?
   >
-  > - Nuke Internal is a more direct and fast approach but it does not handle well unknown errors and modal windows.
+  > - Nuke Internal is a more direct and fast approach, but it uses `exec` under the hood, which might cause some issues.
   > - Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.
 
 - **Connection Type**: Change the internal connection protocol for the client-server.
