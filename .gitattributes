@@ -4,7 +4,8 @@
 
 .pylintrc           export-ignore
 .python-version     export-ignore
-.deepsource.toml   export-ignore
+.deepsource.toml    export-ignore
+poetry.toml         export-ignore
 
 *.lock              export-ignore
 
