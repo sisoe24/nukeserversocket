@@ -4,7 +4,7 @@ import os
 import pytest
 
 from src.utils import settings
-from src.run_local import _MainWindowWidget
+from src.local.run_local import _MainWindowWidget
 
 
 def pytest_addoption(parser):

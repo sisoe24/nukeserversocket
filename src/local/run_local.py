@@ -14,8 +14,8 @@ from PySide2.QtWidgets import (
     QWidget,
 )
 
-from .widgets import FakeScriptEditor
-from .main import MainWindowWidget, MainWindow
+from ..widgets import FakeScriptEditor
+from ..main import MainWindowWidget, MainWindow
 
 
 LOGGER = logging.getLogger('NukeServerSocket.runapp')
