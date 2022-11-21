@@ -6,10 +6,4 @@ When testing plugin locally, a fake nuke module will be used instead. If
 found error.
 """
 from . import logger
-
-try:
-    import nuke
-except ImportError:
-    from . import _nuke as nuke
-else:
-    from . import main
+from . import main

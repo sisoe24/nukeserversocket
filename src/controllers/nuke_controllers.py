@@ -12,9 +12,10 @@ from textwrap import dedent
 
 from PySide2.QtCore import QObject, Signal
 
-from .. import nuke
 from ..utils import AppSettings, insert_time
 from .nuke_script_editor import ScriptEditorController
+
+from ..nuke_api import nuke
 
 if sys.version_info > (3, 0):
     import io as stringIO

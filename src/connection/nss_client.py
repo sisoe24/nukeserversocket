@@ -10,10 +10,11 @@ from PySide2.QtCore import QObject, Signal
 from PySide2.QtWebSockets import QWebSocket
 from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
 
-from .. import nuke
 from ..widgets import Timer
 from ..utils import AppSettings
 from .nss_socket import _AbstractSocket
+
+from ..nuke_api import nuke
 
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
