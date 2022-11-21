@@ -288,8 +288,8 @@ class SettingsWidget(QWidget):
 
         _layout = QVBoxLayout()
         _layout.addWidget(RadioButtons('Code Execution Engine',
-                                       [_RadioButton('Nuke Internal', True),
-                                        _RadioButton('Script Editor', False)]))
+                                       [_RadioButton('Nuke Internal', False),
+                                        _RadioButton('Script Editor', True)]))
         _layout.addWidget(RadioButtons('Connection Type',
                                        [_RadioButton('TCP', True),
                                         _RadioButton('WebSocket', False)]))
