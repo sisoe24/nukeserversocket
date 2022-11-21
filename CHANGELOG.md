@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0] - 
+
+### Changed
+
+- Using the Script Editor engine as default for executing code.
+
+
 ## [0.5.0] - 2022-02-24
 
 ### Added
