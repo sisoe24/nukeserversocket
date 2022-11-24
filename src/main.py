@@ -50,6 +50,10 @@ def init_settings():
     LOGGER.debug('Main :: settings file : %s', settings.fileName())
 
 
+def _check_for_updates():
+    pass
+
+
 class MainWindowWidget(QWidget):
     """Main window widgets and logic.
 
