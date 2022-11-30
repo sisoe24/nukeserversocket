@@ -76,6 +76,7 @@ class QServer(QObject):
 
         Method will also stop the timer and emit the 'Disconnected' state.
         """
+        # TODO: emit a message to the socket when closing
         self.server.close()
         self.timer.stop()
         self.state_changed.emit('Disconnected\n----')
