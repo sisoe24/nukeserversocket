@@ -16,7 +16,7 @@
 ![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
 ![x](https://img.shields.io/badge/Nuke-11_|_12_|13-yellow)
 
-A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more.
+A Nuke plugin that lets you execute code from a text editor in your local network and more.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
   - [1.2. Features](#12-features)
@@ -38,7 +38,7 @@ A Nuke plugin that will allow code execution from the local network via TCP/WebS
 - Multiple computers can connect to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
 - Easy integration with custom clients. (more on [Extendibility](#16-extendibility))
-- WebSocket compatible for browser-based text editors.
+- WebSocket-compatible for browser-based text editors.
 
 ## 1.1. Client applications
 
@@ -50,8 +50,8 @@ Client applications that can use NukeServerSocket:
 
 ## 1.3. Installation
 
-1. Download the repository via the releases page or by cloning it from github.
-2. Move the folder inside your _~/.nuke_ directory or in a custom one.
+1. Download the repository via the releases page or by cloning it from GitHub.
+2. Move the folder inside your _~/.nuke_ directory or into a custom one.
 3. Write `import NukeServerSocket` into your _menu.py_.  
 
 NOTES
@@ -65,13 +65,13 @@ NOTES
 
 ![Execute Code](images/execute_code.gif)
 
-1. Open the NukeServerSocket panel inside Nuke and with the mode on **Receiver**, start the server by clicking **Connect**.
+1. Open the NukeServerSocket panel inside Nuke, and with the mode on **Receiver**, start the server by clicking **Connect**.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
 NOTES:
 
 - You can troubleshoot the connection with the **Test Receiver** button.
-- If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **Port** to a random number between `49152` and `65535` and try again. It means that probably you have a connection listening on that port already.
+- If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a random number between `49152` and `65535` and try again. It probably means that you have a connection listening on that port already.
 
 ### 1.4.2. Receive/Send nodes
 
@@ -79,7 +79,7 @@ NOTES:
 
 - Receive
 
-  When receiving nodes, just connect the server ([Receive incoming request](#141-receive-incoming-request)).
+   When receiving nodes, you only need to start the Server ([Receive incoming request](#141-receive-incoming-request)).
 
 - Send
 
@@ -93,8 +93,9 @@ NOTES:
 
 ## 1.5. Settings
 
-The settings can be accessed from the plugin toolbar
+Accessing the settings can be done from the plugin toolbar.
 
+<<<<<<< HEAD
 - **Code Execution Engine**: Change the engine that will executing the code.
   - **Nuke Internal**: Nuke `executeInMainThread` function.
   - **Script Editor**: Nuke Script Editor widget. [**Default**]
@@ -103,47 +104,58 @@ The settings can be accessed from the plugin toolbar
   >
   > - Nuke Internal is a more direct and fast approach, but it uses `exec` under the hood, which might cause some issues.
   > - Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.
+=======
+- **Code Execution Engine**: Change the engine that will be executing the code.
+  - **Nuke Internal**: Nuke `executeInMainThread` function. [**Default**]
+  - **Script Editor**: Nuke Script Editor widget.
+
+  > Why use one over the other?
+  >
+  > - Nuke Internal uses a more direct and fast approach, but it does not handle internal exceptions and modal windows very well.
+  > - Nuke Script Editor uses a safer approach overall, but it does require slightly more work behind the scene.
+>>>>>>> develop
 
 - **Connection Type**: Change the internal connection protocol for the client-server.
-  - **TCP**: The default type of connection. If unsure, use this. [**Default**] 
-  - **WebSocket**: Similar to the TCP, allows two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
+  - **TCP**: The default type of connection. If unsure, use this. [**Default**]
+  - **WebSocket**: This allows a two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
 
-  **NOTE**: Changing connection type while connected, could cause some errors.
+  **NOTE**: Changing connection type while connected could cause some errors.
 
-- **Mirror To Script Editor**: Allows to mirror the input/output code to the internal script editor.
+- **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
-  - **Format Text**: The script editor output window will received a formatted version of the code result.
+  - **Format Text**: The script editor output window will receive a formatted version of the code result.
   - **Clear Output**:  The script editor output window will clear the code after each execution.
-  - **Show File Path**: The script editor output window will display the full file path of the file being executed.
-  - **Show Unicode**: The script editor output window will display a unicode character `` that indicates the start of the code execution result.
+  - **Show File Path**: The script editor output window will display the full path for the executed file.
+  - **Show Unicode**: The script editor output window will display a Unicode character `` that indicates the start of the code execution result.
   - **Override Input Editor**: Mirror input to the internal script editor.
 
-- **Timeout**: Terminate the connection when the server is inactive or it wasn't able to establish a successful connection, in the time specified.
-  - **Server**: Set the timeout when clicking the **Connect** button. Defaults to `10` minutes.
-  - **Receiver**: Set the timeout for when clicking the **Test Receiver** button. Defaults to `10` seconds.
-  - **Send Nodes**: Set the timeout when clicking **Send Nodes** button. Defaults to `30` seconds.
+- **Timeout**: Terminate the connection when the Server is inactive or did not establish a successful contact in the time specified.
+  - **Server**: Set the Timeout when clicking the **Connect** button. The default value is `10` minutes.
+  - **Receiver**: Set the Timeout for when clicking the **Test Receiver** button. The default value is `10` seconds.
+  - **Send Nodes**: Set the Timeout when clicking **Send Nodes** button. The default value is `30` seconds.
 
 ## 1.6. Extendibility
 
-At its core, the plugin is just a server socket that awaits for an incoming request,
-performs the operations inside Nuke and returns the result. Nothing ties it to any
-application per se.
+At its core, the plugin is just a server socket that waits for an incoming request,
+performs the operations inside Nuke, and returns the result. Nothing ties it to any application per se.
 
-This makes it very easy to implement a new client, without the need to modify NukeServerSocket source code. The client needs only to send the data at the specified address inside NukeServerSocket.
+This makes it very easy to implement a new client, without the need to modify the NukeServerSocket source code. The client needs only to send the data at the specified address inside NukeServerSocket.
 
-More information and examples on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client).
+You can find more information and examples on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client).
 
 ## 1.7. Test plugin locally
 
-The plugin can be launched locally outside the Nuke application. This is useful for testing code and implementing new features more rapidly.
+You can run the plugin locally outside the Nuke application. This method is handy for testing code and implementing new features faster.
 
-More information on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Test-Plugin-locally).
+You can find more information and examples on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Test-Plugin-locally).
 
 ## 1.8. Known Issues
 
-- Creating a modal window with the Nuke internal code execution engine, will cause Nuke to freeze. A workaround is to switch to the Script Editor engine.
+- Creating a modal window with the Nuke internal code execution engine will cause Nuke to freeze. A workaround is to switch to the Script Editor engine.
 - Settings window doesn't display the tooltip text.
-- When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI state. This would look as if the previous connection has been closed, where in reality is still open and listening. One way to force close all of the connections is to restart Nuke, or you can wait for the connection timeout.
+- Changing workspace with an active open connection makes Nuke load a new plugin instance with the default UI state. So it would look as if the previous connection has been closed, whereas in reality is still open and listening. To force close all of the listening connections, you can:
+  - Restart the Nuke instance.
+  - Wait for the connection timeout.
 
 ## 1.9. Compatibility
 
@@ -151,11 +163,11 @@ Nuke version: 11,12, 13.
 
 > Because Nuke 11 uses an early version of PySide2, future compatibility is not a guarantee.
 
-While it should work the same on all platforms, it has been currently only tested on:
+While it should work the same on all platforms, I have tested the plugin only on:
 
 - Linux:
   - CentOS 8
-- MacOS:
+- macOS:
   - Mojave 10.14.06
   - Catalina 10.15.07
 - Windows 10
