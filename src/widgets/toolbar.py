@@ -1,11 +1,18 @@
 """Toolbar widget module."""
 # coding: utf-8
-from __future__ import print_function
 
 import logging
 
 from PySide2.QtCore import QSize, Qt
-from PySide2.QtWidgets import QAction, QDialog, QToolBar, QVBoxLayout, QWidget
+from PySide2.QtWidgets import (
+    QMenu,
+    QToolButton,
+    QAction,
+    QDialog,
+    QToolBar,
+    QVBoxLayout,
+    QWidget
+)
 
 from .settings_widget import SettingsWidget
 from .about_widget import AboutWidget
@@ -13,34 +20,36 @@ from .about_widget import AboutWidget
 LOGGER = logging.getLogger('NukeServerSocket.toolbar')
 
 
+_dialog_widgets_cache = {}
+
+
 class FloatingDialog(QDialog):
     """Create a floating widget based on the QDialog class."""
 
-    def __init__(self, widget, parent=None):  # type: (QWidget, None) -> None
+    def __init__(self, title, widget, parent=None):  # type:(str, QWidget, None) -> None
         """Init method for a Floating Window widget.
 
         Create a floating window widget based on the QDialog class.
 
         Args:
+            title (str): title of the window.
             widget (QWidget): A QWidget to add inside the QDialog layout.
             parent (QWidget, optional): A QWidget to set as the parent.
             Defaults to None.
         """
         QDialog.__init__(self, parent)
-
-        obj_name = widget.objectName()
-        self.setWindowTitle(obj_name.replace('Widget', ''))
-        self.setObjectName(obj_name)
+        self.setWindowTitle(title)
+        _dialog_widgets_cache[widget] = self
 
         _layout = QVBoxLayout()
+        _layout.setContentsMargins(0, 0, 0, 0)
         _layout.addWidget(widget)
 
         self.setLayout(_layout)
 
     def closeEvent(self, event):
-        """When close event triggers destroy the widget."""
-        LOGGER.debug('FloatingDialog :: delete widget. %s', event)
-        self.deleteLater()
+        """Close the widget."""
+        self.close()
 
 
 class ToolBar(QToolBar):
@@ -54,11 +63,17 @@ class ToolBar(QToolBar):
         self.setMovable(False)
 
         self.setStyleSheet('color: white;')
+        self.add_float_widget(title='Settings', widget=SettingsWidget())
+        self.add_float_widget(title='Help', widget=AboutWidget())
 
-        self._setup_action(title='Settings', widget=SettingsWidget)
-        self._setup_action(title='About', widget=AboutWidget)
+    def add_menu(self, title, menu):  # type:(str, QMenu) -> None
+        btn = QToolButton()
+        btn.setText(title)
+        btn.setPopupMode(QToolButton.InstantPopup)
+        btn.setMenu(menu)
+        self.addWidget(btn)
 
-    def _setup_action(self, title, widget):
+    def add_float_widget(self, title, widget):  # type:(str, QWidget) -> QAction
         """Set up action for toolbar.
 
         Method will set up a QAction and connect its trigger signal to spawn
@@ -72,50 +87,29 @@ class ToolBar(QToolBar):
             QAction: The QAction created.
         """
         action = QAction(title, self)
-        action.triggered.connect(lambda: self._show_dialog(widget))
+        action.triggered.connect(lambda: self._show_dialog(title, widget))
         self.addAction(action)
         return action
 
-    def _dialog_exists(self, obj_name):
-        """Check if dialog widget exists already.
-
-        If yes then raise the window and set focus.
-
-        Args:
-            obj_name (str): objectName of the widget to search for
-
-        Returns:
-            bool: True if found and raised False otherwise
-        """
-        for widget in self.children():
-            if widget.objectName() == obj_name:
-                widget.setFocus(Qt.PopupFocusReason)
-                widget.raise_()
-                widget.activateWindow()
-                return True
-        return False
-
-    def _show_dialog(self, widget):  # type(QWidget) -> QDialog | str
+    def _show_dialog(self, title, widget):  # type:(str, QWidget) -> QDialog
         """Spawn a dialog widget.
 
-        If dialog widget is already visible then do nothing.
+        If dialog widget is already visible then regain focus.
 
         Args:
+            title (str): title of the floating dialog window.
             widget (QWidget): a widget to insert inside the dialog widget.
 
         Returns:
-            QDialog | str: QDialog if widget doesn't exists, str if if does.
+            QDialog : QDialog
         """
-        widget = widget()
+        dialog = _dialog_widgets_cache.get(widget)
 
-        obj_name = widget.objectName()
-        if not obj_name:
-            raise RuntimeWarning(
-                'Widget must have an object name before spawning the QDialog')
+        if not dialog:
+            dialog = FloatingDialog(title, widget, parent=self)
 
-        if not self._dialog_exists(obj_name):
-            dialog = FloatingDialog(widget, parent=self)
-            dialog.show()
-            return dialog
+        dialog.show()
+        dialog.activateWindow()
+        dialog.raise_()
 
-        return 'Already active'
+        return dialog
