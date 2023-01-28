@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from src.main import init_settings
+from src.main import _init_settings
 from src.settings import AppSettings
 from src.controllers import nuke_controllers as se
 
@@ -21,7 +21,7 @@ def _transfer_file():
         if os.path.exists(path):
             os.remove(path)
 
-    init_settings()
+    _init_settings()
 
     settings = AppSettings()
     path = settings.value('path/transfer_file')
