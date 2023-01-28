@@ -87,5 +87,4 @@ class LogWidgets(QWidget):
 
     def set_output_text(self, text):  # type: (str) -> None
         """Write text into the output log box."""
-        text = str(text).strip()
-        self._write_log(self.output_widget, text)
+        self._write_log(self.output_widget, str(text).strip())
