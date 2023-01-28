@@ -6,7 +6,7 @@ import pytest
 import requests
 
 from src import about
-from src.utils import pyEncoder
+from src.util import pyEncoder
 from src.widgets import about_widget
 
 

@@ -1,13 +1,12 @@
 """Test PythonController class."""
 import re
-
 from collections import namedtuple
 
 import pytest
 
-from src.utils import AppSettings
-from src.controllers.nuke_controllers import _PyController
+from src.settings import AppSettings
 from src.widgets.settings_widget import ScriptEditorSettings
+from src.controllers.nuke_controllers import _PyController
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
 SAMPLE_WORD = 'NukeServerSocket'

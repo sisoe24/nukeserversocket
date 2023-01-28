@@ -3,17 +3,17 @@
 from __future__ import print_function, with_statement
 
 import json
-import logging
 import random
+import logging
 
-from PySide2.QtCore import QObject, Signal
-from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
+from PySide2.QtCore import Signal, QObject
+from PySide2.QtNetwork import QTcpSocket, QAbstractSocket
 from PySide2.QtWebSockets import QWebSocket
 
-from ..local.mock import nuke
-from ..utils import AppSettings
 from ..widgets import Timer
+from ..settings import AppSettings
 from .nss_socket import _AbstractSocket
+from ..local.mock import nuke
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
 

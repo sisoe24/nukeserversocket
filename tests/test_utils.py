@@ -5,8 +5,7 @@ import sys
 import pytest
 from PySide2.QtCore import QByteArray
 
-from src.utils import get_ip
-from src.utils.util import pyDecoder, pyEncoder, validate_output
+from src.util import get_ip, pyDecoder, pyEncoder, validate_output
 
 
 def test_get_ip():

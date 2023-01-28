@@ -3,9 +3,9 @@ import configparser
 
 import pytest
 
+from src.settings import AppSettings
 from src.connection import nss_client
 from src.widgets.connections_widget import TcpPort
-from src.utils import AppSettings
 
 
 def _port_in_range(value):

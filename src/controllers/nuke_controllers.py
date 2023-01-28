@@ -2,18 +2,19 @@
 # coding: utf-8
 from __future__ import print_function
 
-import contextlib
-import json
-import logging
 import os
 import re
 import sys
+import json
+import logging
+import contextlib
 from textwrap import dedent
 
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import Signal, QObject
 
+from ..util import insert_time
+from ..settings import AppSettings
 from ..local.mock import nuke
-from ..utils import AppSettings, insert_time
 from .nuke_script_editor import ScriptEditorController
 
 if sys.version_info > (3, 0):

@@ -2,15 +2,10 @@
 # coding: utf-8
 from __future__ import print_function
 
-from PySide2.QtWidgets import (
-    QGroupBox,
-    QPlainTextEdit,
-    QPushButton,
-    QVBoxLayout,
-    QWidget
-)
+from PySide2.QtWidgets import (QWidget, QGroupBox, QPushButton, QVBoxLayout,
+                               QPlainTextEdit)
 
-from ..utils import insert_time
+from ..util import insert_time
 
 
 class LogBox(QGroupBox):

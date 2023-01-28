@@ -5,7 +5,7 @@ from __future__ import print_function
 import json
 import logging
 
-from ..utils import pyEncoder
+from ..util import pyEncoder
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
@@ -81,7 +81,7 @@ class DataCode:
         # but if other errors happens will break the script, and I would like
         # to just "ignore" and not execute any code
         except Exception as err:
-            msg = "Error json deserialization. %s: %s" % (err, data)
+            msg = 'Error json deserialization. %s: %s' % (err, data)
             LOGGER.critical(msg)
             raise InvalidData(msg)
 

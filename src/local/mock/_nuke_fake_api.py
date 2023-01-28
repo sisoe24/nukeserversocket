@@ -7,7 +7,7 @@ from textwrap import dedent
 
 from PySide2.QtGui import QClipboard
 
-from src.utils import pyDecoder
+from ...util import pyDecoder
 
 
 def nodeCopy(string):

@@ -4,15 +4,13 @@ from __future__ import print_function
 
 import logging
 import traceback
-
 from collections import namedtuple
 
-from PySide2.QtWidgets import QMessageBox, QCheckBox
 from PySide2.QtGui import QClipboard, QDesktopServices
+from PySide2.QtWidgets import QCheckBox, QMessageBox
 
 from ..about import get_about_key, about_to_string
-from ..utils import AppSettings
-
+from ..settings import AppSettings
 
 LOGGER = logging.getLogger('NukeServerSocket.error_dialog')
 

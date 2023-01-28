@@ -6,18 +6,10 @@ import logging
 from collections import namedtuple
 
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import (
-    QCheckBox,
-    QFormLayout,
-    QWidget,
-    QGroupBox,
-    QVBoxLayout,
-    QSpinBox,
-    QLabel,
-    QRadioButton
-)
+from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QCheckBox, QGroupBox,
+                               QFormLayout, QVBoxLayout, QRadioButton)
 
-from ..utils import AppSettings
+from ..settings import AppSettings
 
 LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
 
@@ -127,7 +119,7 @@ class ScriptEditorSettings(QGroupBox):
         """Set initial default groupbox widget settings."""
         self.setCheckable(True)
 
-        setting_name = "options/mirror_to_script_editor"
+        setting_name = 'options/mirror_to_script_editor'
 
         settings = AppSettings()
         self.setChecked(settings.get_bool(setting_name))

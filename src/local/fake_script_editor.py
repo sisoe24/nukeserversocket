@@ -15,7 +15,7 @@ from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QMainWindow,
                                QPushButton, QVBoxLayout, QApplication,
                                QPlainTextEdit)
 
-from ..utils import pyDecoder
+from ..util import pyDecoder
 
 LOGGER = logging.getLogger('NukeServerSocket.fakescripteditor')
 

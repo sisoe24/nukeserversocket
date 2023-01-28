@@ -3,7 +3,7 @@ import os
 
 import pytest
 
-from src.utils import settings
+from src import settings
 from src.local.run_local import _MainWindowWidget
 
 
@@ -34,7 +34,7 @@ def pytest_collection_modifyitems(config, items):
     skip_check = pytest.mark.skip(reason='need --checklinks option to run')
 
     for item in items:
-        if "web" in item.keywords:
+        if 'web' in item.keywords:
             item.add_marker(skip_check)
 
 

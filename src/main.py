@@ -5,22 +5,12 @@ from __future__ import print_function
 import os
 import logging
 
-from PySide2.QtWidgets import (
-    QMainWindow,
-    QStatusBar,
-    QVBoxLayout,
-    QWidget,
-    QPushButton
-)
+from PySide2.QtWidgets import (QWidget, QStatusBar, QMainWindow, QPushButton,
+                               QVBoxLayout)
 
-from .utils import AppSettings
+from .widgets import ToolBar, LogWidgets, ErrorDialog, ConnectionsWidget
+from .settings import AppSettings
 from .connection import QServer, SendTestClient, SendNodesClient
-from .widgets import (
-    LogWidgets,
-    ConnectionsWidget,
-    ErrorDialog,
-    ToolBar
-)
 
 LOGGER = logging.getLogger('NukeServerSocket.main')
 LOGGER.debug(' -*- START APPLICATION -*-')
@@ -214,7 +204,7 @@ class MainWindow(QMainWindow):
     def __init__(self, main_widget=MainWindowWidget):
         """Init method for main window widget."""
         QMainWindow.__init__(self)
-        self.setWindowTitle("NukeServerSocket")
+        self.setWindowTitle('NukeServerSocket')
 
         toolbar = ToolBar()
         self.addToolBar(toolbar)

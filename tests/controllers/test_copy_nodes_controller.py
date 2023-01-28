@@ -1,11 +1,10 @@
 """Test the _CopyNodesController class."""
 import os
 
-
 import pytest
 
 from src.main import init_settings
-from src.utils import AppSettings
+from src.settings import AppSettings
 from src.controllers import nuke_controllers as se
 
 pytestmark = pytest.mark.controllers

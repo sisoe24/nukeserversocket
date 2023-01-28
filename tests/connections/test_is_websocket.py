@@ -1,7 +1,7 @@
 """Test connection when is a websocket."""
 import pytest
 
-from src.utils import AppSettings
+from src.settings import AppSettings
 from src.connection import QServer
 
 
@@ -36,7 +36,7 @@ def test_tester_message_received_websocket(qtbot, _send_test_msg_web, _main_ui):
     """Send a test message and check received log text."""
     def check_status():
         """Wait for the status to register the transfer."""
-        msg = "Hello from Test WebSocket Client"
+        msg = 'Hello from Test WebSocket Client'
         assert msg in _main_ui.log_widgets.received_text
 
     qtbot.waitUntil(check_status, timeout=10000)
@@ -46,6 +46,6 @@ def test_tester_message_output_websocket(qtbot, _send_test_msg_web, _main_ui):
     """Send a test message and check output log text."""
     def check_status():
         """Wait for the status to register the transfer."""
-        assert "Hello from Test WebSocket Client" in _main_ui.log_widgets.output_text
+        assert 'Hello from Test WebSocket Client' in _main_ui.log_widgets.output_text
 
     qtbot.waitUntil(check_status)

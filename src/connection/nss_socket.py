@@ -4,13 +4,14 @@ from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject, Signal, QUrl
+from PySide2.QtCore import QUrl, Signal, QObject
 from PySide2.QtWebSockets import QWebSocket
 
-from .data_to_code import DataCode, InvalidData
-from ..utils import validate_output, AppSettings
-from ..controllers import CodeEditor
+from ..util import validate_output
 from ..widgets import Timer
+from ..settings import AppSettings
+from ..controllers import CodeEditor
+from .data_to_code import DataCode, InvalidData
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
@@ -139,7 +140,7 @@ class QSocket(QObject):
         class that will execute the received code.
         """
         LOGGER.debug('QSocket :: Message received')
-        self.state_changed.emit("Message received.")
+        self.state_changed.emit('Message received.')
         self.timer.start()
 
         try:

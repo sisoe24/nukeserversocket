@@ -4,13 +4,13 @@ from __future__ import print_function
 
 import logging
 
-from PySide2.QtCore import QObject, Signal
+from PySide2.QtCore import Signal, QObject
+from PySide2.QtNetwork import QTcpServer, QHostAddress, QAbstractSocket
 from PySide2.QtWebSockets import QWebSocketServer
-from PySide2.QtNetwork import QAbstractSocket, QTcpServer, QHostAddress
 
-from .nss_socket import QSocket
-from ..utils import AppSettings
 from ..widgets import Timer
+from ..settings import AppSettings
+from .nss_socket import QSocket
 
 LOGGER = logging.getLogger('NukeServerSocket.server')
 
@@ -109,10 +109,10 @@ class QServer(QObject):
         if self.server.listen(QHostAddress.Any, self.tcp_port):
             self.timer.start()
             self.state_changed.emit(
-                "Connected. Server listening to port: %s..." % self.tcp_port)
+                'Connected. Server listening to port: %s...' % self.tcp_port)
             return True
 
-        msg = "Server did not initiate. Error: %s." % self.server.errorString()
+        msg = 'Server did not initiate. Error: %s.' % self.server.errorString()
         self.state_changed.emit(msg)
 
         raise RuntimeError(msg)

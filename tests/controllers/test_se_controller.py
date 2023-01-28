@@ -3,18 +3,13 @@ import sys
 import subprocess
 
 import pytest
-from PySide2.QtWidgets import (
-    QPushButton,
-    QPlainTextEdit,
-    QTextEdit,
-    QSplitter,
-    QWidget
-)
+from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
+                               QPlainTextEdit)
 
-from src.controllers import nuke_script_editor
-from src.utils import pyDecoder
-from src.widgets import fake_script_editor as fake_se
+from src.util import pyDecoder
 from src.controllers import nuke_controllers as se
+from src.controllers import nuke_script_editor
+from src.local.fake_script_editor import FakeScriptEditor
 
 
 @pytest.fixture()
@@ -38,7 +33,7 @@ def test_script_editor_is_widget(_nuke_editor):
 
 def test_get_script_editor(_nuke_editor):
     """Check if script editor was found and is a FakeScriptEditor."""
-    assert isinstance(_nuke_editor.script_editor, fake_se.FakeScriptEditor)
+    assert isinstance(_nuke_editor.script_editor, FakeScriptEditor)
 
 
 def test_script_editor_not_found(_nuke_editor):
