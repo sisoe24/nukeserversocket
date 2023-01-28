@@ -11,9 +11,7 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QCheckBox, QGroupBox,
 
 from ..settings import AppSettings
 
-LOGGER = logging.getLogger('NukeServerSocket.settings_widget')
-
-_RadioButton = namedtuple('RadioButtons', ['label', 'state'])
+LOGGER = logging.getLogger('nukeserversocket.settings_widget')
 
 
 def _format_name(name):
@@ -30,42 +28,7 @@ def _format_name(name):
     return name.lower().replace(' ', '_')
 
 
-class CheckBox(QCheckBox):
-    """Custom QCheckBox class.
-
-    CheckBox is a custom QCheckBox class that initializes a checkbox obj and
-    assigns them some default values based on the arguments. Class will also
-    connect the toggle signal to update the configuration setting value.
-    """
-
-    def __init__(self, title, label, default_state, tooltip, parent=None):
-        # type: (str, str, bool, str, QWidget | None) -> None
-        """Init method for the CheckBox class.
-
-        Args:
-            title (str): title of the checkbox.
-            label (str): label of the checkbox.
-            default_state (bool): initial state of the checkbox if does not have
-            already a setting value in the config file.
-            tooltip (str): checkbox tooltip.
-            parent (str, optional): QWidget to set as parent. Defaults to None.
-        """
-        QCheckBox.__init__(self, title, parent)
-        self.setToolTip(tooltip)
-        self._label = label
-
-        obj_name = _format_name(title)
-        setting_name = 'options/%s' % obj_name
-        self.setObjectName(obj_name)
-
-        settings = AppSettings()
-        self.setChecked(settings.get_bool(setting_name, default_state))
-        self.toggled.connect(
-            lambda: settings.setValue(setting_name, self.isChecked())
-        )
-
-
-class ScriptEditorSettings(QGroupBox):
+class _ScriptEditorSettings(QGroupBox):
     """A QGroupBox class for the script editor settings.
 
     Class that deals mostly with showing the checkbox ui and enabling/disabling
@@ -78,42 +41,57 @@ class ScriptEditorSettings(QGroupBox):
 
         self._setup_group_toggle()
 
-        self._output_console = CheckBox(
-            default_state=False, title='Override Output Editor', parent=self,
-            tooltip='Output to internal Script Editor', label='Output:')
+        # label: output
+        self._output_console = self._checkbox_factory(
+            'Override Output Editor', 'Output to internal Script Editor', 'Output:')
 
-        self._format_output = CheckBox(
-            default_state=False, title='Format Text', parent=self, label='',
-            tooltip='Clean and format output console text')
+        self._format_output = self._checkbox_factory(
+            'Format Text', 'Clean and format output console text')
 
-        self._clear_output = CheckBox(
-            default_state=False, title='Clear Output', parent=self, label='',
-            tooltip='Clear previous output in console. Works only if Format Text is enabled')
+        self._clear_output = self._checkbox_factory(
+            'Clear Output', 'Output to internal Script Editor')
 
-        self._show_path = CheckBox(
-            default_state=False, title='Show File Path', parent=self, label='',
-            tooltip='Include full path of the executed file')
+        self._show_path = self._checkbox_factory(
+            'Show File Path', 'Include full path of the executed file')
 
-        self._show_unicode = CheckBox(
-            default_state=False, title='Show Unicode', parent=self, label='',
-            tooltip='include unicode character in output text')
+        self._show_unicode = self._checkbox_factory(
+            'Show Unicode', 'include unicode character in output text')
 
-        self._override_input = CheckBox(
-            default_state=False, title='Override Input Editor', parent=self,
-            tooltip='Override internal input text editor', label='Input:')
+        # label: input
+        self._override_input = self._checkbox_factory(
+            'Override Input Editor', 'Override internal input text editor', 'Input:')
 
         _layout = QFormLayout()
         _layout.setAlignment(Qt.AlignCenter)
         _layout.setVerticalSpacing(10)
 
-        for checkbox in self.findChildren(CheckBox):
-            _layout.addRow(checkbox._label, checkbox)
+        for checkbox in self.findChildren(QCheckBox):
+            _layout.addRow(checkbox.category, checkbox)
 
         self.setLayout(_layout)
 
         self.toggled.connect(self._toggle_sub_options)
         self._output_console.toggled.connect(self._toggle_output_options)
         self._format_output.toggled.connect(self._toggle_clear_console)
+
+    def _checkbox_factory(self, title, tooltip, category=''):
+        checkbox = QCheckBox(self, title)
+        checkbox.setText(title)
+        checkbox.setToolTip(tooltip)
+
+        # HACK: add an attribute to the checkbox for later reference
+        checkbox.category = category
+
+        obj_name = _format_name(title)
+        setting_name = 'options/%s' % obj_name
+        checkbox.setObjectName(obj_name)
+
+        settings = AppSettings()
+        checkbox.setChecked(settings.get_bool(setting_name, False))
+        self.toggled.connect(
+            lambda: settings.setValue(setting_name, checkbox.isChecked())
+        )
+        return checkbox
 
     def _setup_group_toggle(self):
         """Set initial default groupbox widget settings."""
@@ -124,13 +102,10 @@ class ScriptEditorSettings(QGroupBox):
         settings = AppSettings()
         self.setChecked(settings.get_bool(setting_name))
 
-        self.toggled.connect(
-            lambda: settings.setValue(
-                setting_name, self.isChecked())
-        )
+        self.toggled.connect(lambda: settings.setValue(setting_name, self.isChecked()))
 
     @staticmethod
-    def _toggle_checkboxes(checkbox, state):  # type: (CheckBox, bool) -> None
+    def _toggle_checkboxes(checkbox, state):  # type: (QCheckBox, bool) -> None
         """Toggle checkbox state.
 
         Args:
@@ -174,11 +149,11 @@ class ScriptEditorSettings(QGroupBox):
             state (bool): state of output_console attribute
         """
         state = self.isChecked()
-        for checkbox in self.findChildren(CheckBox):
+        for checkbox in self.findChildren(QCheckBox):
             self._toggle_checkboxes(checkbox, state)
 
 
-class TimeoutSettings(QGroupBox):
+class _TimeoutSettings(QGroupBox):
     """A QGroupBox class for the timeout settings."""
 
     def __init__(self):
@@ -187,19 +162,17 @@ class TimeoutSettings(QGroupBox):
 
         _layout = QFormLayout()
         _layout.setAlignment(Qt.AlignCenter)
-        _layout.addRow(QLabel('Server (minutes)'),
-                       self.set_spinbox('server', 10))
-        _layout.addRow(QLabel('Receiver (seconds)'),
-                       self.set_spinbox('client', 10))
-        _layout.addRow(QLabel('Send Nodes (seconds)'),
-                       self.set_spinbox('socket', 30))
+        _layout.addRow(QLabel('Server (minutes)'), self._set_spinbox('server', 10))
+        _layout.addRow(QLabel('Receiver (seconds)'), self._set_spinbox('client', 10))
+        _layout.addRow(QLabel('Send Nodes (seconds)'), self._set_spinbox('socket', 30))
         self.setLayout(_layout)
 
     @staticmethod
-    def set_spinbox(label, value):  # type: (str, int) -> QSpinBox
-        """Set a spinbox QWidgets class.
+    def _set_spinbox(label, value):  # type: (str, int) -> QSpinBox
+        """Set a spinbox QWidgets object.
 
-        Set up a spinbox class to be used for the timeout settings.
+        Set up a spinbox class to used in the timeout settings. The value is
+        saved inside the NukeServerSocket.ini configuration file.
 
         Args:
             label (str): the spinbox label to be used in the settings file.
@@ -213,20 +186,12 @@ class TimeoutSettings(QGroupBox):
         settings = AppSettings()
         spinbox = QSpinBox()
         spinbox.setValue(int(settings.value(label, value)))
-        spinbox.valueChanged.connect(
-            lambda time: settings.setValue(label, time)
-        )
+        spinbox.valueChanged.connect(lambda time: settings.setValue(label, time))
         return spinbox
 
 
-class RadioButtons(QGroupBox):
-    """A QGroupBox class for the code execution engine settings.
-
-    Settings will allow the user to choose which engine to use when executing
-    code:
-        * Nuke internal: nukeExecuteInMainThread.
-        * Script Editor: Qt scriptEditor widget.
-    """
+class _RadioButtons(QGroupBox):
+    """Factory class for creating a QGroupBox with a bunch for radio buttons."""
 
     def __init__(self, title, buttons=None):
         """Initialize the CodeEngineSettings class."""
@@ -235,14 +200,12 @@ class RadioButtons(QGroupBox):
         _layout = QVBoxLayout()
         _layout.setAlignment(Qt.AlignCenter)
 
-        if buttons:
-            for button in buttons:
-                _layout.addWidget(self.setup_button(
-                    button.label, button.state))
+        for button in buttons or []:
+            _layout.addWidget(self._setup_button(button.label, button.state))
 
         self.setLayout(_layout)
 
-    def setup_button(self, label, default_state):  # type: (str, bool) -> QRadioButton
+    def _setup_button(self, label, default_state):  # type: (str, bool) -> QRadioButton
         """Set a QRadioButton widget.
 
         Set up a QRadioButton widget default state and connects its toggle
@@ -257,15 +220,12 @@ class RadioButtons(QGroupBox):
             _type_: A QRadioButton object.
         """
         settings = AppSettings()
-        setting_name = '%s/%s' % (_format_name(self.title()),
-                                  _format_name(label))
+        setting_name = '%s/%s' % (_format_name(self.title()), _format_name(label))
 
         radiobutton = QRadioButton(label)
         radiobutton.setChecked(settings.get_bool(setting_name, default_state))
 
-        radiobutton.toggled.connect(
-            lambda state: settings.setValue(setting_name, state)
-        )
+        radiobutton.toggled.connect(lambda state: settings.setValue(setting_name, state))
 
         return radiobutton
 
@@ -278,14 +238,16 @@ class SettingsWidget(QWidget):
         QWidget.__init__(self)
         self.setObjectName('SettingsWidget')
 
+        RadioButton = namedtuple('RadioButtons', ['label', 'state'])
+
         _layout = QVBoxLayout()
-        _layout.addWidget(RadioButtons('Code Execution Engine',
-                                       [_RadioButton('Nuke Internal', False),
-                                        _RadioButton('Script Editor', True)]))
-        _layout.addWidget(RadioButtons('Connection Type',
-                                       [_RadioButton('TCP', True),
-                                        _RadioButton('WebSocket', False)]))
-        _layout.addWidget(ScriptEditorSettings())
-        _layout.addWidget(TimeoutSettings())
+        _layout.addWidget(_RadioButtons('Code Execution Engine',
+                                        [RadioButton('Nuke Internal', False),
+                                         RadioButton('Script Editor', True)]))
+        _layout.addWidget(_RadioButtons('Connection Type',
+                                        [RadioButton('TCP', True),
+                                         RadioButton('WebSocket', False)]))
+        _layout.addWidget(_ScriptEditorSettings())
+        _layout.addWidget(_TimeoutSettings())
 
         self.setLayout(_layout)
