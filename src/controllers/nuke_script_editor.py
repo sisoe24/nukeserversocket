@@ -1,27 +1,17 @@
 """Module that deals with the Nuke Script Editor widget."""
 # coding: utf-8
-from __future__ import print_function
 
 import logging
+from abc import ABCMeta, abstractmethod
 from functools import wraps
-
-from abc import abstractmethod, ABCMeta
 
 import shiboken2
 from PySide2.QtCore import Qt
 from PySide2.QtTest import QTest
+from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
+                               QApplication, QPlainTextEdit)
 
-from PySide2.QtWidgets import (
-    QPushButton,
-    QSplitter,
-    QPlainTextEdit,
-    QTextEdit,
-    QApplication,
-    QWidget
-)
-
-
-LOGGER = logging.getLogger('NukeServerSocket._find_script_editor')
+LOGGER = logging.getLogger('nukeserversocket.script_editor')
 
 
 class BaseScriptEditor(object):
@@ -52,6 +42,9 @@ class BaseScriptEditor(object):
 
 
 editors_widgets = {}
+
+# TODO: Re evaluate if caching the widgets still make sense. Maybe having a
+# singleton NukeScriptEditor class is enough.
 
 
 def editor_cache(func):
@@ -105,8 +98,8 @@ class NukeScriptEditor(BaseScriptEditor):
     def __init__(self):
         """Init method for the NukeScriptEditor class.
 
-        Method will start searching for the appropriate widgets and save them
-        inside its attribute.
+        Start searching for the script editor widgets and save them inside its
+        attribute.
         """
         LOGGER.debug('Initialize Nuke Script Editor')
 
@@ -161,7 +154,6 @@ class NukeScriptEditor(BaseScriptEditor):
                 return widget
 
         # XXX: can the script editor not exists?
-        # TODO: don't like traceback but probably will never be called anyway
         raise RuntimeWarning(
             'NukeServerSocket: Script Editor panel not found! '
             'Please create one and reload the panel.'
@@ -235,7 +227,7 @@ class ScriptEditorController():
         self.initial_output = self.script_editor.output_widget.toPlainText()
 
     def set_input(self, text):  # type: (str) -> None
-        """Set text to the input editor.
+        """Set text for the input editor.
 
         Arguments
             (str) text - text to insert.
@@ -243,7 +235,7 @@ class ScriptEditorController():
         self.script_editor.input_widget.setPlainText(text)
 
     def set_output(self, text):  # type: (str) -> None
-        """Set text to the output editor.
+        """Set text for the output editor.
 
         Arguments
             (str) text - text to insert.
@@ -251,31 +243,31 @@ class ScriptEditorController():
         self.script_editor.output_widget.setPlainText(text)
 
     def input(self):  # type: () -> str
-        """Get input from the nuke internal script editor."""
+        """Get text input text from the nuke internal script editor."""
         return self.script_editor.input_widget.document().toPlainText()
 
     def output(self):  # type: () -> str
-        """Get output from the nuke internal script editor."""
+        """Get text output text from the nuke internal script editor."""
         return self.script_editor.output_widget.document().toPlainText()
 
     def clear_input(self):
-        """Delete all the text in the text edit."""
+        """Delete all the text in the input text editor."""
         self.script_editor.input_widget.document().clear()
 
     def clear_output(self):
-        """Delete all the text in the text edit."""
+        """Delete all the text in the output text editor."""
         self.script_editor.output_widget.document().clear()
 
     def execute(self):
-        """Abstract method for executing code from script editor."""
+        """Execute code from script editor."""
         self.script_editor.execute()
 
     def restore_input(self):
-        """Restore input text."""
+        """Restore initial input text."""
         self.script_editor.input_widget.setPlainText(self.initial_input)
 
     def restore_output(self):
-        """Restore output text."""
+        """Restore initial output text."""
         self.script_editor.output_widget.setPlainText(self.initial_output)
 
     def restore_state(self):
