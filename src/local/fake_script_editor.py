@@ -65,7 +65,7 @@ class FakeScriptEditor(QWidget):
         self.setObjectName(object_name)
 
         self.run_btn = QPushButton('Run')
-        self.run_btn.setToolTip('Run the current')
+        self.run_btn.setToolTip('Run the current script')
         self.run_btn.setShortcut(QKeySequence(Qt.CTRL + Qt.Key_Return))
         self.run_btn.clicked.connect(self.run_code)
 
