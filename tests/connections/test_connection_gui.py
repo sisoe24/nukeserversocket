@@ -1,12 +1,11 @@
 """Test module for the UI elements when various connection modes happen."""
 import random
 import configparser
-
 from abc import ABC, abstractmethod
 
 import pytest
 
-from src.connection import QServer
+from src.network import QServer
 
 RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 
@@ -153,7 +152,7 @@ class GuiApp:
 class TestGuiIsIdle(GuiApp, BaseUIElements):
     """Test UI app when is in idle state."""
 
-    label = "Idle"
+    label = 'Idle'
     port_is_enabled = True
 
     ip_entry_readonly = True
@@ -177,7 +176,7 @@ class TestGuiIsIdle(GuiApp, BaseUIElements):
 class TestGuiIsConnected(GuiApp, BaseUIElements):
     """Test UI when app is connected."""
 
-    label = "Connected"
+    label = 'Connected'
     port_is_enabled = False
 
     ip_entry_readonly = True
@@ -210,7 +209,7 @@ class TestGuiIsConnected(GuiApp, BaseUIElements):
 class TestGuiIsSenderMode(GuiApp, BaseUIElements):
     """Test UI when app is in sender mode."""
 
-    label = "Ready to send"
+    label = 'Ready to send'
     port_is_enabled = True
 
     ip_entry_readonly = False

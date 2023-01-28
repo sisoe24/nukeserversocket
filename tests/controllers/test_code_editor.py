@@ -3,7 +3,7 @@ import json
 
 import pytest
 
-from src.connection import DataCode
+from src.network import DataCode
 from src.controllers import nuke_controllers as se
 
 

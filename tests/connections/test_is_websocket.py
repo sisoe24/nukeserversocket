@@ -1,8 +1,8 @@
 """Test connection when is a websocket."""
 import pytest
 
+from src.network import QServer
 from src.settings import AppSettings
-from src.connection import QServer
 
 
 @pytest.fixture(autouse=True)

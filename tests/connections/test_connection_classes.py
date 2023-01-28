@@ -4,8 +4,8 @@ from PySide2.QtNetwork import QTcpServer, QTcpSocket
 from PySide2.QtWebSockets import QWebSocket, QWebSocketServer
 
 from src.settings import AppSettings
-from src.connection.nss_client import QBaseClient
-from src.connection.nss_server import QServer
+from src.network.nss_client import QBaseClient
+from src.network.nss_server import QServer
 
 
 def test_server_is_websocket():

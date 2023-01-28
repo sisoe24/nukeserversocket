@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.connection.nss_server import QServer
+from src.network.nss_server import QServer
 
 
 @pytest.fixture()

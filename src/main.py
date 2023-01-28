@@ -8,9 +8,9 @@ import logging
 from PySide2.QtWidgets import (QWidget, QStatusBar, QMainWindow, QPushButton,
                                QVBoxLayout)
 
+from .network import QServer, SendTestClient, SendNodesClient
 from .widgets import ToolBar, LogWidgets, ErrorDialog, ConnectionsWidget
 from .settings import AppSettings
-from .connection import QServer, SendTestClient, SendNodesClient
 
 LOGGER = logging.getLogger('NukeServerSocket.main')
 LOGGER.debug(' -*- START APPLICATION -*-')

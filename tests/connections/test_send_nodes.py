@@ -6,9 +6,9 @@ from shutil import rmtree
 import pytest
 
 from src.main import init_settings
+from src.network import SendNodesClient
 from src.settings import AppSettings
-from src.connection import SendNodesClient
-from src.connection.nss_client import NodesNotSelectedError
+from src.network.nss_client import NodesNotSelectedError
 
 TRANSFER_NODES_FILE = """
 set cut_paste_input [stack 0]
