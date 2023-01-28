@@ -1,6 +1,5 @@
 """Client code that deals with send nodes and send test functionality."""
 # coding: utf-8
-from __future__ import print_function, with_statement
 
 import json
 import random
@@ -15,7 +14,7 @@ from ..settings import AppSettings
 from .nss_socket import _AbstractSocket
 from ..local.mock import nuke
 
-LOGGER = logging.getLogger('NukeServerSocket.client')
+LOGGER = logging.getLogger('nukeserversocket.client')
 
 
 class NetworkAddresses(object):
@@ -32,7 +31,7 @@ class NetworkAddresses(object):
         return int(self.settings.value('server/port', 54321))
 
     @property
-    def send_address(self):  # type: () -> str
+    def send_to_address(self):  # type: () -> str
         """Get host address data from the configuration.ini file."""
         return self.settings.value('server/send_to_address', self._local_host)
 
@@ -60,9 +59,8 @@ class QBaseClient(QObject):
     def __init__(self, hostname, port):  # type: (str, int) -> None
         """Init method for the QBaseClient class.
 
-        Method creates a QTcpSocket that will listen for incoming connection
-        from a client. A timeout timer of 10 seconds will also be created when
-        client is not able to connect to the socket.
+        Create a QTcpSocket that listens for incoming connection from a client.
+        It also starts a timer of 10 seconds for client timeout.
 
         Args:
             hostname (str): hostname to connect.
@@ -73,22 +71,20 @@ class QBaseClient(QObject):
         self.tcp_host = hostname
         self.tcp_port = port
 
-        self.socket = _AbstractSocket(self._socket_constructor())
+        self.socket = _AbstractSocket(self._socket_factory())
         LOGGER.debug('Initialize QBaseClient socket: %s', self.socket._type)
 
         self.socket.socket.connected.connect(self.on_connected)
         self.socket.socket.error.connect(self.on_error)
         self.socket.socket.stateChanged.connect(self.connection_state)
 
-        self.timer = Timer(
-            int(AppSettings().value('timeout/client', 10))
-        )
+        self.timer = Timer(int(AppSettings().value('timeout/client', 10)))
         self.timer.time.connect(self.client_timeout.emit)
         self.timer._timer.timeout.connect(self._connection_timeout)
 
     @staticmethod
-    def _socket_constructor():
-        """Initialize the socket type based on app settings."""
+    def _socket_factory():
+        """Initialize the socket type based on user preferences."""
         if AppSettings().get_bool('connection_type/websocket'):
             return QWebSocket()
         return QTcpSocket()
@@ -96,7 +92,7 @@ class QBaseClient(QObject):
     def on_connected(self):
         """When connection is establish do stuff.
 
-        This should be considered as an abstract method that child class
+        This should be considered as an abstract method that a child class
         needs to implement.
         """
         raise NotImplementedError('Child class must implement method.')
@@ -104,21 +100,14 @@ class QBaseClient(QObject):
     def on_error(self, error):
         """Error connection event.
 
-        This can happen when the host address is wrong. When error occurs,
-        stop the timeout timer and emit a `state_changed`: 'Error...'.
+        When an error occurs, stop the timer and emit a `state_changed` signal.
         """
         self.timer.stop()
-        self.state_changed.emit('Error: %s\n----' %
-                                self.socket.socket.errorString())
+        self.state_changed.emit('Error: %s\n----' % self.socket.socket.errorString())
         LOGGER.error('QBaseClient Error: %s', error)
 
     def connection_state(self, socket_state):
-        """Check che socket connection state.
-
-        If connection state is `ConnectingState`, emits a state_changed:
-        'Establishing connection...'. If connection state is `ConnectedState`,
-        emits a state_changed: 'Connection successful...' and stops the timer.
-        """
+        """Check che socket connection state and emit a signal."""
         if socket_state == QAbstractSocket.ConnectingState:
             self.state_changed.emit('Establishing connection...')
 
@@ -139,15 +128,15 @@ class QBaseClient(QObject):
     def _connection_timeout(self):
         """Trigger connection timeout event.
 
-        When connection timeout has been triggered emit a `state_changed`:
-        'Connection timeout' and close the socket.
+        When connection timeout has been triggered, emit a `state_changed`
+        signal and close the socket.
         """
         self.state_changed.emit('Connection timeout.\n----')
         LOGGER.debug('QBaseClient :: Connection Timeout')
         self._disconnect()
 
     def write_data(self, data):  # type: (dict) -> None
-        """Write the data to the socket and disconnected from host.
+        """Write the data to the socket and disconnect from host.
 
         Args:
             data (dict): valid dict type that is used from the socket class to
@@ -177,9 +166,8 @@ class SendTestClient(QBaseClient):
             hostname (str, optional): hostname to connect. Defaults to None.
             port (int, optional): port to connect. Defaults to None.
         """
-        addresses = NetworkAddresses()
-        hostname = hostname or addresses.local_host
-        port = port or addresses.port
+        hostname = hostname or NetworkAddresses().local_host
+        port = port or NetworkAddresses().port
 
         QBaseClient.__init__(self, hostname, port)
 
@@ -222,9 +210,8 @@ class SendNodesClient(QBaseClient):
         """
         LOGGER.debug('SendNodesClient :: Sending nodes...')
 
-        addresses = NetworkAddresses()
-        hostname = hostname or addresses.send_address
-        port = port or addresses.port
+        hostname = hostname or NetworkAddresses().send_to_address
+        port = port or NetworkAddresses().port
 
         QBaseClient.__init__(self, hostname, port)
 
@@ -241,7 +228,7 @@ class SendNodesClient(QBaseClient):
             pass
 
     def transfer_file_content(self):
-        """Get the transfer file content to be sent.
+        """Get the transfer file contents to use in the nuke node copy command.
 
         Returns:
             (dict): a dict to be sent to the socket.
