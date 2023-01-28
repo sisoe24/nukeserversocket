@@ -1,13 +1,12 @@
 """Module that deals with the data received from the network."""
 # coding: utf-8
-from __future__ import print_function
 
 import json
 import logging
 
 from ..util import pyEncoder
 
-LOGGER = logging.getLogger('NukeServerSocket.socket')
+LOGGER = logging.getLogger('nukeserversocket.data_code')
 
 
 class InvalidData(Exception):
@@ -18,7 +17,7 @@ class DataCode:
     """Data code class that deals with the received data from the socket."""
 
     def __init__(self, data):  # type: (str) -> None
-        """Init method for the DataCode class.
+        """`DataCode("{'text': text, 'file': file}")`
 
         Convert the data to a valid python dictionary and Verify if is valid.
 
@@ -26,31 +25,30 @@ class DataCode:
             data (str): string of the data received from the socket.
         """
         self._raw_data = data
-
-        self._data = self.convert_data()
-        self.is_valid_data()
+        self._dict_data = self.to_dict()
+        self._is_valid()
 
     @property
     def text(self):
         """Get the text from the data array if any."""
-        return self._data.get('text', '')
+        return self._dict_data.get('text', '')
 
     @property
     def file(self):
         """Get the file from the data array if any."""
-        return self._data.get('file', '')
+        return self._dict_data.get('file', '')
 
     def data_is_array(self):
         """Return True if data is a stringified array, False otherwise."""
         return self._raw_data.startswith('{')
 
-    def convert_data(self):
+    def to_dict(self):
         """Convert the data into a valid dictionary type."""
         if self.data_is_array():
             return self._convert_with_json()
         return {'text': self._raw_data}
 
-    def is_valid_data(self):
+    def _is_valid(self):
         """Check if data text is valid.
 
         If data has no text, it is not a string or is a space, is considered
@@ -65,6 +63,7 @@ class DataCode:
         text = pyEncoder(self.text)
         if not text or not isinstance(text, str) or text.isspace():
             raise InvalidData(text)
+        return True
 
     def _convert_with_json(self):
         """Convert data with json loads method.
@@ -75,15 +74,14 @@ class DataCode:
         Raises:
             InvalidData: when is unable to process the conversion.
         """
-        data = self._raw_data
         try:
             LOGGER.debug('DataCode :: Message is stringified array.')
-            data = json.loads(data)
+            data = json.loads(self._raw_data)
 
         # I could raise json.decoder.JSONDecodeError but if other errors will
         # occur, they will break the execution and I would like to ignore them
         except Exception as err:
-            msg = 'Error json deserialization. %s: %s' % (err, data)
+            msg = 'Error json deserialization. %s: %s' % (err, self._raw_data)
             LOGGER.critical(msg)
             raise InvalidData(msg)
         else:
