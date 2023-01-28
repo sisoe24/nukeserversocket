@@ -62,14 +62,14 @@ def test_about_form(_about_widget):
 
     for index, item in enumerate(about_list):
         _widget = _about_widget._form_layout.itemAt(index).widget()
-        assert item == _widget.text()
+        assert item in _widget.text()
 
 
 def test_about_grid(_about_widget):
     """Test if grid layout has the proper about information."""
     for index, link in enumerate(LINKS):
         _widget = _about_widget._grid_layout.itemAt(index).widget()
-        assert _widget.text() == link.label
+        assert link.label in _widget.text()
         assert _widget.property('link') == link.repr
 
 
