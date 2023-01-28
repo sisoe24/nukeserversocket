@@ -72,7 +72,7 @@ class QBaseClient(QObject):
         self.tcp_port = port
 
         self.socket = _AbstractSocket(self._socket_factory())
-        LOGGER.debug('Initialize QBaseClient socket: %s', self.socket._type)
+        LOGGER.debug('Initialize QBaseClient socket: %s', type(self.socket))
 
         self.socket.socket.connected.connect(self.on_connected)
         self.socket.socket.error.connect(self.on_error)
