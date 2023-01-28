@@ -3,11 +3,10 @@ import os
 import logging
 
 import pytest
-
 from PySide2.QtGui import QClipboard
 
-from src.widgets import error_dialog
 from src.about import about_to_string
+from src.widgets import error_dialog
 
 
 @pytest.fixture()
@@ -28,7 +27,7 @@ def create_report(qtbot, error_log_path):
     widget = error_dialog.ErrorDialog('Test Error')
     qtbot.addWidget(widget)
 
-    yield widget.prepare_report()
+    yield widget._prepare_report()
 
     with open(error_log_path, 'w') as _:
         pass
