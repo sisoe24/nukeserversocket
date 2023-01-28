@@ -15,14 +15,15 @@ from .data_to_code import DataCode, InvalidData
 
 LOGGER = logging.getLogger('NukeServerSocket.socket')
 
+# TODO: Could create an interface for the sockets class, which would make it
+# easier dealing with different type of sockets
+
 
 class _AbstractSocket(QObject):
     """Abstract socket class QObject.
 
     The class mostly resembles a TcpSocket object, so the same naming methods
-    are used. Because the socket type used to initialize the class could be
-    a websocket or tcpsocket, the methods expose will deal with both behavior
-    behind the scene.
+    are used.
 
     The internal socket object is accessible via `self.socket` and the type
     will vary based on the application settings.
@@ -42,22 +43,24 @@ class _AbstractSocket(QObject):
         QObject.__init__(self)
 
         self.socket = socket
-        self._type = type(self.socket)
-        self.is_websocket = isinstance(self.socket, QWebSocket)
 
         self.socket.connected.connect(self.on_connected)
         self.socket.disconnected.connect(self.on_disconnected)
         self._connect_message_received()
 
+    @property
+    def is_websocket(self):
+        return isinstance(self.socket, QWebSocket)
+
     def _connect_message_received(self):
-        """Emit message when socket message is ready."""
+        """Emit a message when socket message is ready."""
         if self.is_websocket:
             self.socket.textMessageReceived.connect(self.messageReceived.emit)
         else:
             self.socket.readyRead.connect(self._set_tcp_message)
 
     def _set_tcp_message(self):
-        """Emit message to the tcp socket client."""
+        """Emit a message to the tcp socket client."""
         self.messageReceived.emit(self.socket.readAll().data().decode('utf-8'))
 
     def write(self, text):
@@ -101,7 +104,6 @@ class _AbstractSocket(QObject):
 class QSocket(QObject):
     """QObject Socket class that deals with the incoming data.
 
-    Class will also verify its type before calling a CodeEditor to execute it.
     Custom signals will emit when connection status has changed.
 
     Signal:
@@ -126,9 +128,7 @@ class QSocket(QObject):
         self.socket = _AbstractSocket(socket)
         self.socket.messageReceived.connect(self.on_readyRead)
 
-        self.timer = Timer(
-            int(AppSettings().value('timeout/socket', 30))
-        )
+        self.timer = Timer(int(AppSettings().value('timeout/socket', 30)))
         self.timer._timer.timeout.connect(self.close_socket)
         self.timer.time.connect(self.socket_timeout.emit)
         self.timer.start()
@@ -136,8 +136,8 @@ class QSocket(QObject):
     def on_readyRead(self, message):
         """Execute the received data.
 
-        When data received is ready, method will pass the job to the CodeEditor
-        class that will execute the received code.
+        When data received is ready, pass the job to the CodeEditor class that
+        executes the received data.
         """
         LOGGER.debug('QSocket :: Message received')
         self.state_changed.emit('Message received.')
@@ -150,12 +150,8 @@ class QSocket(QObject):
             return
 
         editor = CodeEditor(msg_data)
-        editor._controller.execution_error.connect(
-            self.execution_error.emit
-        )
-        editor._controller.execution_error.connect(
-            self.state_changed.emit
-        )
+        editor._controller.execution_error.connect(self.execution_error.emit)
+        editor._controller.execution_error.connect(self.state_changed.emit)
         output_text = editor.execute()
 
         LOGGER.debug('QSocket :: sending message back.')
