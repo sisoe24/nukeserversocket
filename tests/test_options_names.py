@@ -8,11 +8,10 @@ import os
 import re
 
 import pytest
+from PySide2.QtWidgets import QCheckBox, QRadioButton
 
-from PySide2.QtWidgets import QRadioButton
-from src.widgets.settings_widget import (
-    _format_name, SettingsWidget, CheckBox, ScriptEditorSettings
-)
+from src.widgets.settings_widget import (SettingsWidget, _format_name,
+                                         _ScriptEditorSettings)
 
 pytestmark = pytest.mark.settings_name
 
@@ -78,12 +77,12 @@ def _options_name(qtbot):
     widget = SettingsWidget()
     qtbot.addWidget(widget)
 
-    checkboxes = widget.findChildren(CheckBox)
+    checkboxes = widget.findChildren(QCheckBox)
     options_names = [_format_name(_.text()) for _ in checkboxes]
 
     # add the groupbox title name since it being used as a setting value
     options_names.append(_format_name(
-        ScriptEditorSettings().title()))
+        _ScriptEditorSettings().title()))
 
     return options_names
 
