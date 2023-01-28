@@ -5,7 +5,7 @@ from shutil import rmtree
 
 import pytest
 
-from src.main import init_settings
+from src.main import _init_settings
 from src.network import SendNodesClient
 from src.settings import AppSettings
 from src.network.nss_client import NodesNotSelectedError
@@ -47,7 +47,7 @@ def _transfer_node_file(_tmp_settings_file):
     Yields:
         str: path to the transfer_node.tmp file
     """
-    init_settings()
+    _init_settings()
 
     config = configparser.ConfigParser()
     config.read(_tmp_settings_file)
