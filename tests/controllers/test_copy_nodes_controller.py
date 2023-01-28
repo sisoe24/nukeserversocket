@@ -55,7 +55,7 @@ def test_nodes_controller_wrapper(_nodes_controller, _transfer_file):
     Wrapper should be a valid stringified nuke command.
     """
     expected = "nuke.nodePaste('{}')".format(_transfer_file)
-    result = _nodes_controller._paste_nodes_wrapper(_transfer_file)
+    result = _nodes_controller._node_paste_command(_transfer_file)
 
     assert result == expected
 

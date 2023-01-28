@@ -45,7 +45,7 @@ def test_script_editor_not_found(_nuke_editor):
 
 def test_get_run_button(_nuke_editor):
     """Check if run button was found and is a QPushButton."""
-    assert isinstance(_nuke_editor._find_run_button('Run'), QPushButton)
+    assert isinstance(_nuke_editor._find_run_button(), QPushButton)
 
 
 def test_find_input_widget(_nuke_editor):
@@ -61,11 +61,6 @@ def test_find_output_widget(_nuke_editor):
 def test_find_console(_nuke_editor):
     """Check if console was found and is a QSplitter."""
     assert isinstance(_nuke_editor._find_console(), QSplitter)
-
-
-def test_run_button_not_found(_nuke_editor):
-    """Check if run button returns None if not found."""
-    assert _nuke_editor._find_run_button('test') is None
 
 
 def test_execute_shortcut(_init_fake_editor):
