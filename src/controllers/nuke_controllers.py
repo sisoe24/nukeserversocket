@@ -16,6 +16,7 @@ from ..util import insert_time
 from ..settings import AppSettings
 from ..local.mock import nuke
 from .nuke_script_editor import ScriptEditorController
+from ..network.data_to_code import DataCode
 
 if sys.version_info > (3, 0):
     import io as stringIO
