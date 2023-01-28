@@ -2,9 +2,8 @@
 import random
 import configparser
 
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
-import six
 import pytest
 
 from src.connection import QServer
@@ -14,8 +13,7 @@ RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 pytestmark = pytest.mark.connection
 
 
-@six.add_metaclass(ABCMeta)
-class BaseUIElements():
+class BaseUIElements(ABC):
     """Abstract class that implements the elements that should be tested.
 
     Note: Although this is compatible with py2/3, in python 2 will not raise
