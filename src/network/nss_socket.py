@@ -13,7 +13,7 @@ from ..settings import AppSettings
 from ..controllers import CodeEditor
 from .data_to_code import DataCode, InvalidData
 
-LOGGER = logging.getLogger('NukeServerSocket.socket')
+LOGGER = logging.getLogger('nukeserversocket')
 
 # TODO: Could create an interface for the sockets class, which would make it
 # easier dealing with different type of sockets

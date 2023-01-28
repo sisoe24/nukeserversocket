@@ -11,7 +11,7 @@ from ..widgets import Timer
 from ..settings import AppSettings
 from .nss_socket import QSocket
 
-LOGGER = logging.getLogger('nukeserversocket.server')
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class QServer(QObject):

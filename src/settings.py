@@ -7,7 +7,7 @@ import logging
 
 from PySide2.QtCore import QSettings
 
-LOGGER = logging.getLogger('NukeServerSocket.settings')
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 CONFIG_FILE = os.path.join(

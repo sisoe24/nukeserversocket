@@ -1,6 +1,5 @@
 """Module for the nuke script editor controller classes."""
 # coding: utf-8
-from __future__ import print_function
 
 import os
 import re
@@ -23,7 +22,7 @@ if sys.version_info > (3, 0):
 else:
     import StringIO as stringIO
 
-LOGGER = logging.getLogger('NukeServerSocket.controllers')
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class _ExecuteCode(QObject):

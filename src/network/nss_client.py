@@ -14,7 +14,7 @@ from ..settings import AppSettings
 from .nss_socket import _AbstractSocket
 from ..local.mock import nuke
 
-LOGGER = logging.getLogger('nukeserversocket.client')
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class NetworkAddresses(object):

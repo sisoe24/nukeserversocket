@@ -1,16 +1,12 @@
 """About widget with various app information and links."""
 # coding: utf-8
 
-import logging
-
 from PySide2.QtGui import QDesktopServices
 from PySide2.QtCore import Qt
 from PySide2.QtWidgets import (QLabel, QWidget, QFormLayout, QGridLayout,
                                QPushButton, QVBoxLayout)
 
 from ..about import about, about_links
-
-LOGGER = logging.getLogger('NukeServerSocket.about_widget')
 
 
 class AboutWidget(QWidget):

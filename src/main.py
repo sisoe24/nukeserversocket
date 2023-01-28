@@ -1,6 +1,5 @@
 """Main application logic. This is where main window and widget are created."""
 # coding: utf-8
-from __future__ import print_function
 
 import os
 import logging
@@ -12,11 +11,13 @@ from .network import QServer, SendTestClient, SendNodesClient
 from .widgets import ToolBar, LogWidgets, ErrorDialog, ConnectionsWidget
 from .settings import AppSettings
 
-LOGGER = logging.getLogger('NukeServerSocket.main')
+LOGGER = logging.getLogger('nukeserversocket')
 LOGGER.debug(' -*- START APPLICATION -*-')
 
+# TODO: Refactor
 
-def init_settings():
+
+def _init_settings():
     """Set up initial settings for the application.
 
     When called, will:
@@ -40,10 +41,6 @@ def init_settings():
     LOGGER.debug('Main :: settings file : %s', settings.fileName())
 
 
-def _check_for_updates():
-    pass
-
-
 class MainWindowWidget(QWidget):
     """Main window widgets and logic.
 
@@ -55,7 +52,7 @@ class MainWindowWidget(QWidget):
         """Init method for MainWindowWidget."""
         QWidget.__init__(self)
         LOGGER.debug('Main :: init')
-        init_settings()
+        _init_settings()
 
         self.connections = ConnectionsWidget(parent=self)
 

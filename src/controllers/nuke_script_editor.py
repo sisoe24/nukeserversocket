@@ -11,7 +11,7 @@ from PySide2.QtTest import QTest
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
-LOGGER = logging.getLogger('nukeserversocket.script_editor')
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class BaseScriptEditor(object):

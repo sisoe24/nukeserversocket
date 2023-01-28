@@ -4,15 +4,12 @@ from __future__ import print_function
 
 import sys
 import socket
-import logging
 
 from PySide2.QtCore import QTime, QByteArray
 
-LOGGER = logging.getLogger('NukeServerSocket.util')
-
 
 def insert_time(text):  # type: (str) -> str
-    """Insert textual time at the beginning of the string.
+    """Insert time at the beginning of the string.
 
     Example: [17:49:25] Hello World
 

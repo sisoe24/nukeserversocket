@@ -6,7 +6,7 @@ import logging
 
 from ..util import pyEncoder
 
-LOGGER = logging.getLogger('nukeserversocket.data_code')
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class InvalidData(Exception):

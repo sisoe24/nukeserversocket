@@ -1,8 +1,6 @@
 """Module that deals with the ui connection logic."""
 # coding: utf-8
 
-import logging
-
 from PySide2.QtCore import Qt, QObject
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QLineEdit,
                                QFormLayout, QGridLayout, QHBoxLayout,
@@ -11,8 +9,6 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QLineEdit,
 
 from ..util import get_ip
 from ..settings import AppSettings
-
-LOGGER = logging.getLogger('NukeServerSocket.connections_widget')
 
 # TODO: refactor
 

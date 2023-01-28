@@ -1,8 +1,6 @@
 """Settings widget module."""
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 
-import logging
 from collections import namedtuple
 
 from PySide2.QtCore import Qt
@@ -10,8 +8,6 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QCheckBox, QGroupBox,
                                QFormLayout, QVBoxLayout, QRadioButton)
 
 from ..settings import AppSettings
-
-LOGGER = logging.getLogger('nukeserversocket.settings_widget')
 
 
 def _format_name(name):

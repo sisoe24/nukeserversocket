@@ -1,14 +1,10 @@
 """Toolbar widget module."""
 # coding: utf-8
 
-import logging
-
 from PySide2.QtWidgets import QMenu, QAction, QWidget, QToolBar, QToolButton
 
 from .about_widget import AboutWidget
 from .settings_widget import SettingsWidget
-
-LOGGER = logging.getLogger('m74nukelib.toolbar')
 
 
 def show_window(widget: QWidget):
