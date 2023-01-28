@@ -1,6 +1,5 @@
 """Server module that deals with creates a socket when connection is valid."""
 # coding: utf-8
-from __future__ import print_function
 
 import logging
 
@@ -12,13 +11,13 @@ from ..widgets import Timer
 from ..settings import AppSettings
 from .nss_socket import QSocket
 
-LOGGER = logging.getLogger('NukeServerSocket.server')
+LOGGER = logging.getLogger('nukeserversocket.server')
 
 
 class QServer(QObject):
     """QObject Server class that deals with the connection.
 
-    Class will also emit signal when connection status has changed.
+    Class will also emit signals when connection status has changed.
 
     Signal:
         (None) timeout: emit when the timeout event has been triggered.
@@ -50,9 +49,7 @@ class QServer(QObject):
         self.socket = None
 
         # multiple time by 60 to get seconds
-        self.timer = Timer(
-            int(AppSettings().value('timeout/server', 6)) * 60
-        )
+        self.timer = Timer(int(AppSettings().value('timeout/server', 6)) * 60)
         self.timer.time.connect(self.server_timeout.emit)
         self.timer._timer.timeout.connect(self.timeout.emit)
 
@@ -76,7 +73,6 @@ class QServer(QObject):
 
         Method will also stop the timer and emit the 'Disconnected' state.
         """
-        # TODO: emit a message to the socket when closing
         self.server.close()
         self.timer.stop()
         self.state_changed.emit('Disconnected\n----')
@@ -85,8 +81,8 @@ class QServer(QObject):
     def _create_connection(self):
         """Establish connection and create a new socket.
 
-        When connection is successful, will create a socket and emit
-        `socket_ready` signal.
+        When connection is successful, create a socket and emit `socket_ready`
+        signal.
         """
         while self.server.hasPendingConnections():
             self.timer.reset()
@@ -99,8 +95,8 @@ class QServer(QObject):
     def start_server(self):
         """Start server connection.
 
-        QServer will listen on Any host address and the tcp port specified in
-        the config file.
+        QServer listens on any host address and the tcp port specified in
+        the NukeServerSocket.ini config file.
 
         Raises:
             RuntimeError: if connection cannot be made.
