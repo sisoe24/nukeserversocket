@@ -84,7 +84,7 @@ class _ScriptEditorSettings(QGroupBox):
 
         settings = AppSettings()
         checkbox.setChecked(settings.get_bool(setting_name, False))
-        self.toggled.connect(
+        checkbox.toggled.connect(
             lambda: settings.setValue(setting_name, checkbox.isChecked())
         )
         return checkbox
