@@ -5,7 +5,7 @@ from collections import namedtuple
 import pytest
 
 from src.settings import AppSettings
-from src.widgets.settings_widget import ScriptEditorSettings
+from src.widgets.settings_widget import _ScriptEditorSettings
 from src.controllers.nuke_controllers import _PyController
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
@@ -200,7 +200,7 @@ def test_format_text_settings(_overwrite_output_editor, _app_settings):
 
     If Format Text is false, then console output should be a simple string.
     """
-    settings = ScriptEditorSettings()
+    settings = _ScriptEditorSettings()
     settings.setChecked(True)
 
     _app_settings.setValue('options/format_text', False)
