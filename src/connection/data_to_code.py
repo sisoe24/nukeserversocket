@@ -20,8 +20,7 @@ class DataCode:
     def __init__(self, data):  # type: (str) -> None
         """Init method for the DataCode class.
 
-        Data will be converted to a valid dictionary object and verified if it
-        is valid.
+        Convert the data to a valid python dictionary and Verify if is valid.
 
         Args:
             data (str): string of the data received from the socket.
@@ -54,7 +53,11 @@ class DataCode:
     def is_valid_data(self):
         """Check if data text is valid.
 
-        Check if text has a value, if is a string or just a space.
+        If data has no text, it is not a string or is a space, is considered
+        not valid.
+
+        Returns:
+            bool: Returns True if data is valid.
 
         Raises:
             InvalidData: if data is invalid.
@@ -77,14 +80,12 @@ class DataCode:
             LOGGER.debug('DataCode :: Message is stringified array.')
             data = json.loads(data)
 
-        # could raise json.decoder.JSONDecodeError when decoding problems
-        # but if other errors happens will break the script, and I would like
-        # to just "ignore" and not execute any code
+        # I could raise json.decoder.JSONDecodeError but if other errors will
+        # occur, they will break the execution and I would like to ignore them
         except Exception as err:
             msg = 'Error json deserialization. %s: %s' % (err, data)
             LOGGER.critical(msg)
             raise InvalidData(msg)
-
         else:
             LOGGER.debug('DataCode :: Message is valid data: %s', data)
             return data
