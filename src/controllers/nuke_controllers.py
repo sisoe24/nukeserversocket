@@ -2,20 +2,19 @@
 # coding: utf-8
 from __future__ import print_function
 
-import re
-import os
-import sys
+import contextlib
 import json
 import logging
-import contextlib
+import os
+import re
+import sys
 from textwrap import dedent
 
 from PySide2.QtCore import QObject, Signal
 
+from ..local.mock import nuke
 from ..utils import AppSettings, insert_time
 from .nuke_script_editor import ScriptEditorController
-
-from ..nuke_api import nuke
 
 if sys.version_info > (3, 0):
     import io as stringIO
@@ -66,7 +65,7 @@ class _ExecuteCode(QObject):
                 exec(data, globals())  # skipcq: PYL-W0122
             return s.getvalue()
         except Exception as err:  # skipcq: PYL-W0703
-            return "An exception occurred running Nuke Internal engine: `%s`" % str(err)
+            return 'An exception occurred running Nuke Internal engine: `%s`' % str(err)
 
     def set_input(self, text):  # type: (str) -> None
         """Set input from the nuke command."""
@@ -84,7 +83,7 @@ class _ExecuteCode(QObject):
                     self._exec, self._input)
                 LOGGER.debug('Execute engine :: Nuke Internal')
             except Exception:  # skipcq: PYL-W0703
-                err = "executeInMainThread Error. Fallback on ScriptEditor for now."
+                err = 'executeInMainThread Error. Fallback on ScriptEditor for now.'
                 self.execution_error.emit(err)
                 LOGGER.error(err)
                 self._execute_script_editor()
@@ -177,12 +176,12 @@ class _PyController(_ExecuteCode, object):
         text = self._clean_output(text)
         file = self._show_file()
 
-        output = "[Nuke Tools] %s \n%s" % (file, text)
+        output = '[Nuke Tools] %s \n%s' % (file, text)
 
         if self.settings.get_bool('options/show_unicode', True):
             # Arrow sign going down
             unicode = u'\u21B4'
-            output = "[Nuke Tools] %s %s\n%s" % (file, unicode, text)
+            output = '[Nuke Tools] %s %s\n%s' % (file, unicode, text)
 
         return insert_time(output)
 

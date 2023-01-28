@@ -3,19 +3,17 @@
 from __future__ import print_function, with_statement
 
 import json
-import random
 import logging
+import random
 
 from PySide2.QtCore import QObject, Signal
-from PySide2.QtWebSockets import QWebSocket
 from PySide2.QtNetwork import QAbstractSocket, QTcpSocket
+from PySide2.QtWebSockets import QWebSocket
 
-from ..widgets import Timer
+from ..local.mock import nuke
 from ..utils import AppSettings
+from ..widgets import Timer
 from .nss_socket import _AbstractSocket
-
-from ..nuke_api import nuke
-
 
 LOGGER = logging.getLogger('NukeServerSocket.client')
 
@@ -112,7 +110,7 @@ class QBaseClient(QObject):
         self.timer.stop()
         self.state_changed.emit('Error: %s\n----' %
                                 self.socket.socket.errorString())
-        LOGGER.error("QBaseClient Error: %s", error)
+        LOGGER.error('QBaseClient Error: %s', error)
 
     def connection_state(self, socket_state):
         """Check che socket connection state.
@@ -194,12 +192,12 @@ class SendTestClient(QBaseClient):
         r = random.randint(1, 50)
 
         client = 'WebSocket' if self.socket.is_websocket else 'TCP'
-        code = ("from __future__ import print_function\n"
+        code = ('from __future__ import print_function\n'
                 "print('Hello from Test %s Client', %s)") % (client, r)
 
         output_text = {
-            "text": code,
-            "file": "path/to/tmp_file.py"
+            'text': code,
+            'file': 'path/to/tmp_file.py'
         }
 
         self.write_data(output_text)
@@ -264,4 +262,4 @@ class SendNodesClient(QBaseClient):
             raise NodesNotSelectedError
         else:
             with open(transfer_file) as file:
-                return {"text": file.read(), "file": transfer_file}
+                return {'text': file.read(), 'file': transfer_file}
