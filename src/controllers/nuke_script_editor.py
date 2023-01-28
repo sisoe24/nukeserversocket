@@ -175,7 +175,7 @@ class NukeScriptEditor(BaseScriptEditor):
         return self._find_console().findChild(QPlainTextEdit)
 
     @editor_cache
-    def _find_run_button(self, tooltip='Run'):  # type: (str) -> QPushButton | None
+    def _find_run_button(self):  # type: (str) -> QPushButton | None
         """Find the run button from the script editor.
 
         The only way to grab the button is by searching its tooltip or by its
@@ -189,7 +189,7 @@ class NukeScriptEditor(BaseScriptEditor):
         """
         # TODO: if fail tooltip search for list position
         for button in self._find_script_editor().findChildren(QPushButton):
-            if tooltip in button.toolTip():
+            if button.toolTip() == 'Run the current script':
                 return button
 
         # XXX: can the button not be found?
