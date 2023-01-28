@@ -1,8 +1,17 @@
 [tool.poetry]
 name = "nukeserversocket"
-version = "0.6.0"
+version = "0.5.0"
 description = "A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more."
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
+
+[tool.isort]
+sections = [
+    "FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"
+]
+length_sort = true
+
+[tool.autopep8]
+max_line_length = 90
 
 [tool.coverage.run]
 omit = ["tests/*"]
@@ -15,7 +24,7 @@ exclude_lines = [
     "@abstractproperty",
     "LOGGER.debug"
 ]
-    
+
 [tool.coverage.paths]
 source = ["src/*"]
 
