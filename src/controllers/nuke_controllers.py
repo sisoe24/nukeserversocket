@@ -305,11 +305,11 @@ class _CopyNodesController(_ExecuteCode, object):
         with open(transfer_file, 'w') as file:
             file.write(text)
 
-        text = self._node_paste_command(transfer_file)
+        text = self._paste_nodes_command(transfer_file)
         super(_CopyNodesController, self).set_input(text)
 
     @staticmethod
-    def _node_paste_command(transfer_file):
+    def _paste_nodes_command(transfer_file):
         """Create the `nuke.nodePaste` command.
 
         Args:
