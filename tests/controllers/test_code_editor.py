@@ -1,7 +1,6 @@
 """Test the CodeEditor class."""
 import json
 
-
 import pytest
 
 from src.connection import DataCode
@@ -24,20 +23,20 @@ class TestCodeEditor:
     def test_is_python_controller(self, file):
         """Check if is a valid PyController when file ends .py, None."""
         editor = se.CodeEditor(_data_code(file=file))
-        assert isinstance(editor._controller, se._PyController)
+        assert isinstance(editor.controller, se._PyController)
 
     @pytest.mark.parametrize('file', ['file.cpp', 'file.blink'])
     def test_is_blink_controller(self, file):
         """Check if is a valid BlinkController when file ends .cpp, .blink."""
         editor = se.CodeEditor(_data_code(file=file))
 
-        assert isinstance(editor._controller, se._BlinkController)
+        assert isinstance(editor.controller, se._BlinkController)
 
     def test_is_nodes_controller(self):
         """Check if is a valid CopyNodesController when file ends .tmp."""
         editor = se.CodeEditor(_data_code(file='file.tmp'))
 
-        assert isinstance(editor._controller, se._CopyNodesController)
+        assert isinstance(editor.controller, se._CopyNodesController)
 
     def test_execute_script_editor_code(self):
         """Test executing code from the script editor instead of nuke internal."""
@@ -45,7 +44,7 @@ class TestCodeEditor:
         editor = se.CodeEditor(_data_code(code, 'tmp.py'))
 
         # when bypassing the main execute function, need to set the input
-        controller = editor._controller
+        controller = editor.controller
         controller.set_input(code)
         controller._execute_script_editor()
         assert controller.output() == 'HELLO\n'

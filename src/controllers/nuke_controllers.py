@@ -339,13 +339,13 @@ class CodeEditor(QObject):
         _, file_ext = os.path.splitext(file)
 
         if file_ext in {'.cpp', '.blink'}:
-            self._controller = _BlinkController(file)
+            self.controller = _BlinkController(file)
 
         elif file_ext == '.tmp':
-            self._controller = _CopyNodesController()
+            self.controller = _CopyNodesController()
 
         else:
-            self._controller = _PyController(file)
+            self.controller = _PyController(file)
 
     def execute(self):  # type: () -> str
         """Execute controller function.
@@ -353,12 +353,12 @@ class CodeEditor(QObject):
         The function will set the controller input text and execute it. Once
         done, it will return the output and restore the script editor state.
         """
-        self._controller.set_input(self.data.text)
-        self._controller.execute()
+        self.controller.set_input(self.data.text)
+        self.controller.execute()
 
         send_to_console = AppSettings().get_bool('options/mirror_to_script_editor')
 
-        if isinstance(self._controller, _PyController) and send_to_console:
-            self._controller.to_console()
+        if isinstance(self.controller, _PyController) and send_to_console:
+            self.controller.to_console()
 
-        return self._controller.output()
+        return self.controller.output()

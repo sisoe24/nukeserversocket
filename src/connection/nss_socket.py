@@ -150,8 +150,8 @@ class QSocket(QObject):
             return
 
         editor = CodeEditor(msg_data)
-        editor._controller.execution_error.connect(self.execution_error.emit)
-        editor._controller.execution_error.connect(self.state_changed.emit)
+        editor.controller.execution_error.connect(self.execution_error.emit)
+        editor.controller.execution_error.connect(self.state_changed.emit)
         output_text = editor.execute()
 
         LOGGER.debug('QSocket :: sending message back.')
