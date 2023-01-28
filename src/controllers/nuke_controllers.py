@@ -63,13 +63,13 @@ class _ExecuteCode(QObject):
         """Execute a string as a callable command."""
         try:
             with self.stdoutIO() as s:
-                exec(data, globals())  # skipcq: PYL-W0122
+                exec(data)  # skipcq: PYL-W0122
             return s.getvalue()
         except Exception as err:  # skipcq: PYL-W0703
             return 'An exception occurred running Nuke Internal engine: `%s`' % str(err)
 
     def set_input(self, text):  # type: (str) -> None
-        """Set input from the nuke command."""
+        """Set input for the nuke execution call."""
         self._input = text
 
     def execute(self):
@@ -100,11 +100,11 @@ class _ExecuteCode(QObject):
         self.script_editor.restore_state()
 
     def output(self):  # type: () -> str
-        """Get output from the nuke command."""
+        """Get the output from the nuke execution call."""
         return self._output
 
     def input(self):  # type: () -> str
-        """Get input from the nuke command."""
+        """Get the input from the nuke execution call."""
         return self._input
 
 
@@ -148,10 +148,8 @@ class _PyController(_ExecuteCode, object):
     def _show_file(self):  # type: () -> str
         """Show the file that is being executed.
 
-        If files is an empty string, it will return it.
-
         Returns:
-            (str) file - file path of the file that is being executed.
+            (str) file - path of the file that is being executed or an empty string.
         """
         return self._file if self.settings.get_bool(
             'options/show_file_path') else os.path.basename(self._file)
@@ -206,9 +204,7 @@ class _PyController(_ExecuteCode, object):
         """
         if self.settings.get_bool('options/format_text', True):
 
-            output_text = self._format_output(
-                super(_PyController, self).output()
-            )
+            output_text = self._format_output(super(_PyController, self).output())
 
             if self.settings.get_bool('options/clear_output', True):
                 self.script_editor.set_output(output_text)
@@ -247,10 +243,10 @@ class _BlinkController(_ExecuteCode, object):
 
         Get the blinkscript command and insert it to the input widget.
         """
-        text = self._blink_wrapper(text)
+        text = self._blink_command(text)
         super(_BlinkController, self).set_input(text)
 
-    def _blink_wrapper(self, code):  # type: (str) -> str
+    def _blink_command(self, code):  # type: (str) -> str
         """Create the blinkscript command.
 
         The command checks for a blinkscript node and create one if needed.
@@ -297,8 +293,8 @@ class _CopyNodesController(_ExecuteCode, object):
     def set_input(self, text):  # type: (str) -> str
         """Override parent method by executing the `nuke.nodePaste()` command.
 
-        The method creates a file with the text argument received which is
-        then passed to `nuke.nodePaste`.
+        The method creates a file and writes the text argument received. Then
+        it passes the file path to `nuke.nodePaste`.
 
         Args:
             text (str): the text to be set as input in the widget.
@@ -350,7 +346,7 @@ class CodeEditor(QObject):
     def execute(self):  # type: () -> str
         """Execute controller function.
 
-        The function will set the controller input text and execute it. Once
+        The function sets the controller input text and execute it. Once
         done, it will return the output and restore the script editor state.
         """
         self.controller.set_input(self.data.text)
