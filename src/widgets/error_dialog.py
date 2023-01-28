@@ -1,6 +1,5 @@
 """Error dialog widget that shows when app had an exception at launch."""
 # coding: utf-8
-from __future__ import print_function
 
 import logging
 import traceback

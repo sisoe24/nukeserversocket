@@ -1,6 +1,5 @@
 """Timer class that deals with the connection timeouts."""
 # coding: utf-8
-from __future__ import print_function
 
 from PySide2.QtCore import QTimer, Signal, QObject
 

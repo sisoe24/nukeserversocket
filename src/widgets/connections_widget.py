@@ -1,6 +1,5 @@
 """Module that deals with the ui connection logic."""
 # coding: utf-8
-from __future__ import print_function
 
 import logging
 
@@ -14,6 +13,8 @@ from ..util import get_ip
 from ..settings import AppSettings
 
 LOGGER = logging.getLogger('NukeServerSocket.connections_widget')
+
+# TODO: refactor
 
 
 class ConnectionButtons(QObject):
