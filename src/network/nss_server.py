@@ -1,4 +1,4 @@
-"""Server module that deals with creates a socket when connection is valid."""
+"""Module that deals with the server connection."""
 # coding: utf-8
 
 import logging
