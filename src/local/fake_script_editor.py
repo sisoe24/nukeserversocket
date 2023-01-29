@@ -17,9 +17,7 @@ from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QMainWindow,
 
 from ..util import pyDecoder
 
-LOGGER = logging.getLogger('NukeServerSocket.fakescripteditor')
-
-# TODO: should search alternative to subprocess
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class OutputEditor(QTextEdit):

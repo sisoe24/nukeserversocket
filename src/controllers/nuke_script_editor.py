@@ -149,7 +149,7 @@ class NukeScriptEditor(BaseScriptEditor):
         # .topLevelWidgets() is a smaller list but SE is not always there
         for widget in QApplication.allWidgets():
 
-            # TODO: user should be able to decide which SE to use?
+            # XXX: should the user be able to decide which SE to use?
             if editor in widget.objectName():
                 return widget
 

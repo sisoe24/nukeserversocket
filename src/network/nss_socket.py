@@ -17,9 +17,6 @@ from .data_to_code import DataCode, InvalidData
 
 LOGGER = logging.getLogger('nukeserversocket')
 
-# TODO: Could create an interface for the sockets class, which would make it
-# easier dealing with different type of sockets
-
 
 class _AbstractSocketInterface(object):
     __metaclass__ = abc.ABCMeta
