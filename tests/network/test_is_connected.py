@@ -4,7 +4,6 @@ import socket
 
 import pytest
 
-
 STRING = 'nss test msg'
 TEXT = "print('%s'.upper())" % STRING
 FILE = 'tmp/path/nss.py'
@@ -73,7 +72,7 @@ def test_tester_message_received(qtbot, _send_test_msg, _main_ui):
     """Send a test message and check received log text."""
     def check_status():
         """Wait for the status to register the transfer."""
-        msg = "Hello from Test TCP Client"
+        msg = 'Hello from Test TCP Client'
         assert msg in _main_ui.log_widgets.received_text
 
     qtbot.waitUntil(check_status)
@@ -83,12 +82,12 @@ def test_tester_message_output(qtbot, _send_test_msg, _main_ui):
     """Send a test message and check output log text."""
     def check_status():
         """Wait for the status to register the transfer."""
-        assert "Hello from Test TCP Client" in _main_ui.log_widgets.output_text
+        assert 'Hello from Test TCP Client' in _main_ui.log_widgets.output_text
 
     qtbot.waitUntil(check_status)
 
 
-@pytest.fixture(params=[TEXT, json.dumps({"text": TEXT, "file": FILE})],
+@pytest.fixture(params=[TEXT, json.dumps({'text': TEXT, 'file': FILE})],
                 ids=['simple string', 'stringified array'])
 def _send_data(request):
     """Send valid data via socket connection.
