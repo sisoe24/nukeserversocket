@@ -12,7 +12,6 @@ from .widgets import ToolBar, LogWidgets, ErrorDialog, ConnectionsWidget
 from .settings import AppSettings
 
 LOGGER = logging.getLogger('nukeserversocket')
-LOGGER.debug(' -*- START APPLICATION -*-')
 
 # TODO: Refactor
 
@@ -38,7 +37,7 @@ def _init_settings():
     settings.setValue('path/transfer_file',
                       os.path.join(tmp_folder, 'transfer_nodes.tmp'))
 
-    LOGGER.debug('Main :: settings file : %s', settings.fileName())
+    LOGGER.debug('Settings file: %s', settings.fileName())
 
 
 class MainWindowWidget(QWidget):
@@ -88,7 +87,7 @@ class MainWindowWidget(QWidget):
         self.connections.sender_mode.setEnabled(state)
 
     def _disconnect(self):
-        """Disconnet server.
+        """Disconnect server.
 
         Set the connection button state to `False`, which will trigger a signal
         that toggles the connection with a falsy value.
@@ -191,11 +190,8 @@ class MainWindowWidget(QWidget):
 class MainWindow(QMainWindow):
     """Custom QMainWindow class.
 
-    A toolbar and a status bar will be added in the main app together with the
-    main widgets.
-
-    If app has an exception loading the main widget, will spawn an ErrorDialog
-    class.
+    The class comes with a statusbar and a toolbar. When an exception happens,
+    it will spawn an ErrorDialog widget.
     """
 
     def __init__(self, main_widget=MainWindowWidget):
