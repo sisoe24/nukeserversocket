@@ -4,7 +4,7 @@ import os
 import pytest
 
 from src import settings
-from src.local.run_local import _MainWindowWidget
+from src.local.run_local import NukeServerSocketLocal
 
 
 def pytest_addoption(parser):
@@ -76,7 +76,7 @@ def patch_settings(_tmp_settings_file, monkeypatch):
 def _main_ui(qtbot):
     """Initialize Main UI Widget."""
     settings.AppSettings().setValue('connection_type/tcp', True)
-    widget = _MainWindowWidget()
+    widget = NukeServerSocketLocal()
     qtbot.addWidget(widget)
     yield widget.main_app
 
@@ -85,7 +85,7 @@ def _main_ui(qtbot):
 def _main_ui_websocket(qtbot):
     """Initialize Main UI Widget."""
     settings.AppSettings().setValue('connection_type/websocket', True)
-    widget = _MainWindowWidget()
+    widget = NukeServerSocketLocal()
     qtbot.addWidget(widget)
     yield widget.main_app
     settings.AppSettings().setValue('connection_type/websocket', False)
