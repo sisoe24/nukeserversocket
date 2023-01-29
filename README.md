@@ -19,11 +19,11 @@
 A Nuke plugin that lets you execute code from a text editor in your local network and more.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
-  - [1.2. Features](#12-features)
-  - [1.1. Client applications](#11-client-applications)
+  - [1.1. Features](#11-features)
+  - [1.2. Client applications](#12-client-applications)
   - [1.3. Installation](#13-installation)
   - [1.4. Usage](#14-usage)
-    - [1.4.1.Execute code](#141execute-code)
+    - [1.4.1. 1.4.1.Execute code](#141-141execute-code)
     - [1.4.2. Receive/Send nodes](#142-receivesend-nodes)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
@@ -32,7 +32,7 @@ A Nuke plugin that lets you execute code from a text editor in your local networ
   - [1.9. Compatibility](#19-compatibility)
   - [1.10. Demo](#110-demo)
 
-## 1.2. Features
+## 1.1. Features
 
 - Send Python or BlinkScript code to be executed inside Nuke from your local network.
 - Multiple computers can connect to the same Nuke instance.
@@ -40,7 +40,7 @@ A Nuke plugin that lets you execute code from a text editor in your local networ
 - Easy integration with custom clients. (more on [Extendibility](#16-extendibility))
 - WebSocket-compatible for browser-based text editors.
 
-## 1.1. Client applications
+## 1.2. Client applications
 
 Client applications that can use NukeServerSocket:
 
@@ -52,7 +52,7 @@ Client applications that can use NukeServerSocket:
 
 1. Download the repository via the releases page or by cloning it from GitHub.
 2. Move the folder inside your _~/.nuke_ directory or into a custom one.
-3. Write `import NukeServerSocket` into your _menu.py_.  
+3. Write `import NukeServerSocket` into your _menu.py_.
 
 NOTES
 
@@ -61,7 +61,7 @@ NOTES
 
 ## 1.4. Usage
 
-### 1.4.1.Execute code
+### 1.4.1. 1.4.1.Execute code
 
 ![Execute Code](images/execute_code.gif)
 
@@ -79,11 +79,11 @@ NOTES:
 
 - Receive
 
-   When receiving nodes, you only need to start the Server ([Receive incoming request](#141-receive-incoming-request)).
+   When receiving nodes, you only need to start the Server ([Receive incoming request](#141-141execute-code)).
 
 - Send
 
-  1. When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-receive-incoming-request)).
+  1. When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-141execute-code)).
   2. Select the nodes you want to send a click **Send Selected Nodes**.
 
 NOTES:
@@ -95,25 +95,14 @@ NOTES:
 
 Accessing the settings can be done from the plugin toolbar.
 
-<<<<<<< HEAD
 - **Code Execution Engine**: Change the engine that will executing the code.
-  - **Nuke Internal**: Nuke `executeInMainThread` function.
-  - **Script Editor**: Nuke Script Editor widget. [**Default**]
-
-  > Why use one over the other?
-  >
-  > - Nuke Internal is a more direct and fast approach, but it uses `exec` under the hood, which might cause some issues.
-  > - Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.
-=======
-- **Code Execution Engine**: Change the engine that will be executing the code.
   - **Nuke Internal**: Nuke `executeInMainThread` function. [**Default**]
   - **Script Editor**: Nuke Script Editor widget.
 
   > Why use one over the other?
   >
-  > - Nuke Internal uses a more direct and fast approach, but it does not handle internal exceptions and modal windows very well.
-  > - Nuke Script Editor uses a safer approach overall, but it does require slightly more work behind the scene.
->>>>>>> develop
+  > - Nuke Internal is a more direct and fast approach, but it uses `exec` under the hood, which might cause some issues.
+  > - Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.
 
 - **Connection Type**: Change the internal connection protocol for the client-server.
   - **TCP**: The default type of connection. If unsure, use this. [**Default**]
