@@ -11,7 +11,7 @@ from PySide2.QtWebSockets import QWebSocket
 
 from ..widgets import Timer
 from ..settings import AppSettings
-from .nss_socket import _AbstractSocket
+from .nss_socket import socket_factory
 from ..local.mock import nuke
 
 LOGGER = logging.getLogger('nukeserversocket')
@@ -39,6 +39,8 @@ class NetworkAddresses(object):
     def local_host(self):  # type: () -> str
         """Get the local host address: 127.0.0.1."""
         return self._local_host
+
+# TODO: Refactor QBaseCLient: revisit how the socket is coupled with the class
 
 
 class QBaseClient(QObject):
@@ -71,23 +73,19 @@ class QBaseClient(QObject):
         self.tcp_host = hostname
         self.tcp_port = port
 
-        self.socket = _AbstractSocket(self._socket_factory())
+        self.socket = socket_factory(
+            QTcpSocket() if AppSettings().get_bool('connection_type/tcp') else QWebSocket()
+        )
+
         LOGGER.debug('Initialize QBaseClient socket: %s', type(self.socket))
 
-        self.socket.socket.connected.connect(self.on_connected)
-        self.socket.socket.error.connect(self.on_error)
-        self.socket.socket.stateChanged.connect(self.connection_state)
+        self.socket._socket.connected.connect(self.on_connected)
+        self.socket._socket.error.connect(self.on_error)
+        self.socket._socket.stateChanged.connect(self.connection_state)
 
         self.timer = Timer(int(AppSettings().value('timeout/client', 10)))
         self.timer.time.connect(self.client_timeout.emit)
         self.timer._timer.timeout.connect(self._connection_timeout)
-
-    @staticmethod
-    def _socket_factory():
-        """Initialize the socket type based on user preferences."""
-        if AppSettings().get_bool('connection_type/websocket'):
-            return QWebSocket()
-        return QTcpSocket()
 
     def on_connected(self):
         """When connection is establish do stuff.
@@ -103,7 +101,7 @@ class QBaseClient(QObject):
         When an error occurs, stop the timer and emit a `state_changed` signal.
         """
         self.timer.stop()
-        self.state_changed.emit('Error: %s\n----' % self.socket.socket.errorString())
+        self.state_changed.emit('Error: %s\n---' % self.socket._socket.errorString())
         LOGGER.error('QBaseClient Error: %s', error)
 
     def connection_state(self, socket_state):
@@ -123,7 +121,7 @@ class QBaseClient(QObject):
     def _disconnect(self):
         """Abort socket connection."""
         self.timer.stop()
-        self.socket.socket.abort()
+        self.socket.abort()
 
     def _connection_timeout(self):
         """Trigger connection timeout event.
@@ -149,7 +147,7 @@ class QBaseClient(QObject):
         """Connect to host and start the timeout timer."""
         LOGGER.debug('QBaseClient :: Connecting to host: %s %s',
                      self.tcp_host, self.tcp_port)
-        self.socket._connect(self.tcp_host, self.tcp_port)
+        self.socket.socket_connect(self.tcp_host, self.tcp_port)
         self.timer.start()
 
 
@@ -179,7 +177,7 @@ class SendTestClient(QBaseClient):
         LOGGER.debug('SendTestClient :: Handshake successful.')
         r = random.randint(1, 50)
 
-        client = 'WebSocket' if self.socket.is_websocket else 'TCP'
+        client = type(self.socket).__name__
         code = ('from __future__ import print_function\n'
                 "print('Hello from Test %s Client', %s)") % (client, r)
 
