@@ -75,9 +75,20 @@ def patch_settings(_tmp_settings_file, monkeypatch):
 @pytest.fixture()
 def _main_ui(qtbot):
     """Initialize Main UI Widget."""
+    settings.AppSettings().setValue('connection_type/tcp', True)
     widget = _MainWindowWidget()
     qtbot.addWidget(widget)
     yield widget.main_app
+
+
+@pytest.fixture()
+def _main_ui_websocket(qtbot):
+    """Initialize Main UI Widget."""
+    settings.AppSettings().setValue('connection_type/websocket', True)
+    widget = _MainWindowWidget()
+    qtbot.addWidget(widget)
+    yield widget.main_app
+    settings.AppSettings().setValue('connection_type/websocket', False)
 
 
 @pytest.fixture(autouse=True)
