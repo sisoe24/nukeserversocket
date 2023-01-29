@@ -25,7 +25,7 @@ else:
 LOGGER = logging.getLogger('nukeserversocket')
 
 
-class _ExecuteCode(QObject):
+class _ExecuteCodeController(QObject):
     """Execute code inside Nuke.
 
     Signal:
@@ -108,7 +108,7 @@ class _ExecuteCode(QObject):
         return self._input
 
 
-class _PyController(_ExecuteCode, object):
+class _PyController(_ExecuteCodeController, object):
     """Controller class that deals with python code execution."""
 
     history = []
@@ -119,7 +119,7 @@ class _PyController(_ExecuteCode, object):
         Args:
             file (str): file path of the file that is being executed.
         """
-        _ExecuteCode.__init__(self)
+        _ExecuteCodeController.__init__(self)
         self.settings = AppSettings()
         self._file = file
 
@@ -218,7 +218,7 @@ class _PyController(_ExecuteCode, object):
         self._clear_history()
 
 
-class _BlinkController(_ExecuteCode, object):
+class _BlinkController(_ExecuteCodeController, object):
     """Controller that deals with blink script execution code."""
 
     def __init__(self, file):
@@ -227,7 +227,7 @@ class _BlinkController(_ExecuteCode, object):
         Args:
             file (str): file path of the file that is being executed.
         """
-        _ExecuteCode.__init__(self)
+        _ExecuteCodeController.__init__(self)
         self._file = file
 
     def output(self):  # type: () -> str
@@ -275,12 +275,12 @@ class _BlinkController(_ExecuteCode, object):
         """).format(**kwargs).strip()
 
 
-class _CopyNodesController(_ExecuteCode, object):
+class _CopyNodesController(_ExecuteCodeController, object):
     """Controller that deals with copy nodes execution code."""
 
     def __init__(self):
         """Init method for the _CopyNodesController class."""
-        _ExecuteCode.__init__(self)
+        _ExecuteCodeController.__init__(self)
 
     def output(self):  # type: () -> str
         """Override parent method.
