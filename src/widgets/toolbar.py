@@ -10,11 +10,11 @@ from .settings_widget import SettingsWidget
 def show_window(widget: QWidget):
     """Show a widget window.
 
-        If widget is already visible then regain focus.
+    If widget is already visible then regain focus.
 
-        Args:
-            widget (QWidget): a widget to insert inside the dialog widget.
-        """
+    Args:
+        widget (QWidget): a widget to insert inside the dialog widget.
+    """
     widget.show()
     widget.activateWindow()
     widget.raise_()
