@@ -28,15 +28,15 @@ class _AbstractSocketInterface(object):
 
     @abc.abstractmethod
     def write(self, text):
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def socket_connect(self, host, port):
-        pass
+        raise NotImplementedError
 
     @abc.abstractmethod
     def close(self):
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def on_connected():
@@ -106,56 +106,6 @@ class _WebSocket(_AbstractSocketInterface, QObject):
         self._socket.abort()
 
 
-# class _AbstractSocket(_AbstractSocketInterface, QObject):
-#     """Abstract socket class QObject.
-
-#     The class mostly resembles a TcpSocket object, so the same naming methods
-#     are used.
-
-#     The internal socket object is accessible via `self.socket` and the type
-#     will vary based on the application settings.
-
-#     Signals:
-#         (str) messageReceived: emits when socket message is ready.
-#     """
-
-#     messageReceived = Signal(str)
-
-#     def __new__(cls, socket):
-#         return _TcpSocket(socket) if isinstance(socket, QTcpSocket) else _WebSocket(socket)
-
-#     def __init__(self, socket):
-#         """Init method for the socket class.
-
-#         Args:
-#             socket (QWebSocket | QTcpSocket): The socket for the connection.
-#         """
-#         QObject.__init__(self)
-#         self.socket = socket
-#         self.socket.messageReceived.connect(self.messageReceived.emit)
-
-#     def write(self, text):
-#         """Write socket data back to server."""
-#         self.socket.write(text)
-
-#     def socket_connect(self, host, port):
-#         """Connect socket.
-
-#         Args:
-#             host (str): hostname
-#             port (int): port
-#         """
-#         self.socket.socket_connect(host, port)
-
-#     def close(self):
-#         """Flush content and close socket."""
-#         self.socket.socket.flush()
-#         self.socket.close()
-
-#     def abort(self):
-#         self.socket.abort()
-
-
 def socket_factory(socket):
     return _TcpSocket(socket) if isinstance(socket, QTcpSocket) else _WebSocket(socket)
 
@@ -192,6 +142,11 @@ class QSocket(QObject):
         self.timer.time.connect(self.socket_timeout.emit)
         self.timer.start()
 
+    def close_socket(self):
+        """Close the socket and stop the timeout timer."""
+        self.socket.close()
+        self.timer.stop()
+
     def on_readyRead(self, message):
         """Execute the received data.
 
@@ -220,11 +175,6 @@ class QSocket(QObject):
 
         self.received_text.emit(msg_data.text)
         self.output_text.emit(output_text)
-
-    def close_socket(self):
-        """Close the socket and stop the timeout timer."""
-        self.socket._socket.close()
-        self.timer.stop()
 
     def _invalid_data(self, err):
         """Close socket when data is invalid.
