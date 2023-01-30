@@ -51,8 +51,3 @@ def test_floating_dialog_cache_widget(_toolbar):
     first_dialog = _toolbar._show_dialog('Settings', c)
     second_dialog = _toolbar._show_dialog('Settings', c)
     assert first_dialog == second_dialog
-
-
-@pytest.mark.skip(reason='TODO')
-def test_floating_dialog_cache(_toolbar):
-    ...
