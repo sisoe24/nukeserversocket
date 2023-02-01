@@ -55,7 +55,7 @@ class AboutWidget(QWidget):
                 column = 0
 
     @staticmethod
-    def _create_btn(name, link):
+    def _create_btn(name, link):  # type: (str, str) -> QPushButton
         """Create buttons with some default values.
 
         Create a QPushButton adding the tooltip, the property and setting up

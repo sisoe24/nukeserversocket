@@ -49,7 +49,7 @@ class Timer(QObject):
         self.time.emit('')
 
     def _ui_countdown(self):
-        """Initiate the countdown for the timeout UI label."""
+        """Start the countdown for the timeout UI label."""
         self._timeout -= 1
 
         if self._timeout == 0:

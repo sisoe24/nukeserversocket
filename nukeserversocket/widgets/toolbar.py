@@ -7,7 +7,7 @@ from .about_widget import AboutWidget
 from .settings_widget import SettingsWidget
 
 
-def show_window(widget: QWidget):
+def show_window(widget):  # type:(QWidget) -> None
     """Show a widget window.
 
     If widget is already visible then regain focus.
@@ -31,14 +31,14 @@ class ToolBar(QToolBar):
         self.add_widget(title='Help', widget=AboutWidget())
         self.add_widget(title='Settings', widget=SettingsWidget())
 
-    def add_menu(self, title: str, menu: QMenu):
+    def add_menu(self, title, menu):  # type: (str, QMenu)-> None
         btn = QToolButton()
         btn.setText(title)
         btn.setPopupMode(QToolButton.InstantPopup)
         btn.setMenu(menu)
         self.addWidget(btn)
 
-    def add_widget(self, title: str, widget: QWidget) -> QAction:
+    def add_widget(self, title, widget):  # type: (str, QWidget) -> QAction
         """Set up action for toolbar.
 
         Method will set up a QAction and connect its trigger signal to show a

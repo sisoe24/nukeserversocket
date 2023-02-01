@@ -90,7 +90,7 @@ class _ScriptEditorSettings(QGroupBox):
         return checkbox
 
     def _setup_group_toggle(self):
-        """Set initial default groupbox widget settings."""
+        """Set up default groupbox widget settings."""
         self.setCheckable(True)
 
         setting_name = 'options/mirror_to_script_editor'
