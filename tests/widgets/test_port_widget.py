@@ -3,9 +3,9 @@ import configparser
 
 import pytest
 
-from src.network import nss_client
-from src.settings import AppSettings
-from src.widgets.connections_widget import TcpPort
+from nukeserversocket.network import nss_client
+from nukeserversocket.settings import AppSettings
+from nukeserversocket.widgets.connections_widget import TcpPort
 
 
 def _port_in_range(value):

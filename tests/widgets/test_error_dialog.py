@@ -4,8 +4,8 @@ import os
 import pytest
 from PySide2.QtGui import QClipboard
 
-from src.about import about_to_string
-from src.widgets import error_dialog
+from nukeserversocket.about import about_to_string
+from nukeserversocket.widgets import error_dialog
 
 
 @pytest.fixture()

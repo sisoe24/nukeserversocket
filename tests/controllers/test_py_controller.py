@@ -4,9 +4,9 @@ from collections import namedtuple
 
 import pytest
 
-from src.settings import AppSettings
-from src.widgets.settings_widget import _ScriptEditorSettings
-from src.controllers.nuke_controllers import _PyController
+from nukeserversocket.settings import AppSettings
+from nukeserversocket.widgets.settings_widget import _ScriptEditorSettings
+from nukeserversocket.controllers.nuke_controllers import _PyController
 
 BEGIN_PATTERN = r'(\[\d\d:\d\d:\d\d\] \[Nuke Tools\]) '
 SAMPLE_WORD = 'NukeServerSocket'

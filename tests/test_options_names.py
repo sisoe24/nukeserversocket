@@ -10,8 +10,9 @@ import re
 import pytest
 from PySide2.QtWidgets import QCheckBox, QRadioButton
 
-from src.widgets.settings_widget import (SettingsWidget, _format_name,
-                                         _ScriptEditorSettings)
+from nukeserversocket.widgets.settings_widget import (SettingsWidget,
+                                                      _format_name,
+                                                      _ScriptEditorSettings)
 
 pytestmark = pytest.mark.settings_name
 

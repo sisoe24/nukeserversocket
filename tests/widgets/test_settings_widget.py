@@ -4,7 +4,7 @@ import configparser
 import pytest
 from PySide2.QtWidgets import QCheckBox
 
-from src.widgets.settings_widget import _ScriptEditorSettings
+from nukeserversocket.widgets.settings_widget import _ScriptEditorSettings
 
 
 @pytest.fixture()

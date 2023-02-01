@@ -3,8 +3,8 @@ from collections import namedtuple
 
 import pytest
 
-from src.widgets import toolbar, about_widget, settings_widget
-from src.widgets.toolbar import show_window
+from nukeserversocket.widgets import toolbar, about_widget, settings_widget
+from nukeserversocket.widgets.toolbar import show_window
 
 SETTINGS_WIDGET = settings_widget.SettingsWidget
 

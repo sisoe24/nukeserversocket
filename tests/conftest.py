@@ -3,8 +3,8 @@ import os
 
 import pytest
 
-from src import settings
-from src.local.run_local import NukeServerSocketLocal
+from nukeserversocket import settings
+from nukeserversocket.local.run_local import NukeServerSocketLocal
 
 
 def pytest_addoption(parser):

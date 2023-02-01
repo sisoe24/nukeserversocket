@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 
 import pytest
 
-from src.network import QServer
+from nukeserversocket.network import QServer
 
 RANDOM_IP = '192.168.1.%s' % random.randint(10, 99)
 

@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.network.data_to_code import DataCode, InvalidData
+from nukeserversocket.network.data_to_code import DataCode, InvalidData
 
 valid_data = (
     '{"text": "hello"}',

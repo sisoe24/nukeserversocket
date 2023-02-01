@@ -5,10 +5,10 @@ from shutil import rmtree
 
 import pytest
 
-from src.main import _init_settings
-from src.network import SendNodesClient
-from src.settings import AppSettings
-from src.network.nss_client import NodesNotSelectedError
+from nukeserversocket.main import _init_settings
+from nukeserversocket.network import SendNodesClient
+from nukeserversocket.settings import AppSettings
+from nukeserversocket.network.nss_client import NodesNotSelectedError
 
 TRANSFER_NODES_FILE = """
 set cut_paste_input [stack 0]

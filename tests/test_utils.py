@@ -5,7 +5,7 @@ import sys
 import pytest
 from PySide2.QtCore import QByteArray
 
-from src.util import get_ip, pyDecoder, pyEncoder, validate_output
+from nukeserversocket.util import get_ip, pyDecoder, pyEncoder, validate_output
 
 
 def test_get_ip():

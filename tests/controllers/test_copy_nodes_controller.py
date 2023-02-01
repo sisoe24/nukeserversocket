@@ -3,9 +3,9 @@ import os
 
 import pytest
 
-from src.main import _init_settings
-from src.settings import AppSettings
-from src.controllers import nuke_controllers as se
+from nukeserversocket.main import _init_settings
+from nukeserversocket.settings import AppSettings
+from nukeserversocket.controllers import nuke_controllers as se
 
 pytestmark = pytest.mark.controllers
 

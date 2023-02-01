@@ -6,10 +6,10 @@ import pytest
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QPlainTextEdit)
 
-from src.util import pyDecoder
-from src.controllers import nuke_controllers as se
-from src.controllers import nuke_script_editor
-from src.local.fake_script_editor import FakeScriptEditor
+from nukeserversocket.util import pyDecoder
+from nukeserversocket.controllers import nuke_controllers as se
+from nukeserversocket.controllers import nuke_script_editor
+from nukeserversocket.local.fake_script_editor import FakeScriptEditor
 
 
 @pytest.fixture()

@@ -1,10 +1,10 @@
 """Test log widgets."""
 import re
-from PySide2.QtWidgets import QGroupBox
 
 import pytest
+from PySide2.QtWidgets import QGroupBox
 
-from src.widgets import LogWidgets
+from nukeserversocket.widgets import LogWidgets
 
 
 @pytest.fixture()

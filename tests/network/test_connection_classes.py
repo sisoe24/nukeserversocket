@@ -2,10 +2,10 @@
 from PySide2.QtNetwork import QTcpServer, QTcpSocket
 from PySide2.QtWebSockets import QWebSocket, QWebSocketServer
 
-from src.settings import AppSettings
-from src.network.nss_client import QBaseClient
-from src.network.nss_server import QServer
-from src.network.nss_socket import _TcpSocket, _WebSocket
+from nukeserversocket.settings import AppSettings
+from nukeserversocket.network.nss_client import QBaseClient
+from nukeserversocket.network.nss_server import QServer
+from nukeserversocket.network.nss_socket import _TcpSocket, _WebSocket
 
 
 def test_server_is_websocket_server():

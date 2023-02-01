@@ -3,8 +3,8 @@ import json
 
 import pytest
 
-from src.network import DataCode
-from src.controllers import nuke_controllers as se
+from nukeserversocket.network import DataCode
+from nukeserversocket.controllers import nuke_controllers as se
 
 
 def _data_code(code='test', file=''):

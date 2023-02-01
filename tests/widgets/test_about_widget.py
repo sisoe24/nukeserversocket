@@ -5,9 +5,9 @@ import platform
 import pytest
 import requests
 
-from src import about
-from src.util import pyEncoder
-from src.widgets import about_widget
+from nukeserversocket import about
+from nukeserversocket.util import pyEncoder
+from nukeserversocket.widgets import about_widget
 
 
 def test_get_about_key():

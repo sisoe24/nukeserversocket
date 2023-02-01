@@ -3,7 +3,7 @@ from textwrap import dedent
 
 import pytest
 
-from src.controllers.nuke_controllers import _BlinkController
+from nukeserversocket.controllers.nuke_controllers import _BlinkController
 
 NUKE_CMD = dedent("""
 nodes = [n for n in nuke.allNodes() if "tmp.cpp" == n.name()]

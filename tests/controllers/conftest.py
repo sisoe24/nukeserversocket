@@ -2,7 +2,7 @@
 
 import pytest
 
-from src.local.fake_script_editor import FakeScriptEditor
+from nukeserversocket.local.fake_script_editor import FakeScriptEditor
 
 
 @pytest.fixture()
