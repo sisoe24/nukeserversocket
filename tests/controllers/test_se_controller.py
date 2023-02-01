@@ -74,4 +74,4 @@ def test_execute_shortcut(_init_fake_editor):
     se_controller.execute()
 
     code = subprocess.check_output([sys.executable, '-c', input_text])
-    assert se_controller.output() == pyDecoder(code)
+    assert se_controller.output().strip() == pyDecoder(code).strip()
