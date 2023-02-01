@@ -29,7 +29,7 @@ def _uses_settings(file):
 
 def _traverse_dir(package):
     """Traverse the package directory in search for a python file."""
-    for dirpath, _, filenames in os.walk(package):
+    for dirpath, _, filenames in os.walk(os.path.join(package, 'nukeserversocket')):
         for filename in filenames:
             fp = os.path.join(dirpath, filename)
             if filename.endswith('py') and _uses_settings(fp):
