@@ -15,7 +15,7 @@ def test_get_ip():
     `127.0.0.1`.
     """
     ip = get_ip()
-    assert re.match(r'\d{3}\.\d{3}\.\d\.\d{1,2}|127\.0\.0\.1', ip)
+    assert re.match(r'^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$', ip)
 
 
 def test_validate_output_py3():
