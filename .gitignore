@@ -3,7 +3,7 @@ dist
 bin
 *tmp
 
-.poetry.lock
+poetry.lock
 
 .DS_Store
 *.pyc
