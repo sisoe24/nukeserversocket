@@ -1,5 +1,6 @@
 """Test about widget."""
 import os
+import re
 import platform
 
 import pytest
@@ -19,7 +20,7 @@ def test_get_about_key():
 def test_about_python_version():
     """Python version should be 3.7.7 for nuke 13 or 2.7.16 for nuke11/12."""
     version = about.get_about_key('Python')
-    assert version <= '3.7.7'
+    assert re.match(r'3\.7.\d{1,2}', version)
 
 
 def test_get_about_missing_key():
