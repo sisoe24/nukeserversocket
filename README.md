@@ -16,7 +16,7 @@
 ![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
 ![x](https://img.shields.io/badge/Nuke-11_|_12_|13-yellow)
 
-A Nuke plugin that lets you execute code from a text editor in your local network and more.
+A Nuke plugin to run code from external applications.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
   - [1.1. Features](#11-features)
@@ -34,15 +34,15 @@ A Nuke plugin that lets you execute code from a text editor in your local networ
 
 ## 1.1. Features
 
-- Send Python or BlinkScript code to be executed inside Nuke from your local network.
-- Multiple computers can connect to the same Nuke instance.
+- Receive Python or BlinkScript code from any client in your LAN.
+  - Create your own client and let NukeServerSocket do the rest. (more on [Extendibility](#16-extendibility))
+- Connect more than one client to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
-- Easy integration with custom clients. (more on [Extendibility](#16-extendibility))
-- WebSocket-compatible for browser-based text editors.
+- WebSocket ready for browser-based text editors.
 
 ## 1.2. Client applications
 
-Client applications that can use NukeServerSocket:
+Client applications that use NukeServerSocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
