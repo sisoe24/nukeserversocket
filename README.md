@@ -23,7 +23,7 @@ A Nuke plugin to run code from external applications.
   - [1.2. Client applications](#12-client-applications)
   - [1.3. Installation](#13-installation)
   - [1.4. Usage](#14-usage)
-    - [1.4.1. 1.4.1.Execute code](#141-141execute-code)
+    - [1.4.1. Execute code](#141-execute-code)
     - [1.4.2. Receive/Send nodes](#142-receivesend-nodes)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
@@ -34,11 +34,10 @@ A Nuke plugin to run code from external applications.
 
 ## 1.1. Features
 
-- Receive Python or BlinkScript code from any client in your LAN.
-  - Create your own client and let NukeServerSocket do the rest. (more on [Extendibility](#16-extendibility))
+- Receive Python or BlinkScript code from any client in your local network. (More on [Extendibility](#16-extendibility))
 - Connect more than one client to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
-- WebSocket ready for browser-based text editors.
+- WebSocket-ready for browser-based text editors.
 
 ## 1.2. Client applications
 
@@ -50,18 +49,19 @@ Client applications that use NukeServerSocket:
 
 ## 1.3. Installation
 
-1. Download the repository via the releases page or by cloning it from GitHub.
-2. Move the folder inside your _~/.nuke_ directory or into a custom one.
+1. Download the repository via the [releases page](https://github.com/sisoe24/NukeServerSocket/releases) or by cloning it from GitHub.
+2. Place the folder inside the _~/.nuke_ directory or into a custom one.
 3. Write `import NukeServerSocket` into your _menu.py_.
 
 NOTES
 
 - If you use a custom plugin path, add the path in your init.py: `nuke.pluginAddPath('custom/path')`
 - The folder name must be named **NukeServerSocket**.
+- If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), use the command `Nuke Tools: Add NukeServerSocket`.
 
 ## 1.4. Usage
 
-### 1.4.1. 1.4.1.Execute code
+### 1.4.1. Execute code
 
 ![Execute Code](images/execute_code.gif)
 
@@ -77,18 +77,18 @@ NOTES:
 
 ![Send Nodes](images/send_nodes.gif)
 
-- Receive
+- Receive nodes
 
-   When receiving nodes, you only need to start the Server ([Receive incoming request](#141-141execute-code)).
+   When receiving nodes, start the server with the mode on **Receiver**.
 
-- Send
+- Sending nodes
 
-  1. When sending nodes, switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network request ([Receive incoming request](#141-141execute-code)).
-  2. Select the nodes you want to send a click **Send Selected Nodes**.
+  1. Switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network requests.
+  2. Select the nodes you wish to send a click **Send Selected Nodes**.
 
 NOTES:
 
-- When sending nodes on the same computer, only the **Port** value must match the two Nuke instances.
+- When sending nodes to the same computer, only the **Port** value must match the two Nuke instances.
 - When sending nodes between different computers, both **IP Address** and **Port** must match the two Nuke instances.
 
 ## 1.5. Settings
