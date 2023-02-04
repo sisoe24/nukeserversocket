@@ -4,6 +4,7 @@
 import os
 import sys
 import logging
+import logging.handlers
 
 LOGGER = logging.getLogger('nukeserversocket')
 LOGGER.propagate = False
@@ -36,26 +37,19 @@ def empty_line(log_file='debug'):
         file.write('\n')
 
 
-def set_critical():
-    """Init function for the critical handler logger."""
-    critical = logging.FileHandler(_get_path('error'), 'w')
-    critical.setLevel(logging.ERROR)
-    critical.setFormatter(_formatter_detailed())
-    critical.set_name('critical')
-    return critical
-
-
-def set_debug():
+def _handler_debug():
     """Init function for the debug handler logger."""
     empty_line()
-    debug = logging.FileHandler(_get_path('debug'), 'w')
+    debug = logging.handlers.TimedRotatingFileHandler(
+        filename=_get_path('debug'), when='W6', backupCount=4
+    )
     debug.set_name('debug')
     debug.setLevel(logging.DEBUG)
     debug.setFormatter(_formatter_detailed())
     return debug
 
 
-def set_console():
+def _handler_console():
     """Init function for the console handler logger."""
     console = logging.StreamHandler(stream=sys.stdout)
     console.set_name('console')
@@ -64,6 +58,5 @@ def set_console():
     return console
 
 
-LOGGER.addHandler(set_debug())
-LOGGER.addHandler(set_critical())
-LOGGER.addHandler(set_console())
+LOGGER.addHandler(_handler_debug())
+LOGGER.addHandler(_handler_console())
