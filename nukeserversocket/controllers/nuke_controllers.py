@@ -24,6 +24,8 @@ else:
 
 LOGGER = logging.getLogger('nukeserversocket')
 
+# TODO: Create abstract code controller class
+
 
 class _ExecuteCodeController(QObject):
     """Execute code inside Nuke.
@@ -63,6 +65,8 @@ class _ExecuteCodeController(QObject):
         """Execute a string as a callable command."""
         try:
             with self.stdoutIO() as s:
+                # TODO: https://github.com/sisoe24/NukeServerSocket/issues/23
+                # exec not working properly with nested functions
                 exec(data)  # skipcq: PYL-W0122
             return s.getvalue()
         except Exception as err:  # skipcq: PYL-W0703
