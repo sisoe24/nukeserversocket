@@ -27,7 +27,7 @@
             },
             "args": [
                 "-m",
-                "src.local.run_local",
+                "nukeserversocket.local.run_local",
             ],
         },
         {
