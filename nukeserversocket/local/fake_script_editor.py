@@ -59,6 +59,7 @@ class FakeScriptEditor(QWidget):
     def __init__(self, object_name='uk.co.thefoundry.scripteditor.1'):
         """Init method of the the FakeScriptEditor class."""
         QWidget.__init__(self)
+        self.setMaximumHeight(300)
         LOGGER.debug('FakeScriptEditor :: init')
         self.setObjectName(object_name)
 
