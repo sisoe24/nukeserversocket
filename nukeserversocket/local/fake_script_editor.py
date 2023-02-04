@@ -11,9 +11,9 @@ import subprocess
 
 from PySide2.QtGui import QKeyEvent, QKeySequence
 from PySide2.QtCore import Qt
-from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QMainWindow,
-                               QPushButton, QVBoxLayout, QApplication,
-                               QPlainTextEdit)
+from PySide2.QtWidgets import (QLabel, QWidget, QSplitter, QTextEdit,
+                               QMainWindow, QPushButton, QVBoxLayout,
+                               QApplication, QPlainTextEdit)
 
 from ..util import pyDecoder
 
@@ -78,6 +78,7 @@ class FakeScriptEditor(QWidget):
         self.splitter.addWidget(self.input_console)
 
         _layout = QVBoxLayout()
+        _layout.addWidget(QLabel('Script Editor emulation'))
         _layout.addWidget(self.run_btn)
         _layout.addWidget(self.splitter)
         self.setLayout(_layout)
