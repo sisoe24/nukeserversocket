@@ -45,7 +45,7 @@ def about_links():
         ('Changelog', github_web + '/blob/main/CHANGELOG.md'),
         ('Issues', github_web + '/issues'),
         ('Nukepedia', 'https://www.nukepedia.com/python/misc/nukeserversocket'),
-        ('Logs', 'file:///%s/src/logs' % _get_root()),
+        ('Logs', 'file:///%s/nukeserversocket/logs' % _get_root()),
         ('Client apps', 'https://github.com/sisoe24/NukeServerSocket#11-client-applications'),
         ('Other', '')
     )
