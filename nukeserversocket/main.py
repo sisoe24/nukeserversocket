@@ -209,7 +209,7 @@ class MainWindow(QMainWindow):
             main_widgets = main_widget()
         except Exception as err:  # skipcq: PYL-W0703
             ErrorDialog(err, self).show()
-            LOGGER.critical(err, exc_info=True)
+            LOGGER.exception(err)
         else:
             self.setCentralWidget(main_widgets)
 
