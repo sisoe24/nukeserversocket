@@ -65,9 +65,7 @@ class _ExecuteCodeController(QObject):
         """Execute a string as a callable command."""
         try:
             with self.stdoutIO() as s:
-                # TODO: https://github.com/sisoe24/NukeServerSocket/issues/23
-                # exec not working properly with nested functions
-                exec(data)  # skipcq: PYL-W0122
+                exec(data, {})  # skipcq: PYL-W0122
             return s.getvalue()
         except Exception as err:  # skipcq: PYL-W0703
             return 'An exception occurred running Nuke Internal engine: `%s`' % str(err)
