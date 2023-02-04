@@ -220,5 +220,5 @@ except ImportError:
     pass
 else:
     nukescripts.panels.registerWidgetAsPanel(
-        'NukeServerSocket.src.main.MainWindow', 'NukeServerSocket',
+        'NukeServerSocket.nukeserversocket.main.MainWindow', 'NukeServerSocket',
         'NukeServerSocket.MainWindow')
