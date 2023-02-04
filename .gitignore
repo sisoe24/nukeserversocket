@@ -1,6 +1,8 @@
-other
-dist
-bin
+other/
+dist/
+bin/
+logs/
+
 *tmp
 
 poetry.lock
