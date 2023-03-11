@@ -3,4 +3,4 @@ try:
     import nuke
 except ImportError:
     # otherwise import the fake nuke api
-    from . import _nuke_fake_api as nuke
+    from . import _nuke as nuke

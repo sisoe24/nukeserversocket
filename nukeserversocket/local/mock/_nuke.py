@@ -10,6 +10,10 @@ from PySide2.QtGui import QClipboard
 from ...util import pyDecoder
 
 
+env = {
+    'NukeVersionMajor': 14
+}
+
 def nodeCopy(string):
     """Copy nodes implementation of equivalent Nukes method."""
     copy_tmp = dedent("""
