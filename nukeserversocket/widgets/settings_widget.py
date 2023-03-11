@@ -8,6 +8,7 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QCheckBox, QGroupBox,
                                QFormLayout, QVBoxLayout, QRadioButton)
 
 from ..settings import AppSettings
+from ..local.mock import nuke
 
 
 def _format_name(name):
@@ -240,9 +241,10 @@ class SettingsWidget(QWidget):
         _layout.addWidget(_RadioButtons('Code Execution Engine',
                                         [RadioButton('Nuke Internal', False),
                                          RadioButton('Script Editor', True)]))
-        _layout.addWidget(_RadioButtons('Connection Type',
-                                        [RadioButton('TCP', True),
-                                         RadioButton('WebSocket', False)]))
+        if nuke.env.get('NukeVersionMajor') < 14:
+            _layout.addWidget(_RadioButtons('Connection Type',
+                                            [RadioButton('TCP', True),
+                                             RadioButton('WebSocket', False)]))
         _layout.addWidget(_ScriptEditorSettings())
         _layout.addWidget(_TimeoutSettings())
 
