@@ -11,6 +11,8 @@ from .network import QServer, SendTestClient, SendNodesClient
 from .widgets import ToolBar, LogWidgets, ErrorDialog, ConnectionsWidget
 from .settings import AppSettings
 
+from .local.mock import nuke
+
 LOGGER = logging.getLogger('nukeserversocket')
 
 # TODO: Refactor
@@ -33,7 +35,11 @@ def _init_settings():
 
     settings = AppSettings()
     settings.validate_port_settings()
-    settings.setValue('dialog/dont_show', False)
+
+    if nuke.env.get('NukeVersionMajor') == 14:
+        settings.setValue('connection_type/tcp', True)
+        settings.setValue('connection_type/websocket', False)
+
     settings.setValue('path/transfer_file',
                       os.path.join(tmp_folder, 'transfer_nodes.tmp'))
 
