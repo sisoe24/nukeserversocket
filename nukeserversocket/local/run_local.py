@@ -9,6 +9,7 @@ from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
 
 from ..main import MainWindow, MainWindowWidget
 from ..widgets import FakeScriptEditor
+from .mock import nuke
 
 LOGGER = logging.getLogger('nukeserversocket')
 
@@ -49,7 +50,7 @@ class _MainWindow(MainWindow):
     def __init__(self):
         """Init method for the _MainWindow class."""
         MainWindow.__init__(self, main_widget=NukeServerSocketLocal)
-        self.setWindowTitle('NukeServerSocket Local')
+        self.setWindowTitle('NukeServerSocket Local - %s' % nuke.env['NukeVersionMajor'])
         if os.getenv('USERNAME', os.getenv('USER')) == 'virgil':
             self.setGeometry(1449.26171875, 602.8671875, 1080, 1980)
 
