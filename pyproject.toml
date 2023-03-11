@@ -38,7 +38,7 @@ addopts = "-l --tb=short --strict-markers"
 qt_api = "pyside2"
 
 [tool.poetry.dependencies]
-python = "~3.7.7"
+python = "~3.7"
 PySide2 = "<=5.12.2"
 
 [tool.poetry.group.dev.dependencies]
