@@ -7,12 +7,14 @@ import logging
 
 from PySide2.QtCore import Signal, QObject
 from PySide2.QtNetwork import QTcpSocket, QAbstractSocket
-from PySide2.QtWebSockets import QWebSocket
 
 from ..widgets import Timer
 from ..settings import AppSettings
 from .nss_socket import socket_factory
 from ..local.mock import nuke
+
+if nuke.env.get('NukeVersionMajor') > 14:
+    from PySide2.QtWebSockets import QWebSocket
 
 LOGGER = logging.getLogger('nukeserversocket')
 
