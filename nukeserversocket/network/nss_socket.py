@@ -6,8 +6,7 @@ import abc
 import logging
 
 from PySide2.QtCore import QUrl, Signal, QObject
-from PySide2.QtNetwork import QTcpSocket, QAbstractSocket
-from PySide2.QtWebSockets import QWebSocket
+from PySide2.QtNetwork import QTcpSocket
 
 from ..util import validate_output
 from ..widgets import Timer
