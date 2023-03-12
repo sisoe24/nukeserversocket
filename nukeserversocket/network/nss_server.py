@@ -13,7 +13,7 @@ from ..local.mock import nuke
 
 LOGGER = logging.getLogger('nukeserversocket')
 
-if nuke.env.get('NukeVersionMajor') > 14:
+if nuke.env.get('NukeVersionMajor') < 14:
     from PySide2.QtWebSockets import QWebSocketServer
 
 
