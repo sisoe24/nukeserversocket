@@ -11,7 +11,7 @@ from ...util import pyDecoder
 
 
 env = {
-    'NukeVersionMajor': 14
+    'NukeVersionMajor': 13
 }
 
 def nodeCopy(string):
