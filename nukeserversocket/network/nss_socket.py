@@ -18,6 +18,11 @@ LOGGER = logging.getLogger('nukeserversocket')
 
 
 class _AbstractSocketInterface(object):
+    """Abstract socket interface class.
+
+    This mimics the functionality of a QWebSocket or a QTcpSocket.
+    """
+
     __metaclass__ = abc.ABCMeta
 
     def __init__(self, socket):  # type: (QWebSocket | QTcpSocket) -> None
@@ -27,6 +32,7 @@ class _AbstractSocketInterface(object):
 
     @abc.abstractmethod
     def write(self, text):
+        """Write socket data."""
         raise NotImplementedError
 
     @abc.abstractmethod
@@ -35,6 +41,7 @@ class _AbstractSocketInterface(object):
 
     @abc.abstractmethod
     def close(self):
+        """Close socket connection."""
         raise NotImplementedError
 
     @staticmethod
@@ -54,10 +61,16 @@ class _AbstractSocketInterface(object):
 
 
 class _TcpSocket(_AbstractSocketInterface, QObject):
+    """Abstract QTcpSocket class.
+
+    Signal:
+        (str): messageReceived: emits when socket receives the data.
+    """
 
     messageReceived = Signal(str)
 
     def __init__(self, socket):  # type:(QTcpSocket) -> None
+        """Init method for the _TcpSocket class."""
         QObject.__init__(self)
         _AbstractSocketInterface.__init__(self, socket)
         self._socket = socket
@@ -68,44 +81,66 @@ class _TcpSocket(_AbstractSocketInterface, QObject):
         self.messageReceived.emit(self._socket.readAll().data().decode('utf-8'))
 
     def write(self, text):
+        """Write socket data."""
         self._socket.write(validate_output(text))
 
     def socket_connect(self, host, port):
+        """Initialize socket connection."""
         self._socket.connectToHost(host, port)
 
     def close(self):
+        """Close connection."""
         self._socket.flush()
         self._socket.disconnectFromHost()
 
     def abort(self):
+        """Abort connection."""
         self._socket.abort()
 
 
 class _WebSocket(_AbstractSocketInterface, QObject):
+    """Abstract QWebSocket class.
+
+    Signal:
+        (str): messageReceived: emits when socket receives the data.
+    """
 
     messageReceived = Signal(str)
 
     def __init__(self, socket):  # type:(QWebSocket) -> None
+        """Init method for the _WebSocket class."""
         QObject.__init__(self)
         _AbstractSocketInterface.__init__(self, socket)
         self._socket = socket
         self._socket.textMessageReceived.connect(self.messageReceived.emit)
 
     def write(self, text):
+        """Write socket data."""
         self._socket.sendTextMessage(text)
 
     def socket_connect(self, host, port):
+        """Initialize connection."""
         self._socket.open(QUrl('ws://%s:%s' % (host, port)))
 
     def close(self):
+        """Close connection."""
         self._socket.flush()
         self._socket.close()
 
     def abort(self):
+        """Abort connection."""
         self._socket.abort()
 
 
 def socket_factory(socket):
+    """Create an abstract socket object.
+
+    Args:
+        socket (QTcpSocket | QWebSocket)
+
+    Returns:
+        _QTcpSocket | _WebSocket
+    """
     return _TcpSocket(socket) if isinstance(socket, QTcpSocket) else _WebSocket(socket)
 
 

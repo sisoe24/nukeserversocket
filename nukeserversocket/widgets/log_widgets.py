@@ -10,6 +10,7 @@ from ..settings import AppSettings
 
 class LogBox(QGroupBox):
     """A custom QGroupBox that contains a QPlainTextEdit and a QPushButton."""
+
     _setting_key = 'hide_log'
 
     def __init__(self, title):

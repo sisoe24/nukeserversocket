@@ -14,6 +14,7 @@ env = {
     'NukeVersionMajor': 13
 }
 
+
 def nodeCopy(string):
     """Copy nodes implementation of equivalent Nukes method."""
     copy_tmp = dedent("""

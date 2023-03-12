@@ -32,6 +32,7 @@ class ToolBar(QToolBar):
         self.add_widget(title='Settings', widget=SettingsWidget())
 
     def add_menu(self, title, menu):  # type: (str, QMenu)-> None
+        """Set up a menu stile QtoolButton inside the Toolbar."""
         btn = QToolButton()
         btn.setText(title)
         btn.setPopupMode(QToolButton.InstantPopup)
