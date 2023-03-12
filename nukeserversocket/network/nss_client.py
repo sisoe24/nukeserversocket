@@ -142,7 +142,7 @@ class QBaseClient(QObject):
             data (dict): valid dict type that is used from the socket class to
             initialize the code execution.
         """
-        self.socket.write(json.dumps(data))
+        self.socket.write(json.dumps(data)) # skipcp: PY-W0079
         self.socket.close()
 
     def connect_to_host(self):
