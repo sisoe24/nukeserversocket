@@ -9,7 +9,6 @@ from PySide2.QtGui import QClipboard
 
 from ...util import pyDecoder
 
-
 env = {
     'NukeVersionMajor': 13
 }

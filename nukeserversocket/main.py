@@ -10,7 +10,6 @@ from PySide2.QtWidgets import (QWidget, QStatusBar, QMainWindow, QPushButton,
 from .network import QServer, SendTestClient, SendNodesClient
 from .widgets import ToolBar, LogWidgets, ErrorDialog, ConnectionsWidget
 from .settings import AppSettings
-
 from .local.mock import nuke
 
 LOGGER = logging.getLogger('nukeserversocket')

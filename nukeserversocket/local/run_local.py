@@ -7,9 +7,9 @@ from random import randint
 
 from PySide2.QtWidgets import QWidget, QVBoxLayout, QApplication
 
+from .mock import nuke
 from ..main import MainWindow, MainWindowWidget
 from ..widgets import FakeScriptEditor
-from .mock import nuke
 
 LOGGER = logging.getLogger('nukeserversocket')
 
