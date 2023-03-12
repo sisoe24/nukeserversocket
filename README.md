@@ -37,7 +37,7 @@ A Nuke plugin to run code from external applications.
 - Connect more than one client to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
 - WebSocket-ready for browser-based text editors.
-  > Note: WebSocket connection currently does not work for Nuke 14.
+  > Note: WebSocket connection does not work in Nuke 14.
 
 ## 1.2. Client applications
 
@@ -70,7 +70,7 @@ NOTES
 
 NOTES:
 
-- You can troubleshoot the connection with the **Test Receiver** button.
+- You can troubleshoot the connection by using the **Test Receiver** button.
 - If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a random number between `49152` and `65535` and try again. It probably means that you have a connection listening on that port already.
 
 ### 1.4.2. Receive/Send nodes
@@ -93,7 +93,7 @@ NOTES:
 
 ## 1.5. Settings
 
-Accessing the settings can be done from the plugin toolbar.
+You access the settings from the plugin toolbar.
 
 - **Code Execution Engine**: Change the engine that will executing the code.
   - **Nuke Internal**: Nuke `executeInMainThread` function. [**Default**]
@@ -138,7 +138,7 @@ You can find more information and examples on the [wiki page](https://github.com
 
 ## 1.8. Known Issues
 
-- Nuke 14 does not ship QWebSocket modules so the WebSocket connection not enabled.
+- Nuke 14 does not ship with QWebSocket module so the WebSocket connection is not enabled.
 - Creating a modal window with the Nuke internal code execution engine will cause Nuke to freeze. A workaround is to switch to the Script Editor engine.
 - Settings window doesn't display the tooltip text.
 - Changing workspace with an active open connection makes Nuke load a new plugin instance with the default UI state. So it would look as if the previous connection has been closed, whereas in reality is still open and listening. To force close all of the listening connections, you can:
