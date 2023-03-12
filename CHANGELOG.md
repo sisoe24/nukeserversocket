@@ -1,10 +1,23 @@
 # Changelog
 
-## [unreleased]
+## [0.6.0] - 2023-03-12
+
+### Added
+
+* The status log viewers now have a toggle ON/OFF switch.
+* Nuke 14 compatibility.
 
 ### Changed
 
 * Using the Script Editor engine as default for executing code.
+
+### Fixed
+
+* Nuke internal engine executing nested functions now should work.
+
+### Removed
+
+* QWebSocket connection for Nuke 14.
 
 ## [0.5.0] - 2022-02-24
 
