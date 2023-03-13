@@ -1,33 +1,34 @@
 # Files
-.gitignore          export-ignore
-.gitattributes      export-ignore
+.gitignore                 export-ignore
+.gitattributes             export-ignore
 
-.pylintrc           export-ignore
-.python-version     export-ignore
-.deepsource.toml    export-ignore
-poetry.toml         export-ignore
+.pylintrc                  export-ignore
+.python-version            export-ignore
+.deepsource.toml           export-ignore
+.pre-commit-config.yaml    export-ignore
 
-*.lock              export-ignore
+poetry.toml                export-ignore
 
-Pipfile             export-ignore
-requirements.txt    export-ignore
+*.lock                     export-ignore
 
-pytest.ini          export-ignore
+tox.ini                    export-ignore
 
-.coverage*          export-ignore
-coverage*           export-ignore
 
-README.html         export-ignore
-CHANGELOG.md        export-ignore
+.coverage*                 export-ignore
+coverage*                  export-ignore
+
+README.html                export-ignore
+CHANGELOG.md               export-ignore
+
 
 
 # Directories
-.github             export-ignore
-.githooks           export-ignore
-.vscode             export-ignore
-images              export-ignore
-scripts             export-ignore
-tests               export-ignore
+.github                    export-ignore
+.githooks                  export-ignore
+.vscode                    export-ignore
+images                     export-ignore
+scripts                    export-ignore
+tests                      export-ignore
 
 # Source files
 *                   text=auto
