@@ -4,11 +4,11 @@
 name: NukeServerSocket
 
 on:
+  pull_request:
   push:
     branches:
       - 'develop'
       - 'release/**'
-  pull_request
 
 permissions:
   contents: read
