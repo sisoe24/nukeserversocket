@@ -31,6 +31,12 @@
             ],
         },
         {
+            "label": "Pack repo",
+            "type": "shell",
+            "command": "mkdir dist && git archive --format zip --output ${workspaceFolder}/dist/NukeServerSocket.zip main",
+            "problemMatcher": []
+        },
+        {
             "label": "Clean .pyc",
             "type": "shell",
             "command": "find ${workspaceFolder} -type f \\( -name '._*' -o -name '*.pyc' \\) -exec rm {} \\;",
