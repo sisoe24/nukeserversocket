@@ -3,8 +3,7 @@ from textwrap import dedent
 
 import pytest
 
-from src.controllers.nuke_controllers import _BlinkController
-
+from nukeserversocket.controllers.nuke_controllers import _BlinkController
 
 NUKE_CMD = dedent("""
 nodes = [n for n in nuke.allNodes() if "tmp.cpp" == n.name()]
@@ -40,7 +39,7 @@ def test_blink_output(_blink_controller):
 
 def test_blink_wrapper(_blink_controller):
     """Check the blink NUKE_CMD nuke command."""
-    nuke_cmd = _blink_controller._blink_wrapper("TEST CODE")
+    nuke_cmd = _blink_controller._blink_command('TEST CODE')
     assert nuke_cmd == NUKE_CMD
 
 

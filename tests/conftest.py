@@ -3,8 +3,8 @@ import os
 
 import pytest
 
-from src.utils import settings
-from src.run_local import _MainWindowWidget
+from nukeserversocket import settings
+from nukeserversocket.local.run_local import NukeServerSocketLocal
 
 
 def pytest_addoption(parser):
@@ -34,7 +34,7 @@ def pytest_collection_modifyitems(config, items):
     skip_check = pytest.mark.skip(reason='need --checklinks option to run')
 
     for item in items:
-        if "web" in item.keywords:
+        if 'web' in item.keywords:
             item.add_marker(skip_check)
 
 
@@ -75,9 +75,20 @@ def patch_settings(_tmp_settings_file, monkeypatch):
 @pytest.fixture()
 def _main_ui(qtbot):
     """Initialize Main UI Widget."""
-    widget = _MainWindowWidget()
+    settings.AppSettings().setValue('connection_type/tcp', True)
+    widget = NukeServerSocketLocal()
     qtbot.addWidget(widget)
     yield widget.main_app
+
+
+@pytest.fixture()
+def _main_ui_websocket(qtbot):
+    """Initialize Main UI Widget."""
+    settings.AppSettings().setValue('connection_type/websocket', True)
+    widget = NukeServerSocketLocal()
+    qtbot.addWidget(widget)
+    yield widget.main_app
+    settings.AppSettings().setValue('connection_type/websocket', False)
 
 
 @pytest.fixture(autouse=True)

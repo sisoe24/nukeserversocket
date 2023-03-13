@@ -1,2 +1,2 @@
 """This is needed only for Nuke."""
-from . import src
+from . import nukeserversocket

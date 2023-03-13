@@ -6,29 +6,41 @@
         {
             "label": "RunApp",
             "type": "shell",
-            "command": "${config:python.defaultInterpreterPath} -m src.run_local",
             "dependsOn": [
                 "Clean .pyc"
             ],
-            "options": {
-                "env": {
-                    "PYTHONDONTWRITEBYTECODE": "1"
+            "osx": {
+                "command": ".venv/bin/python",
+                "options": {
+                    "env": {
+                        "PYTHONDONTWRITEBYTECODE": "1"
+                    }
                 }
-            }
+            },
+            "windows": {
+                "command": ".venv\\Scripts\\python.exe",
+                "options": {
+                    "env": {
+                        "PYTHONDONTWRITEBYTECODE": "1"
+                    }
+                }
+            },
+            "args": [
+                "-m",
+                "nukeserversocket.local.run_local",
+            ],
+        },
+        {
+            "label": "Pack repo",
+            "type": "shell",
+            "command": "mkdir dist && git archive --format zip --output ${workspaceFolder}/dist/NukeServerSocket.zip main",
+            "problemMatcher": []
         },
         {
             "label": "Clean .pyc",
             "type": "shell",
             "command": "find ${workspaceFolder} -type f \\( -name '._*' -o -name '*.pyc' \\) -exec rm {} \\;",
             "problemMatcher": []
-        },
-        {
-            "label": "Zip Project",
-            "type": "shell",
-            "command": "bash ${workspaceFolder}/scripts/create_zip_project.sh",
-            "dependsOn": [
-                "Clean .pyc"
-            ]
         },
         {
             "label": "Open coverage report",

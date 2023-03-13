@@ -1,12 +1,11 @@
 """Test the _CopyNodesController class."""
 import os
 
-
 import pytest
 
-from src.main import init_settings
-from src.utils import AppSettings
-from src.controllers import nuke_controllers as se
+from nukeserversocket.main import _init_settings
+from nukeserversocket.settings import AppSettings
+from nukeserversocket.controllers import nuke_controllers as se
 
 pytestmark = pytest.mark.controllers
 
@@ -22,7 +21,7 @@ def _transfer_file():
         if os.path.exists(path):
             os.remove(path)
 
-    init_settings()
+    _init_settings()
 
     settings = AppSettings()
     path = settings.value('path/transfer_file')
@@ -56,7 +55,7 @@ def test_nodes_controller_wrapper(_nodes_controller, _transfer_file):
     Wrapper should be a valid stringified nuke command.
     """
     expected = "nuke.nodePaste('{}')".format(_transfer_file)
-    result = _nodes_controller._paste_nodes_wrapper(_transfer_file)
+    result = _nodes_controller._paste_nodes_command(_transfer_file)
 
     assert result == expected
 

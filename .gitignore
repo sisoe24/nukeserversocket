@@ -1,8 +1,11 @@
-other
-dist
-bin
+other/
+dist/
+bin/
+logs/
+
 *tmp
 
+poetry.lock
 
 .DS_Store
 *.pyc
@@ -90,4 +93,3 @@ env.bak/
 venv.bak/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
-

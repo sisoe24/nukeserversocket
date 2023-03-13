@@ -3,18 +3,13 @@ import sys
 import subprocess
 
 import pytest
-from PySide2.QtWidgets import (
-    QPushButton,
-    QPlainTextEdit,
-    QTextEdit,
-    QSplitter,
-    QWidget
-)
+from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
+                               QPlainTextEdit)
 
-from src.controllers import nuke_script_editor
-from src.utils import pyDecoder
-from src.widgets import fake_script_editor as fake_se
-from src.controllers import nuke_controllers as se
+from nukeserversocket.util import pyDecoder
+from nukeserversocket.controllers import nuke_controllers as se
+from nukeserversocket.controllers import nuke_script_editor
+from nukeserversocket.local.fake_script_editor import FakeScriptEditor
 
 
 @pytest.fixture()
@@ -38,7 +33,7 @@ def test_script_editor_is_widget(_nuke_editor):
 
 def test_get_script_editor(_nuke_editor):
     """Check if script editor was found and is a FakeScriptEditor."""
-    assert isinstance(_nuke_editor.script_editor, fake_se.FakeScriptEditor)
+    assert isinstance(_nuke_editor.script_editor, FakeScriptEditor)
 
 
 def test_script_editor_not_found(_nuke_editor):
@@ -50,7 +45,7 @@ def test_script_editor_not_found(_nuke_editor):
 
 def test_get_run_button(_nuke_editor):
     """Check if run button was found and is a QPushButton."""
-    assert isinstance(_nuke_editor._find_run_button('Run'), QPushButton)
+    assert isinstance(_nuke_editor._find_run_button(), QPushButton)
 
 
 def test_find_input_widget(_nuke_editor):
@@ -68,11 +63,6 @@ def test_find_console(_nuke_editor):
     assert isinstance(_nuke_editor._find_console(), QSplitter)
 
 
-def test_run_button_not_found(_nuke_editor):
-    """Check if run button returns None if not found."""
-    assert _nuke_editor._find_run_button('test') is None
-
-
 def test_execute_shortcut(_init_fake_editor):
     """Check if shortcut will execute the code when run button is not found."""
     se_controller = se.ScriptEditorController()
@@ -84,4 +74,4 @@ def test_execute_shortcut(_init_fake_editor):
     se_controller.execute()
 
     code = subprocess.check_output([sys.executable, '-c', input_text])
-    assert se_controller.output() == pyDecoder(code)
+    assert se_controller.output().strip() == pyDecoder(code).strip()

@@ -1,24 +1,55 @@
 [tool.poetry]
 name = "nukeserversocket"
-version = "0.5.0"
-description = ""
+version = "0.6.0"
+description = "A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more."
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
-packages = [
-    { include = "src" },
+
+[tool.isort]
+length_sort = true
+
+[tool.autopep8]
+max_line_length = 90
+
+[tool.coverage.run]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+skip_covered = true
+skip_empty = true
+exclude_lines = [
+    "@abstractmethod",
+    "@abstractproperty",
+    "LOGGER.debug"
 ]
 
+[tool.coverage.paths]
+source = ["src/*"]
+
+[tool.coverage.html]
+directory = "coverage"
+
+[tool.pylint.'MASTER']
+init-hook='import sys; sys.path.append(".")'
+disable = "R0903,E0401,C0103,W0511,R1725,R0205,W0707,E1101,W0212"
+
+[tool.pytest.ini_options]
+testpaths = "tests"
+addopts = "-l --tb=short --strict-markers"
+qt_api = "pyside2"
+
 [tool.poetry.dependencies]
-python = ">=3.6, <=3.7.7"
+python = "~3.7"
 PySide2 = "<=5.12.2"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "~6.2.5"
 pytest-qt = "~4.0.2"
 requests = "~2.26.0"
 pytest-cov = "~3.0.0"
 pytest-randomly = "^3.10.1"
-six = "^1.16.0"
 pytest-repeat = "^0.9.1"
+tox = "^4.1.3"
+pdoc = "^12.3.1"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

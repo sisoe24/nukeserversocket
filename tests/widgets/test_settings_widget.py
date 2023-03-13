@@ -4,31 +4,31 @@ import configparser
 import pytest
 from PySide2.QtWidgets import QCheckBox
 
-from src.widgets.settings_widget import ScriptEditorSettings, CheckBox
+from nukeserversocket.widgets.settings_widget import _ScriptEditorSettings
 
 
 @pytest.fixture()
 def _settings(qtbot, _tmp_settings_file):
     """Initialize the ScriptEditorSettings class."""
-    widget = ScriptEditorSettings()
+    widget = _ScriptEditorSettings()
     qtbot.addWidget(widget)
 
     yield widget
 
 
-def is_enabled(widget):  # type: (CheckBox) -> None
-    """Check if CheckBox widget is enabled."""
+def is_enabled(widget):  # type: (QCheckBox) -> None
+    """Check if QCheckBox widget is enabled."""
     assert widget.isEnabled()
     assert widget.isChecked()
 
 
-def is_disabled(widget):  # type: (CheckBox) -> None
-    """Check if CheckBox widget is disabled."""
+def is_disabled(widget):  # type: (QCheckBox) -> None
+    """Check if QCheckBox widget is disabled."""
     assert not widget.isEnabled()
     assert not widget.isChecked()
 
 
-def test_all_options_are_enabled(_settings):  # type: (ScriptEditorSettings) -> None
+def test_all_options_are_enabled(_settings):  # type: (_ScriptEditorSettings) -> None
     """Test output_to_console enabled settings.
 
     If `console_output` is enable, so it should be for `clear_text` and
@@ -45,7 +45,7 @@ def test_all_options_are_enabled(_settings):  # type: (ScriptEditorSettings) -> 
     is_enabled(_settings._override_input)
 
 
-def test_all_options_are_disabled(_settings):  # type: (ScriptEditorSettings) -> None
+def test_all_options_are_disabled(_settings):  # type: (_ScriptEditorSettings) -> None
     """Test output_to_console enabled settings.
 
     If `console_output` is enable, so it should be for `clear_text` and
@@ -62,7 +62,7 @@ def test_all_options_are_disabled(_settings):  # type: (ScriptEditorSettings) ->
     is_disabled(_settings._override_input)
 
 
-def test_output_console_is_true(_settings):  # type: (ScriptEditorSettings) -> None
+def test_output_console_is_true(_settings):  # type: (_ScriptEditorSettings) -> None
     """Test output_to_console enabled settings.
 
     If `console_output` is enable, so it should be for `clear_text` and
@@ -77,7 +77,7 @@ def test_output_console_is_true(_settings):  # type: (ScriptEditorSettings) -> N
     is_enabled(_settings._show_unicode)
 
 
-def test_output_console_is_false(_settings):  # type: (ScriptEditorSettings) -> None
+def test_output_console_is_false(_settings):  # type: (_ScriptEditorSettings) -> None
     """Test console_output disabled settings.
 
     If `console_output` is disabled, so it should be for the other sub options.
@@ -91,7 +91,7 @@ def test_output_console_is_false(_settings):  # type: (ScriptEditorSettings) -> 
     is_disabled(_settings._show_unicode)
 
 
-def test_format_text_is_false(_settings):  # type: (ScriptEditorSettings) -> None
+def test_format_text_is_false(_settings):  # type: (_ScriptEditorSettings) -> None
     """Test format text disabled setting.
 
     If `format_text` is disabled so it should be for other sub options.

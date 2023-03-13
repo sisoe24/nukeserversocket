@@ -8,11 +8,11 @@ import os
 import re
 
 import pytest
+from PySide2.QtWidgets import QCheckBox, QRadioButton
 
-from PySide2.QtWidgets import QRadioButton
-from src.widgets.settings_widget import (
-    _format_name, SettingsWidget, CheckBox, ScriptEditorSettings
-)
+from nukeserversocket.widgets.settings_widget import (SettingsWidget,
+                                                      _format_name,
+                                                      _ScriptEditorSettings)
 
 pytestmark = pytest.mark.settings_name
 
@@ -29,7 +29,7 @@ def _uses_settings(file):
 
 def _traverse_dir(package):
     """Traverse the package directory in search for a python file."""
-    for dirpath, _, filenames in os.walk(package):
+    for dirpath, _, filenames in os.walk(os.path.join(package, 'nukeserversocket')):
         for filename in filenames:
             fp = os.path.join(dirpath, filename)
             if filename.endswith('py') and _uses_settings(fp):
@@ -78,12 +78,12 @@ def _options_name(qtbot):
     widget = SettingsWidget()
     qtbot.addWidget(widget)
 
-    checkboxes = widget.findChildren(CheckBox)
+    checkboxes = widget.findChildren(QCheckBox)
     options_names = [_format_name(_.text()) for _ in checkboxes]
 
     # add the groupbox title name since it being used as a setting value
     options_names.append(_format_name(
-        ScriptEditorSettings().title()))
+        _ScriptEditorSettings().title()))
 
     return options_names
 

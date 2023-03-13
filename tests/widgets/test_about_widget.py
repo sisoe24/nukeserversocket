@@ -1,13 +1,14 @@
 """Test about widget."""
 import os
+import re
 import platform
 
 import pytest
 import requests
 
-from src import about
-from src.utils import pyEncoder
-from src.widgets import about_widget
+from nukeserversocket import about
+from nukeserversocket.util import pyEncoder
+from nukeserversocket.widgets import about_widget
 
 
 def test_get_about_key():
@@ -19,7 +20,7 @@ def test_get_about_key():
 def test_about_python_version():
     """Python version should be 3.7.7 for nuke 13 or 2.7.16 for nuke11/12."""
     version = about.get_about_key('Python')
-    assert version <= '3.7.7'
+    assert re.match(r'3\.7.\d{1,2}', version)
 
 
 def test_get_about_missing_key():
@@ -62,14 +63,14 @@ def test_about_form(_about_widget):
 
     for index, item in enumerate(about_list):
         _widget = _about_widget._form_layout.itemAt(index).widget()
-        assert item == _widget.text()
+        assert item in _widget.text()
 
 
 def test_about_grid(_about_widget):
     """Test if grid layout has the proper about information."""
     for index, link in enumerate(LINKS):
         _widget = _about_widget._grid_layout.itemAt(index).widget()
-        assert _widget.text() == link.label
+        assert link.label in _widget.text()
         assert _widget.property('link') == link.repr
 
 

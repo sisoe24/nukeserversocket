@@ -1,264 +1,225 @@
-<!DOCTYPE html>
-<html>
-
-<head>
-  <title>README.md</title>
-  <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-
-  <script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
-</head>
-
-<body>
-  <script>
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
-        ? 'dark'
-        : 'default'
-    });
-  </script>
-  
-  <h1 id="1-nukeserversocket-readme">1. NukeServerSocket README</h1>
-  
-  <p><a href="https://github.com/sisoe24/NukeServerSocket/releases"><img
-        src="https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable" alt="Main Build"></a>
-    <a href="https://github.com/sisoe24/NukeServerSocket/releases"><img
-        src="https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&amp;include_prereleases"
-        alt="Pre Release"></a>
-    <img src="https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket" alt="Last commit">
-  </p>
-  <p><a href="https://github.com/sisoe24/NukeServerSocket/issues"><img
-        src="https://img.shields.io/github/issues/sisoe24/NukeServerSocket" alt="issues"></a>
-    <a href="https://github.com/sisoe24/NukeServerSocket/pulls"><img
-        src="https://img.shields.io/github/issues-pr/sisoe24/NukeServerSocket" alt="pull-request"></a>
-  </p>
-  <p><a
-      href="https://www.codacy.com/gh/sisoe24/NukeServerSocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/NukeServerSocket&amp;utm_campaign=Badge_Grade"><img
-        src="https://app.codacy.com/project/badge/Grade/5b59bd7f80c646a8b2b16ad4b8cba599" alt="Codacy Badge"></a>
-    <a
-      href="https://www.codacy.com/gh/sisoe24/NukeServerSocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/NukeServerSocket&amp;utm_campaign=Badge_Coverage"><img
-        src="https://app.codacy.com/project/badge/Coverage/5b59bd7f80c646a8b2b16ad4b8cba599" alt="Codacy Badge"></a>
-    <a href="https://deepsource.io/gh/sisoe24/NukeServerSocket/?ref=repository-badge"><img
-        src="https://deepsource.io/gh/sisoe24/NukeServerSocket.svg/?label=active+issues&amp;show_trend=true&amp;token=D3BtO5z54YqAh2Fn2pTf9JKB"
-        alt="DeepSource"></a>
-  </p>
-  <p><a href="https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE"><img
-        src="https://img.shields.io/github/license/sisoe24/NukeServerSocket" alt="license"></a></p>
-  <p><img src="https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success" alt="x">
-    <img src="https://img.shields.io/badge/Nuke-11_|_12_|13-yellow" alt="x">
-  </p>
-  <p>A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more.</p>
-  <ul>
-    <li><a href="#1-nukeserversocket-readme">1. NukeServerSocket README</a>
-      <ul>
-        <li><a href="#11-client-applications">1.1. Client applications</a></li>
-        <li><a href="#12-features">1.2. Features</a></li>
-        <li><a href="#13-installation">1.3. Installation</a></li>
-        <li><a href="#14-usage">1.4. Usage</a>
-          <ul>
-            <li><a href="#141-receive-incoming-request">1.4.1. Receive incoming request</a></li>
-            <li><a href="#142-receivesend-nodes">1.4.2. Receive/Send nodes</a>
-              <ul>
-                <li><a href="#1421-send">1.4.2.1. Send</a></li>
-                <li><a href="#1422-receive">1.4.2.2. Receive</a></li>
-              </ul>
-            </li>
-          </ul>
-        </li>
-        <li><a href="#15-settings">1.5. Settings</a></li>
-        <li><a href="#16-extendibility">1.6. Extendibility</a></li>
-        <li><a href="#17-test-plugin-locally">1.7. Test plugin locally</a></li>
-        <li><a href="#18-known-issues">1.8. Known Issues</a></li>
-        <li><a href="#19-compatibility">1.9. Compatibility</a></li>
-        <li><a href="#110-demo">1.10. Demo</a></li>
-      </ul>
-    </li>
-  </ul>
-  <h1 id="1-nukeserversocket-readme">Changelog</h1>
-  <h2>v0.5.0 2022-02-25</h2>
-  <li>WebSocket communication protocol for browser-based text editors.</li>
-  <li>Fixed: Python2 code execution when using the Nuke Internal engine..</li>
-
-  <h2>v0.4.1 2022-02-18</h2>
-  <li>Switch code execution engine settings.</li>
-
-  <h2>v0.4.0 2022-02-17</h2>
-  <li>Intercept exceptions inside Nuke's thread to extension output.</li>
-  <li>Configurable timeout settings.</li>
-  <li>Display timeout timers in UI.</li>
-
-  <h2>v0.3.0 2022-02-06</h2>
-  <li>Various fixes and optimizations for code execution.</li>
-
-  <h2>v0.2.0 2021-10-29</h2>
-  <li>Connections timeouts.</li>
-  <li>Various fixes and optimizations.</li>
-
-  <h2>v0.1.0 2021-09-23</h2>
-  <li>Execute BlinkScript code.</li>
-  <li>Send/Receive Nodes from another instance.</li>
-  <li>New About widget.</li>
-  <li>API now accepts also simple strings when sending a request.</li>
-  <li>Under the hood optimizations.</li>
-  <h2 id="11-client-applications">1.1. Client applications</h2>
-  <p>Client applications that can use NukeServerSocket:</p>
-  <ul>
-    <li><a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a> - Visual
-      Studio Code extension.</li>
-    <li><a href="https://packagecontrol.io/packages/NukeToolsST">Nuke Tools ST</a> - Sublime Text package.</li>
-    <li><a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket">DCC WebSocket</a> -
-      Visual Studio Code Web extension.</li>
-  </ul>
-  <h2 id="12-features">1.2. Features</h2>
-  <ul>
-    <li>Send Python or BlinkScript code to be executed inside Nuke from your local network.</li>
-    <li>Multiple computers can connect to the same Nuke instance.</li>
-    <li>Receive/Send nodes from another Nuke instance in your local network.</li>
-    <li>Not bound to any application. (more on <a href="#16-extendibility">Extendibility</a>)</li>
-    <li>WebSocket compatible for browser-based text editors.</li>
-  </ul>
-  <h2 id="13-installation">1.3. Installation</h2>
-  <p>Save the plugin in your <em>.nuke</em> directory or in a custom directory and then
-    <code>import NukeServerSocket</code> in your <em>menu.py</em>.<br>
-    <strong>Remember</strong>: If you use a custom plugin path, add the path in your init.py:
-    <code>nuke.pluginAddPath('custom/path')</code>.
-  </p>
-  <blockquote>
-    <p>N.B. if your downloaded zip folder has a different name (NukeServerSocket-master, NukeServerSocket-0.0.2 etc._),
-      then you <strong>need to rename it to just NukeServerSocket</strong>.</p>
-  </blockquote>
-  <h2 id="14-usage">1.4. Usage</h2>
-  <h3 id="141-receive-incoming-request">1.4.1. Receive incoming request</h3>
-  <p><a href="#1101-execute-code">Demo</a></p>
-  <p>Open the <em>NukeServerSocket</em> panel and with the mode on <strong>Receiver</strong>, start the server by
-    clicking <strong>Connect</strong>.</p>
-  <blockquote>
-    <p>If you receive a message: &quot;<em>Server did not initiate. Error: The bound address is already in
-        use</em>&quot;, just change the <strong>Port</strong> to a random number between <code>49152</code> and
-      <code>65535</code> and try again. It means that probably you have a connection listening on that port already.
-      Also when connected, you could test the receiver with the <strong>Test Receiver</strong> button.</p>
-  </blockquote>
-  <p>When connected, NukeServerSocket will listen for incoming request on the IP Address and Port shown in the plugin.
-  </p>
-  <p>Now you can send code from Visual Studio Code with <a
+<h1 id="1-nukeserversocket-readme">1. NukeServerSocket README</h1>
+<p><a href="https://github.com/sisoe24/NukeServerSocket/releases"><img
+      src="https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable" alt="Main Build"></a>
+  <a href="https://github.com/sisoe24/NukeServerSocket/releases"><img
+      src="https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&amp;include_prereleases"
+      alt="Pre Release"></a>
+  <img src="https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket" alt="Last commit">
+</p>
+<p><a href="https://github.com/sisoe24/NukeServerSocket/issues"><img
+      src="https://img.shields.io/github/issues/sisoe24/NukeServerSocket" alt="issues"></a>
+  <a href="https://github.com/sisoe24/NukeServerSocket/pulls"><img
+      src="https://img.shields.io/github/issues-pr/sisoe24/NukeServerSocket" alt="pull-request"></a>
+</p>
+<p><a
+    href="https://www.codacy.com/gh/sisoe24/NukeServerSocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/NukeServerSocket&amp;utm_campaign=Badge_Grade"><img
+      src="https://app.codacy.com/project/badge/Grade/5b59bd7f80c646a8b2b16ad4b8cba599" alt="Codacy Badge"></a>
+  <a
+    href="https://www.codacy.com/gh/sisoe24/NukeServerSocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/NukeServerSocket&amp;utm_campaign=Badge_Coverage"><img
+      src="https://app.codacy.com/project/badge/Coverage/5b59bd7f80c646a8b2b16ad4b8cba599" alt="Codacy Badge"></a>
+  <a href="https://deepsource.io/gh/sisoe24/NukeServerSocket/?ref=repository-badge"><img
+      src="https://deepsource.io/gh/sisoe24/NukeServerSocket.svg/?label=active+issues&amp;show_trend=true&amp;token=D3BtO5z54YqAh2Fn2pTf9JKB"
+      alt="DeepSource"></a>
+</p>
+<p><a href="https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE"><img
+      src="https://img.shields.io/github/license/sisoe24/NukeServerSocket" alt="license"></a></p>
+<p><img src="https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success" alt="x">
+  <img src="https://img.shields.io/badge/Nuke-11_|_12_|_13_|_14-yellow" alt="x">
+</p>
+<p>A Nuke plugin to run code from external applications.</p>
+<ul>
+  <li><a href="#1-nukeserversocket-readme">1. NukeServerSocket README</a>
+    <ul>
+      <li><a href="#11-features">1.1. Features</a></li>
+      <li><a href="#12-client-applications">1.2. Client applications</a></li>
+      <li><a href="#13-installation">1.3. Installation</a></li>
+      <li><a href="#14-usage">1.4. Usage</a>
+        <ul>
+          <li><a href="#141-execute-code">1.4.1. Execute code</a></li>
+          <li><a href="#142-receivesend-nodes">1.4.2. Receive/Send nodes</a></li>
+        </ul>
+      </li>
+      <li><a href="#15-settings">1.5. Settings</a></li>
+      <li><a href="#16-extendibility">1.6. Extendibility</a></li>
+      <li><a href="#17-test-plugin-locally">1.7. Test plugin locally</a></li>
+      <li><a href="#18-known-issues">1.8. Known Issues</a></li>
+      <li><a href="#19-compatibility">1.9. Compatibility</a></li>
+    </ul>
+  </li>
+</ul>
+<h2 id="1-1-features">1.1. Features</h2>
+<ul>
+  <li>Receive Python or BlinkScript code from any client in your local network. (More on <a
+      href="#16-extendibility">Extendibility</a>)</li>
+  <li>Connect more than one client to the same Nuke instance.</li>
+  <li>Receive/Send nodes from another Nuke instance in your local network.</li>
+  <li>WebSocket-ready for browser-based text editors.<blockquote>
+      <p>Note: WebSocket connection does not work in Nuke 14.</p>
+    </blockquote>
+  </li>
+</ul>
+<h2 id="1-2-client-applications">1.2. Client applications</h2>
+<p>Client applications that use NukeServerSocket:</p>
+<ul>
+  <li><a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a> - Visual
+    Studio Code extension.</li>
+  <li><a href="https://packagecontrol.io/packages/NukeToolsST">Nuke Tools ST</a> - Sublime Text package.</li>
+  <li><a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket">DCC WebSocket</a> - Visual
+    Studio Code Web extension.</li>
+</ul>
+<h2 id="1-3-installation">1.3. Installation</h2>
+<ol>
+  <li>Download the repository via the <a href="https://github.com/sisoe24/NukeServerSocket/releases">releases page</a>
+    or by cloning it from GitHub.</li>
+  <li>Place the folder inside the <em>~/.nuke</em> directory or into a custom one.</li>
+  <li>Write <code>import NukeServerSocket</code> into your <em>menu.py</em>.</li>
+</ol>
+<p>NOTES</p>
+<ul>
+  <li>If you use a custom plugin path, add the path in your init.py:
+    <code>nuke.pluginAddPath(&#39;custom/path&#39;)</code></li>
+  <li>The folder name must be named <strong>NukeServerSocket</strong>.</li>
+  <li>If you use <a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a>,
+    use the command <code>Nuke Tools: Add NukeServerSocket</code>.</li>
+</ul>
+<h2 id="1-4-usage">1.4. Usage</h2>
+<h3 id="1-4-1-execute-code">1.4.1. Execute code</h3>
+<p><img src="images/execute_code.gif" alt="Execute Code"></p>
+<ol>
+  <li>Open the NukeServerSocket panel inside Nuke, and with the mode on <strong>Receiver</strong>, start the server by
+    clicking <strong>Connect</strong>.</li>
+  <li>You can now send code from Visual Studio Code with <a
       href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a> or any other
-    method you prefer.</p>
-  <h3 id="142-receivesend-nodes">1.4.2. Receive/Send nodes</h3>
-  <p><a href="#1102-send-nodes">Demo</a></p>
-  <h4 id="1421-send">1.4.2.1. Send</h4>
-  <p>When sending nodes, switch the mode from <strong>Receiver</strong> to <strong>Sender</strong> and be sure that
-    there is another NukeServerSocket instance listening for incoming network request (<a
-      href="#141-receive-incoming-request">Receive incoming request</a>). Select the nodes you want to send a click
-    <strong>Send Selected Nodes</strong>.</p>
-  <blockquote>
-    <p>By default, the IP Address on the sender points to the local IP address, so, if you want to send nodes between
-      the same computer, you should only specify the Port. When sending nodes to another computer, you will also need to
-      specify the IP Address of the computer you want to send the nodes.</p>
-  </blockquote>
-  <h4 id="1422-receive">1.4.2.2. Receive</h4>
-  <p>When receiving nodes just follow the steps for <a href="#141-receive-incoming-request">Receive incoming request</a>
-    for the receiving instance and the <a href="#1421-send">Send</a> steps for the sending instance.</p>
-  <h2 id="15-settings">1.5. Settings</h2>
-  <p>The settings can be accessed from the plugin toolbar</p>
-  <ul>
-    <li>
-      <p><strong>Code Execution Engine</strong>: Change the engine that is executing the code.</p>
+    method you prefer.</li>
+</ol>
+<p>NOTES:</p>
+<ul>
+  <li>You can troubleshoot the connection by using the <strong>Test Receiver</strong> button.</li>
+  <li>If you receive a message: &quot;<em>Server did not initiate. Error: The bound address is already in
+      use</em>&quot;, change the <strong>port</strong> to a random number between <code>49152</code> and
+    <code>65535</code> and try again. It probably means that you have a connection listening on that port already.</li>
+</ul>
+<h3 id="1-4-2-receive-send-nodes">1.4.2. Receive/Send nodes</h3>
+<p><img src="images/send_nodes.gif" alt="Send Nodes"></p>
+<ul>
+  <li>
+    <p>Receive nodes</p>
+    <p> When receiving nodes, start the server with the mode on <strong>Receiver</strong>.</p>
+  </li>
+  <li>
+    <p>Sending nodes</p>
+    <ol>
+      <li>Switch the mode from <strong>Receiver</strong> to <strong>Sender</strong> and be sure that there is another
+        NukeServerSocket instance listening for incoming network requests.</li>
+      <li>Select the nodes you wish to send a click <strong>Send Selected Nodes</strong>.</li>
+    </ol>
+  </li>
+</ul>
+<p>NOTES:</p>
+<ul>
+  <li>When sending nodes to the same computer, only the <strong>Port</strong> value must match the two Nuke instances.
+  </li>
+  <li>When sending nodes between different computers, both <strong>IP Address</strong> and <strong>Port</strong> must
+    match the two Nuke instances.</li>
+</ul>
+<h2 id="1-5-settings">1.5. Settings</h2>
+<p>You access the settings from the plugin toolbar.</p>
+<ul>
+  <li>
+    <p><strong>Code Execution Engine</strong>: Change the engine that will executing the code.</p>
+    <ul>
+      <li><strong>Nuke Internal</strong>: Nuke <code>executeInMainThread</code> function. [<strong>Default</strong>]
+      </li>
+      <li><strong>Script Editor</strong>: Nuke Script Editor widget.</li>
+    </ul>
+    <blockquote>
+      <p>Why use one over the other?</p>
       <ul>
-        <li><strong>Nuke Internal</strong>: Nuke <code>executeInMainThread</code> function.</li>
-        <li><strong>Script Editor</strong>: Nuke Script Editor widget.</li>
+        <li>Nuke Internal is a more direct and fast approach, but it uses <code>exec</code> under the hood, which might
+          cause some issues.</li>
+        <li>Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.</li>
       </ul>
-    </li>
-    <li>
-      <p><strong>Connection Type</strong>: Change the internal connection protocol for the client-server.</p>
-      <ul>
-        <li><strong>TCP</strong>: The default type of connection. If unsure, use this.</li>
-        <li><strong>WebSocket</strong>: Similar to the TCP, allows two-way interactive communication session between the
-          user's browser and the internal server. Use this when using a browser-based text editor.</li>
-      </ul>
-      <blockquote>
-        <p>Changing connection type while connected, could cause some errors.</p>
-      </blockquote>
-    </li>
-    <li>
-      <p><strong>Mirror To Script Editor</strong>: Allows to mirror the input/output code to the internal script editor.
-      </p>
-      <ul>
-        <li><strong>Override Output Editor</strong>: Mirror output to the internal script editor.</li>
-        <li><strong>Format Text</strong>: The script editor output window will received a formatted version of the code
-          result.</li>
-        <li><strong>Clear Output</strong>: The script editor output window will clear the code after each execution.
-        </li>
-        <li><strong>Show File Path</strong>: The script editor output window will display the full file path of the file
-          being executed.</li>
-        <li><strong>Show Unicode</strong>: The script editor output window will display a unicode character `` that
-          indicates the start of the code execution result.</li>
-        <li><strong>Override Input Editor</strong>: Mirror input to the internal script editor.</li>
-      </ul>
-    </li>
-    <li>
-      <p><strong>Timeout</strong>: Terminate the connection when the server is inactive or it wasn't able to establish a
-        successful connection, in the time specified.</p>
-      <ul>
-        <li><strong>Server</strong>: Set the timeout when clicking the <strong>Connect</strong> button. Defaults to
-          <code>10</code> minutes.</li>
-        <li><strong>Receiver</strong>: Set the timeout for when clicking the <strong>Test Receiver</strong> button.
-          Defaults to <code>10</code> seconds.</li>
-        <li><strong>Send Nodes</strong>: Set the timeout when clicking <strong>Send Nodes</strong> button. Defaults to
-          <code>30</code> seconds.</li>
-      </ul>
-    </li>
-  </ul>
-  <h2 id="16-extendibility">1.6. Extendibility</h2>
-  <p>At its core, the plugin is just a server socket that awaits for an incoming request,
-    performs the operations inside Nuke and returns the result. Nothing ties it to any
-    application per se.</p>
-  <p>This makes it very easy to implement a new client, without the need to modify NukeServerSocket source code. The
-    client needs only to send the data at the specified address inside NukeServerSocket.</p>
-  <p>More information and examples on the <a
-      href="https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client">wiki page</a>.</p>
-  <h2 id="17-test-plugin-locally">1.7. Test plugin locally</h2>
-  <p>The plugin can be launched locally outside the Nuke application. This is useful for testing code and implementing
-    new features more rapidly.</p>
-  <p>More information on the <a href="https://github.com/sisoe24/NukeServerSocket/wiki/Test-Plugin-locally">wiki
-      page</a>.</p>
-  <h2 id="18-known-issues">1.8. Known Issues</h2>
-  <ul>
-    <li>Creating a modal window with the Nuke internal code execution engine, will cause Nuke to freeze. A workaround is
-      to switch to the Script Editor engine.</li>
-    <li>Settings window doesn't display the tooltip text.</li>
-    <li>When changing workspace with an active open connection, Nuke will load a new plugin instance with the default UI
-      state. This would look as if the previous connection has been closed, where in reality is still open and
-      listening. One way to force close all of the connections is to restart Nuke, or you can wait for the connection
-      timeout.</li>
-  </ul>
-  <h2 id="19-compatibility">1.9. Compatibility</h2>
-  <p>Nuke version: 11,12, 13.</p>
-  <blockquote>
-    <p>Because Nuke 11 uses an early version of PySide2, future compatibility is not a guarantee.</p>
-  </blockquote>
-  <p>While it should work the same on all platforms, it has been currently only tested on:</p>
-  <ul>
-    <li>Linux:
-      <ul>
-        <li>CentOS 8</li>
-      </ul>
-    </li>
-    <li>MacOS:
-      <ul>
-        <li>Mojave 10.14.06</li>
-        <li>Catalina 10.15.07</li>
-      </ul>
-    </li>
-    <li>Windows 10</li>
-  </ul>
-  <h2 id="110-demo">1.10. Demo</h2>
-  <p>Execute code from Visual Studio Code</p>
-  <p><img src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/execute_code.gif?raw=true"
-      alt="Execute Code"></p>
-  <p>Send nodes</p>
-  <p><img src="https://github.com/sisoe24/NukeServerSocket/blob/main/images/send_nodes.gif?raw=true" alt="Send Nodes">
-  </p>
-
-</body>
-
-</html>
+    </blockquote>
+  </li>
+  <li>
+    <p><strong>Connection Type</strong>: Change the internal connection protocol for the client-server <strong>(Not
+        present in Nuke 14, which defaults to TCP)</strong>.</p>
+    <ul>
+      <li><strong>TCP</strong>: The default type of connection. If unsure, use this. [<strong>Default</strong>]</li>
+      <li><strong>WebSocket</strong>: This allows a two-way interactive communication session between the user&#39;s
+        browser and the internal server. Use this when using a browser-based text editor.</li>
+    </ul>
+  </li>
+  <li>
+    <p><strong>Mirror To Script Editor</strong>: Allows mirroring the input/output code to the internal script editor.
+    </p>
+    <ul>
+      <li><strong>Override Output Editor</strong>: Mirror output to the internal script editor.</li>
+      <li><strong>Format Text</strong>: The script editor output window will receive a formatted version of the code
+        result.</li>
+      <li><strong>Clear Output</strong>: The script editor output window will clear the code after each execution.</li>
+      <li><strong>Show File Path</strong>: The script editor output window will display the full path for the executed
+        file.</li>
+      <li><strong>Show Unicode</strong>: The script editor output window will display a Unicode character `` that
+        indicates the start of the code execution result.</li>
+      <li><strong>Override Input Editor</strong>: Mirror input to the internal script editor.</li>
+    </ul>
+  </li>
+  <li>
+    <p><strong>Timeout</strong>: Terminate the connection when the Server is inactive or did not establish a successful
+      contact in the time specified.</p>
+    <ul>
+      <li><strong>Server</strong>: Set the Timeout when clicking the <strong>Connect</strong> button. The default value
+        is <code>10</code> minutes.</li>
+      <li><strong>Receiver</strong>: Set the Timeout for when clicking the <strong>Test Receiver</strong> button. The
+        default value is <code>10</code> seconds.</li>
+      <li><strong>Send Nodes</strong>: Set the Timeout when clicking <strong>Send Nodes</strong> button. The default
+        value is <code>30</code> seconds.</li>
+    </ul>
+  </li>
+</ul>
+<h2 id="1-6-extendibility">1.6. Extendibility</h2>
+<p>At its core, the plugin is just a server socket that waits for an incoming request,
+  performs the operations inside Nuke, and returns the result. Nothing ties it to any application per se.</p>
+<p>This makes it very easy to implement a new client, without the need to modify the NukeServerSocket source code. The
+  client needs only to send the data at the specified address inside NukeServerSocket.</p>
+<p>You can find more information and examples on the <a
+    href="https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client">wiki page</a>.</p>
+<h2 id="1-7-test-plugin-locally">1.7. Test plugin locally</h2>
+<p>You can run the plugin locally outside the Nuke application. This method is handy for testing code and implementing
+  new features faster.</p>
+<p>You can find more information and examples on the <a
+    href="https://github.com/sisoe24/NukeServerSocket/wiki/Test-Plugin-locally">wiki page</a>.</p>
+<h2 id="1-8-known-issues">1.8. Known Issues</h2>
+<ul>
+  <li>Nuke 14 does not ship with QWebSocket module so the WebSocket connection is not enabled.</li>
+  <li>Creating a modal window with the Nuke internal code execution engine will cause Nuke to freeze. A workaround is to
+    switch to the Script Editor engine.</li>
+  <li>Settings window doesn&#39;t display the tooltip text.</li>
+  <li>Changing workspace with an active open connection makes Nuke load a new plugin instance with the default UI state.
+    So it would look as if the previous connection has been closed, whereas in reality is still open and listening. To
+    force close all of the listening connections, you can:<ul>
+      <li>Restart the Nuke instance.</li>
+      <li>Wait for the connection timeout.</li>
+    </ul>
+  </li>
+</ul>
+<h2 id="1-9-compatibility">1.9. Compatibility</h2>
+<p>Nuke version: 11,12, 13, 14</p>
+<blockquote>
+  <p>Because Nuke 11 uses an early version of PySide2, future compatibility is not a guarantee.</p>
+</blockquote>
+<p>While it should work the same on all platforms, I have tested the plugin only on:</p>
+<ul>
+  <li>Linux:<ul>
+      <li>CentOS 8</li>
+    </ul>
+  </li>
+  <li>macOS:<ul>
+      <li>Mojave 10.14.06</li>
+      <li>Catalina 10.15.07</li>
+      <li>Monterey 12.6.3</li>
+    </ul>
+  </li>
+  <li>Windows 10</li>
+</ul>
