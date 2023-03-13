@@ -5,9 +5,10 @@ name: NukeServerSocket
 
 on:
   push:
-    branches: [ "develop" ]
-  pull_request:
-    branches: [ "release/**" ]
+    branches:
+      - 'develop'
+      - 'release/**'
+  pull_request
 
 permissions:
   contents: read
