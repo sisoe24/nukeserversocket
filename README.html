@@ -26,6 +26,19 @@
 <p><img src="https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success" alt="x">
   <img src="https://img.shields.io/badge/Nuke-11_|_12_|_13_|_14-yellow" alt="x">
 </p>
+
+<hr>
+<a href="https://github.com/sisoe24/NukeServerSocket/blob/main/CHANGELOG.md">
+  <h1 id="1-nukeserversocket-readme">Changelog</h1>
+</a>
+<h2>v0.6.0 2023-03-12</h2>
+<ul>
+  <li>Fixed Nuke 14 compatibility issues by removing WebSocket connection.</li>
+  <li>Switchable log panels.</li>
+  <li>Under the hood refactoring.</li>
+</ul>
+<hr>
+
 <p>A Nuke plugin to run code from external applications.</p>
 <ul>
   <li><a href="#1-nukeserversocket-readme">1. NukeServerSocket README</a>
@@ -77,7 +90,8 @@
 <p>NOTES</p>
 <ul>
   <li>If you use a custom plugin path, add the path in your init.py:
-    <code>nuke.pluginAddPath(&#39;custom/path&#39;)</code></li>
+    <code>nuke.pluginAddPath(&#39;custom/path&#39;)</code>
+  </li>
   <li>The folder name must be named <strong>NukeServerSocket</strong>.</li>
   <li>If you use <a href="https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools">Nuke Tools</a>,
     use the command <code>Nuke Tools: Add NukeServerSocket</code>.</li>
@@ -97,7 +111,8 @@
   <li>You can troubleshoot the connection by using the <strong>Test Receiver</strong> button.</li>
   <li>If you receive a message: &quot;<em>Server did not initiate. Error: The bound address is already in
       use</em>&quot;, change the <strong>port</strong> to a random number between <code>49152</code> and
-    <code>65535</code> and try again. It probably means that you have a connection listening on that port already.</li>
+    <code>65535</code> and try again. It probably means that you have a connection listening on that port already.
+  </li>
 </ul>
 <h3 id="1-4-2-receive-send-nodes">1.4.2. Receive/Send nodes</h3>
 <p><img src="images/send_nodes.gif" alt="Send Nodes"></p>
