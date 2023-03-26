@@ -27,8 +27,9 @@
             },
             "args": [
                 "-m",
-                "nukeserversocket.local.run_local",
+                "nukeserversocket.local.run_local"
             ],
+            "problemMatcher": []
         },
         {
             "label": "Pack repo",
@@ -45,12 +46,12 @@
         {
             "label": "Open coverage report",
             "type": "shell",
-            "command": "open coverage/index.html",
+            "command": "open coverage/index.html"
         },
         {
             "label": "Create coverage report",
             "type": "shell",
-            "command": "${config:python.defaultInterpreterPath} -m pytest --cov=src --cov-report html --cov-report term:skip-covered",
+            "command": "${config:python.defaultInterpreterPath} -m pytest --cov=src --cov-report html --cov-report term:skip-covered"
         }
     ]
 }
