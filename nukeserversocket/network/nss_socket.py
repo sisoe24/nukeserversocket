@@ -11,7 +11,7 @@ from PySide2.QtNetwork import QTcpSocket
 from ..util import validate_output
 from ..widgets import Timer
 from ..settings import AppSettings
-from ..controllers import CodeEditor
+from ..controllers import ExecutionController
 from .data_to_code import DataCode, InvalidData
 
 LOGGER = logging.getLogger('nukeserversocket')
@@ -197,10 +197,10 @@ class QSocket(QObject):
             self._invalid_data(err)
             return
 
-        editor = CodeEditor(msg_data)
-        editor.controller.execution_error.connect(self.execution_error.emit)
-        editor.controller.execution_error.connect(self.state_changed.emit)
-        output_text = editor.execute()
+        code = ExecutionController(msg_data)
+        code.on_error.connect(self.execution_error.emit)
+        code.on_error.connect(self.state_changed.emit)
+        output_text = code.execute()
 
         LOGGER.debug('QSocket :: sending message back.')
         self.socket.write(output_text)
