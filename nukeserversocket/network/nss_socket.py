@@ -197,10 +197,10 @@ class QSocket(QObject):
             self._invalid_data(err)
             return
 
-        code = ExecutionController(msg_data)
+        code = ExecutionController()
         code.on_error.connect(self.execution_error.emit)
         code.on_error.connect(self.state_changed.emit)
-        output_text = code.execute()
+        output_text = code.execute(msg_data)
 
         LOGGER.debug('QSocket :: sending message back.')
         self.socket.write(output_text)

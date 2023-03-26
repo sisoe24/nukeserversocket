@@ -318,11 +318,21 @@ class _CopyNodesController(_ExecuteCodeController, object):
         return 'Nodes received.'
 
 
+def controllers_factory(data):
+    file = data.file
+    _, file_ext = os.path.splitext(file)
+
+    if file_ext in ('.cpp', '.blink'):
+        return _BlinkController(file)
+
+    return _CopyNodesController() if file_ext == '.tmp' else _PyController(file)
+
+
 class ExecutionController(QObject):
     """Base class for the script editor controllers."""
     on_error = Signal(str)
 
-    def __init__(self, data):  # type: (DataCode) -> None
+    def __init__(self):
         """Init method for the ExecutionController class.
 
         Initialize the controller class based on the type of data received.
@@ -331,35 +341,23 @@ class ExecutionController(QObject):
             data (DataCode): DataCode object.
         """
         super().__init__()
-        self.data = data
 
-        file = data.file
-        _, file_ext = os.path.splitext(file)
-
-        if file_ext in ('.cpp', '.blink'):
-            self._controller = _BlinkController(file)
-
-        elif file_ext == '.tmp':
-            self._controller = _CopyNodesController()
-
-        else:
-            self._controller = _PyController(file)
-
-        self._controller.on_error.connect(self.on_error)
-
-    def execute(self):  # type: () -> str
+    def execute(self, data):  # type: (DataCode) -> str
         """Execute controller function.
 
         The function sets the controller input text and executes it. Once
         done, it will return the output and restore the script editor state.
         """
-        self._controller.set_input(self.data.text)
-        self._controller.execute()
+        controller = controllers_factory(data)
+        controller.on_error.connect(self.on_error)
+
+        controller.set_input(data.text)
+        controller.execute()
 
         if (
-            isinstance(self._controller, _PyController) and
+            isinstance(controller, _PyController) and
             AppSettings().get_bool('options/mirror_to_script_editor')
         ):
-            self._controller.to_console()
+            controller.to_console()
 
-        return self._controller.output()
+        return controller.output()
