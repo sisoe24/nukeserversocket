@@ -41,7 +41,7 @@ def _handler_debug():
     """Init function for the debug handler logger."""
     empty_line()
     debug = logging.handlers.TimedRotatingFileHandler(
-        filename=_get_path('debug'), when='W6', backupCount=4
+        filename=_get_path('debug'), when='midnight', interval=1, backupCount=7
     )
     debug.set_name('debug')
     debug.setLevel(logging.DEBUG)
