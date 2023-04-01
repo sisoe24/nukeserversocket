@@ -173,6 +173,7 @@ class MainWindowWidget(QWidget):
         Returns:
             SendTestClient: SendTestClient object.
         """
+        # BUG: the send nodes is not working
         self._client = SendTestClient()
         self._connect_client(self.test_btn)
         self._client.client_timeout.connect(
