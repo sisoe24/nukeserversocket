@@ -279,7 +279,7 @@ class _BlinkController(_ExecuteCodeController, object):
 class _CopyNodesController(_ExecuteCodeController, object):
     """Controller that deals with copy nodes execution code."""
 
-    def __init__(self):
+    def __init__(self, file=''):
         """Init method for the _CopyNodesController class."""
         _ExecuteCodeController.__init__(self)
 
@@ -318,14 +318,13 @@ class _CopyNodesController(_ExecuteCodeController, object):
         return 'Nodes received.'
 
 
-def controllers_factory(data):
-    file = data.file
-    _, file_ext = os.path.splitext(file)
-
-    if file_ext in ('.cpp', '.blink'):
-        return _BlinkController(file)
-
-    return _CopyNodesController() if file_ext == '.tmp' else _PyController(file)
+def get_controllers(file):
+    controllers = {
+        '.cpp': _BlinkController,
+        '.blink': _BlinkController,
+        '.tmp': _CopyNodesController,
+    }
+    return controllers.get(os.path.splitext(file)[1], _PyController)(file)
 
 
 class ExecutionController(QObject):
@@ -348,7 +347,7 @@ class ExecutionController(QObject):
         The function sets the controller input text and executes it. Once
         done, it will return the output and restore the script editor state.
         """
-        controller = controllers_factory(data)
+        controller = get_controllers(data.file)
         controller.on_error.connect(self.on_error)
 
         controller.set_input(data.text)
