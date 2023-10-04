@@ -189,7 +189,7 @@ class NukeScriptEditor(BaseScriptEditor):
         """
         # TODO: if fail tooltip search for list position
         for button in self._find_script_editor().findChildren(QPushButton):
-            if button.toolTip() == 'Run the current script':
+            if button.toolTip().startswith('Run the current script'):
                 return button
 
         # XXX: can the button not be found?
