@@ -9,25 +9,21 @@
             "dependsOn": [
                 "Clean .pyc"
             ],
+            "options": {
+                "env": {
+                    "PYTHONDONTWRITEBYTECODE": "1"
+                }
+            },
             "osx": {
                 "command": ".venv/bin/python",
-                "options": {
-                    "env": {
-                        "PYTHONDONTWRITEBYTECODE": "1"
-                    }
-                }
             },
             "windows": {
                 "command": ".venv\\Scripts\\python.exe",
-                "options": {
-                    "env": {
-                        "PYTHONDONTWRITEBYTECODE": "1"
-                    }
-                }
             },
             "args": [
                 "-m",
-                "nukeserversocket.local.run_local"
+                // "nukeserversocket.local.run_local"
+                "nukeserversocket.refactor.main"
             ],
             "problemMatcher": []
         },
