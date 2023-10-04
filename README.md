@@ -30,6 +30,12 @@ A Nuke plugin to run code from external applications.
   - [1.7. Test plugin locally](#17-test-plugin-locally)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
+  
+# Note for Nuke 14 users
+
+If you use Nuke 14, make sure to download the latest version of NukeServerSocket [0.6.0](https://github.com/sisoe24/NukeServerSocket/releases/tag/v0.6.0) since, for now, Nuke does not include the QWebSocket modules which NukeServerSocket  < 0.6.0 relies on.
+
+---
 
 ## 1.1. Features
 
