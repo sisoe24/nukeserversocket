@@ -14,7 +14,7 @@
 [![license](https://img.shields.io/github/license/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE)
 
 ![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
-![x](https://img.shields.io/badge/Nuke-11_|_12_|_13_|_14-yellow)
+![x](https://img.shields.io/badge/Nuke-11_|_12_|_13_|_14_|_15-yellow)
 
 A Nuke plugin to run code from external applications.
 
@@ -31,9 +31,9 @@ A Nuke plugin to run code from external applications.
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
   
-# Note for Nuke 14 users
+# Note for Nuke 14/15 users
 
-If you use Nuke 14, make sure to download the latest version of NukeServerSocket [0.6.0](https://github.com/sisoe24/NukeServerSocket/releases/tag/v0.6.0) since, for now, Nuke does not include the QWebSocket modules which NukeServerSocket  < 0.6.0 relies on.
+If you are using Nuke 14/15, make sure to [download](https://github.com/sisoe24/NukeServerSocket/releases#latest) NukeServerSocket's latest version (>= 0.6.0), as Nuke currently does not include the QWebSocket modules that NukeServerSocket < 0.6.0 relies on.
 
 ---
 
@@ -43,7 +43,7 @@ If you use Nuke 14, make sure to download the latest version of NukeServerSocket
 - Connect more than one client to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
 - WebSocket-ready for browser-based text editors.
-  > Note: WebSocket connection does not work in Nuke 14.
+  > Note: WebSocket connection does not work in Nuke 14/15.
 
 ## 1.2. Client applications
 
@@ -110,9 +110,9 @@ You access the settings from the plugin toolbar.
   > - Nuke Internal is a more direct and fast approach, but it uses `exec` under the hood, which might cause some issues.
   > - Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.
 
-- **Connection Type**: Change the internal connection protocol for the client-server **(Not present in Nuke 14, which defaults to TCP)**.
+- **Connection Type**: Change the internal connection protocol for the client-server **(Not present in Nuke 14/15, which defaults to TCP)**.
   - **TCP**: The default type of connection. If unsure, use this. [**Default**]
-  - **WebSocket**: This allows a two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
+  - **WebSocket**: Use this when using browser-based text editors.
 
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
