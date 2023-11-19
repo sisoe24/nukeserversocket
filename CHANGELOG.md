@@ -7,7 +7,7 @@
 
 * Fixed a bug that would cause the extension to not properly use the Script Editor engine.
 
-## [0.6.1] - 2023-11-18
+## [0.6.1] - 2023-10-04
 
 ### Fixed
 
