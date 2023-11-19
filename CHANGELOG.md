@@ -1,5 +1,18 @@
 # Changelog
 
+
+## [0.6.2] - 2023-11-19
+
+### Fixed
+
+* Fixed a bug that would cause the extension to not properly use the Script Editor engine.
+
+## [0.6.1] - 2023-11-18
+
+### Fixed
+
+* Fixed a bug where Nuke's execution button was not found.
+
 ## [0.6.0] - 2023-03-12
 
 ### Added
