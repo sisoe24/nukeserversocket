@@ -13,12 +13,16 @@
 
 [![license](https://img.shields.io/github/license/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE)
 
-![x](https://img.shields.io/badge/Python-2.7.18_|_3.7.7-success)
-![x](https://img.shields.io/badge/Nuke-11_|_12_|_13_|_14-yellow)
+[![NukeTools](https://img.shields.io/github/v/release/sisoe24/Nuke-Tools?label=NukeTools)](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools)
+
+
+![x](https://img.shields.io/badge/Python-2.7.18_|_3.*-success)
+![x](https://img.shields.io/badge/Nuke-11_|_12_|_13_|_14_|_15-yellow)
 
 A Nuke plugin to run code from external applications.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
+- [Note for Nuke 14/15 users](#note-for-nuke-1415-users)
   - [1.1. Features](#11-features)
   - [1.2. Client applications](#12-client-applications)
   - [1.3. Installation](#13-installation)
@@ -31,13 +35,19 @@ A Nuke plugin to run code from external applications.
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
 
+# Note for Nuke 14/15 users
+
+If you are using Nuke 14/15, make sure to [download](https://github.com/sisoe24/NukeServerSocket/releases#latest) NukeServerSocket's latest version (>= 0.6.0), as Nuke currently does not include the QWebSocket modules that NukeServerSocket < 0.6.0 relies on.
+
+---
+
 ## 1.1. Features
 
 - Receive Python or BlinkScript code from any client in your local network. (More on [Extendibility](#16-extendibility))
 - Connect more than one client to the same Nuke instance.
 - Receive/Send nodes from another Nuke instance in your local network.
 - WebSocket-ready for browser-based text editors.
-  > Note: WebSocket connection does not work in Nuke 14.
+  > Note: WebSocket connection does not work in Nuke 14/15.
 
 ## 1.2. Client applications
 
@@ -96,17 +106,16 @@ NOTES:
 You access the settings from the plugin toolbar.
 
 - **Code Execution Engine**: Change the engine that will executing the code.
-  - **Nuke Internal**: Nuke `executeInMainThread` function. [**Default**]
-  - **Script Editor**: Nuke Script Editor widget.
+  - **Nuke Internal**: Nuke `executeInMainThread` function.
+  - **Script Editor**: Nuke Script Editor widget. [**Default**]
 
   > Why use one over the other?
   >
-  > - Nuke Internal is a more direct and fast approach, but it uses `exec` under the hood, which might cause some issues.
-  > - Nuke Script Editor its a safer approach overall but it does require slightly more work behind scene.
+  > You should almost always use the Script Editor engine, as it is safer and more reliable. The Nuke Internal engine causes many issues and it might get removed in the future.
 
-- **Connection Type**: Change the internal connection protocol for the client-server **(Not present in Nuke 14, which defaults to TCP)**.
+- **Connection Type**: Change the internal connection protocol for the client-server **(Not present in Nuke 14/15, which defaults to TCP)**.
   - **TCP**: The default type of connection. If unsure, use this. [**Default**]
-  - **WebSocket**: This allows a two-way interactive communication session between the user's browser and the internal server. Use this when using a browser-based text editor.
+  - **WebSocket**: Use this when using browser-based text editors.
 
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
   - **Override Output Editor**: Mirror output to the internal script editor.
@@ -138,7 +147,7 @@ You can find more information and examples on the [wiki page](https://github.com
 
 ## 1.8. Known Issues
 
-- Nuke 14 does not ship with QWebSocket module so the WebSocket connection is not enabled.
+- Nuke 14/15 does not ship with QWebSocket module so the WebSocket connection is not enabled.
 - Creating a modal window with the Nuke internal code execution engine will cause Nuke to freeze. A workaround is to switch to the Script Editor engine.
 - Settings window doesn't display the tooltip text.
 - Changing workspace with an active open connection makes Nuke load a new plugin instance with the default UI state. So it would look as if the previous connection has been closed, whereas in reality is still open and listening. To force close all of the listening connections, you can:
@@ -147,7 +156,7 @@ You can find more information and examples on the [wiki page](https://github.com
 
 ## 1.9. Compatibility
 
-Nuke version: 11,12, 13, 14
+Nuke version: 11,12, 13, 14, 15
 
 > Because Nuke 11 uses an early version of PySide2, future compatibility is not a guarantee.
 

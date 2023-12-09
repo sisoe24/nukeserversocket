@@ -84,7 +84,7 @@ class _ExecuteCodeController(QObject):
         If for some reason execution fails, fallback on the script editor
         mechanism.
         """
-        if AppSettings().get_bool('code_execution_engine/nuke_internal', True):
+        if AppSettings().get_bool('code_execution_engine/nuke_internal', False):
             try:
                 self._output = nuke.executeInMainThreadWithResult(
                     self._exec, self._input)
@@ -95,6 +95,7 @@ class _ExecuteCodeController(QObject):
                 LOGGER.error(err)
                 self._execute_script_editor()
         else:
+            LOGGER.debug('Execute engine :: Script Editor')
             self._execute_script_editor()
 
     def set_input(self, text):  # type: (str) -> None
