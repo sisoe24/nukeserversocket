@@ -8,6 +8,8 @@ from dataclasses import field, dataclass
 from PySide2.QtCore import Slot, Signal, QObject
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
+from .settings import get_settings
+
 
 def server_factory() -> QTcpServer:
     """Factory function to create a new server object.
@@ -40,6 +42,11 @@ class ReceivedData:
         # file is optional as is only used to show the file name in the output
         self.file = d.get('file')
 
+    def output(self):
+        if get_settings().get('format_output', False):
+            return f'File: {self.file}\nText: {self.text}'
+        return self.text
+
 
 class NssServer(QObject):
     on_new_connection = Signal()
@@ -59,8 +66,7 @@ class NssServer(QObject):
 
         data = ReceivedData(self._socket.readAll().data())
 
-        output = f'File: {data.file}\nText: {data.text}'
-
+        output = data.output()
         self.on_data_received.emit(data.text)
         self.on_data_written.emit(output)
 
