@@ -6,9 +6,6 @@
         {
             "label": "RunApp",
             "type": "shell",
-            "dependsOn": [
-                "Clean .pyc"
-            ],
             "options": {
                 "env": {
                     "PYTHONDONTWRITEBYTECODE": "1"
@@ -28,26 +25,25 @@
             "problemMatcher": []
         },
         {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pytest",
+                "-xsl",
+                "-vvv",
+                // "-m quick"
+            ],
+            "group": "test",
+            "hide": true,
+            "problemMatcher": []
+        },
+        {
             "label": "Pack repo",
             "type": "shell",
             "command": "git archive --format zip --output ${workspaceFolder}/dist/NukeServerSocket.zip main",
             "problemMatcher": []
-        },
-        {
-            "label": "Clean .pyc",
-            "type": "shell",
-            "command": "find ${workspaceFolder} -type f \\( -name '._*' -o -name '*.pyc' \\) -exec rm {} \\;",
-            "problemMatcher": []
-        },
-        {
-            "label": "Open coverage report",
-            "type": "shell",
-            "command": "open coverage/index.html"
-        },
-        {
-            "label": "Create coverage report",
-            "type": "shell",
-            "command": "${config:python.defaultInterpreterPath} -m pytest --cov=src --cov-report html --cov-report term:skip-covered"
         }
     ]
 }
