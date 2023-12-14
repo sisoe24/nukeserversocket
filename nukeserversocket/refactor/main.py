@@ -3,12 +3,14 @@ from __future__ import annotations
 
 import os
 import sys
+from datetime import datetime
 
-from PySide2.QtCore import Slot, QObject
+from PySide2.QtCore import Slot, QTimer, QObject
 from PySide2.QtNetwork import QTcpSocket
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QLineEdit,
-                               QFormLayout, QMainWindow, QPushButton,
-                               QVBoxLayout, QApplication)
+                               QFormLayout, QHBoxLayout, QMainWindow,
+                               QPushButton, QVBoxLayout, QApplication,
+                               QPlainTextEdit)
 
 from .api import get_ip
 from .server import NssServer
@@ -35,7 +37,10 @@ class MainView(QWidget):
         self.connect_btn = QPushButton('Connect')
         self.connect_btn.setCheckable(True)
 
-        self.logs = LogWidgets()
+        self.logs = QPlainTextEdit()
+        self.logs.setReadOnly(True)
+
+        self.clear_logs = QPushButton('Clear logs')
 
         self.status_label = QLabel('Idle')
         self.status_label.setStyleSheet('color: orange')
@@ -54,7 +59,9 @@ class MainView(QWidget):
         layout = QVBoxLayout()
         layout.addLayout(form_layout)
         layout.addWidget(self.connect_btn)
+        layout.addWidget(QLabel('Logs'))
         layout.addWidget(self.logs)
+        layout.addWidget(self.clear_logs)
         self.setLayout(layout)
 
     def _update_status_connection(self, label: str, style: str, button_txt: str):
@@ -91,13 +98,29 @@ class MainController:
         self.server.on_data_received.connect(self._on_data_received)
         self.server.on_data_written.connect(self._on_data_written)
 
+        self._timer = QTimer()
+        self._timer.timeout.connect(self._on_timeout)
+        self._timer.setSingleShot(True)
+
+    def _write_log(self, text: str):
+        time = datetime.now().strftime('%H:%M:%S')
+        self._view.logs.appendPlainText(f'[{time}] {text}')
+        self._view.logs.verticalScrollBar().setValue(
+            self._view.logs.verticalScrollBar().maximum())
+
+    @Slot()
+    def _on_timeout(self):
+        self._write_log('Server Timeout.')
+        self._close_connection()
+
     @Slot(str)
     def _on_data_received(self, data: str):
-        self._view.logs.received_widget.write(data)
+        self._write_log(f'Received data:\n {data}')
+        self._timer.start(10000)
 
     @Slot(str)
     def _on_data_written(self, data: str):
-        self._view.logs.output_widget.write(data)
+        self._write_log(f'Data written:\n {data}')
 
     @Slot(int)
     def _on_port_change(self):
@@ -106,16 +129,23 @@ class MainController:
     @Slot(bool)
     def _on_connect(self, should_connect: bool):
         if should_connect and not self.server.is_listening():
-            status = self.server.listen(self._view.port_input.value())
-            if status:
-                self._view.set_connected()
+            if self.server.listen(self._view.port_input.value()):
+                self._timer.start(10000)
+                self._write_log('Listening...')
                 self._view.port_input.setEnabled(False)
+                self._view.set_connected()
             else:
+                self._write_log('Failed to listen.')
                 self._view.set_failed()
         else:
-            self._view.set_disconnected()
-            self.server.close()
-            self._view.port_input.setEnabled(True)
+            self._close_connection()
+
+    def _close_connection(self):
+        self.server.close()
+        self._view.set_disconnected()
+        self._view.port_input.setEnabled(True)
+        self._view.connect_btn.setChecked(False)
+        self._write_log('Closing connection...')
 
 
 class NukeServerSocket(QMainWindow):
@@ -129,6 +159,14 @@ class NukeServerSocket(QMainWindow):
         self.view = MainView()
         self.model = MainModel()
         self.controller = MainController(self.view, self.model)
+
+        toolbar = self.addToolBar('Main')
+        self.addToolBar(toolbar)
+
+        toolbar.addAction('Clear logs', self.view.logs.clear)
+        toolbar.addAction('Help', self.close)
+        toolbar.addAction('Settings', self.close)
+
         self.setCentralWidget(self.view)
 
 
