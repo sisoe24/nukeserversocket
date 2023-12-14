@@ -1,8 +1,10 @@
 
+from __future__ import annotations
+
 import os
 import sys
 
-from PySide2.QtCore import QObject
+from PySide2.QtCore import Slot, QObject
 from PySide2.QtNetwork import QTcpSocket
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QLineEdit,
                                QFormLayout, QMainWindow, QPushButton,
@@ -11,12 +13,18 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QLineEdit,
 from .api import get_ip
 from .server import NssServer
 from .settings import get_settings
+from .widgets.loggers import LogWidgets
 
 
-class MainModel(QObject):
-    def __init__(self, parent=None):
-        """Init method for MainWindowWidget."""
-        super().__init__(parent)
+class MainModel:
+    def get_ip(self):
+        return get_ip()
+
+    def get_port(self):
+        return get_settings().get('port', 54321)
+
+    def set_port(self, port: int):
+        return get_settings().set('port', port)
 
 
 class MainView(QWidget):
@@ -27,7 +35,7 @@ class MainView(QWidget):
         self.connect_btn = QPushButton('Connect')
         self.connect_btn.setCheckable(True)
 
-        self.status_logs = QPushButton('Status Logs')
+        self.logs = LogWidgets()
 
         self.status_label = QLabel('Idle')
         self.status_label.setStyleSheet('color: orange')
@@ -37,7 +45,6 @@ class MainView(QWidget):
 
         self.port_input = QSpinBox()
         self.port_input.setRange(49512, 65535)
-        self.port_input.setValue(54321)
 
         form_layout = QFormLayout()
         form_layout.addRow('Status:', self.status_label)
@@ -47,7 +54,7 @@ class MainView(QWidget):
         layout = QVBoxLayout()
         layout.addLayout(form_layout)
         layout.addWidget(self.connect_btn)
-        layout.addWidget(self.status_logs)
+        layout.addWidget(self.logs)
         self.setLayout(layout)
 
     def _update_status_connection(self, label: str, style: str, button_txt: str):
@@ -69,23 +76,34 @@ class MainView(QWidget):
         self.connect_btn.setEnabled(False)
 
 
-class MainController(QObject):
-    def __init__(self, view: MainView, model: MainModel, parent=None):
+class MainController:
+    def __init__(self, view: MainView, model: MainModel):
         """Init method for MainWindowWidget."""
-        super().__init__(parent)
         self._view = view
         self._model = model
 
-        self._view.ip_label.setText(get_ip())
+        self._view.ip_label.setText(self._model.get_ip())
+        self._view.port_input.setValue(self._model.get_port())
         self._view.port_input.valueChanged.connect(self._on_port_change)
         self._view.connect_btn.clicked.connect(self._on_connect)
 
         self.server = NssServer()
+        self.server.on_data_received.connect(self._on_data_received)
+        self.server.on_data_written.connect(self._on_data_written)
 
+    @Slot(str)
+    def _on_data_received(self, data: str):
+        self._view.logs.received_widget.write(data)
+
+    @Slot(str)
+    def _on_data_written(self, data: str):
+        self._view.logs.output_widget.write(data)
+
+    @Slot(int)
     def _on_port_change(self):
-        settings = get_settings()
-        settings.set('port', self._view.port_input.value())
+        self._model.set_port(self._view.port_input.value())
 
+    @Slot(bool)
     def _on_connect(self, should_connect: bool):
         if should_connect and not self.server.is_listening():
             status = self.server.listen(self._view.port_input.value())
