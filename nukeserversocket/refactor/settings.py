@@ -8,10 +8,18 @@ from typing import Any, Dict
 
 
 class _NssSettings:
+    defaults = {
+        'port': 54321,
+        'timeout': 10000,
+        'format_output': False,
+    }
+
     def __init__(self, settings_file: pathlib.Path):
         self._settings_file = settings_file
         self._settings = self.load(settings_file)
-        self._settings.setdefault('port', 54321)
+
+        for key, value in self.defaults.items():
+            self._settings.setdefault(key, value)
 
     def load(self, settings_file: pathlib.Path) -> Dict[str, Any]:
         with settings_file.open() as f:
