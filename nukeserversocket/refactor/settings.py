@@ -1,20 +1,24 @@
 
+from __future__ import annotations
+
 import os
 import json
+import pathlib
 from typing import Any, Dict
 
 
-class Settings:
-    def __init__(self, settings_file: str):
+class _NssSettings:
+    def __init__(self, settings_file: pathlib.Path):
         self._settings_file = settings_file
         self._settings = self.load(settings_file)
+        self._settings.setdefault('port', 54321)
 
-    def load(self, settings_file: str):
-        with open(settings_file) as f:
+    def load(self, settings_file: pathlib.Path) -> Dict[str, Any]:
+        with settings_file.open() as f:
             return json.load(f)
 
     def save(self):
-        with open(self._settings_file, 'w') as f:
+        with self._settings_file.open('w') as f:
             json.dump(self._settings, f)
 
     def get(self, key: str, default: Any = None) -> Any:
@@ -25,14 +29,23 @@ class Settings:
         self.save()
 
 
-def nuke_settings():
-    return os.path.join(os.path.expanduser('~/.nuke'), 'nukeserversocket.json')
+def _nss_settings() -> pathlib.Path:
+    runtime_settings = os.environ.get('NUKE_SERVER_SOCKET_SETTINGS')
+    if runtime_settings:
+        return pathlib.Path(runtime_settings)
+
+    file = pathlib.Path().home() / '.nuke' / 'nukeserversocket.json'
+
+    if not os.path.exists(file):
+        file.write_text('{}')
+
+    return file
 
 
-_SETTINGS_CACHE: Dict[str, Settings] = {}
+_SETTINGS_CACHE: Dict[str, _NssSettings] = {}
 
 
 def get_settings():
     if _SETTINGS_CACHE.get('settings') is None:
-        _SETTINGS_CACHE['settings'] = Settings(nuke_settings())
+        _SETTINGS_CACHE['settings'] = _NssSettings(_nss_settings())
     return _SETTINGS_CACHE['settings']
