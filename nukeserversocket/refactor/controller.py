@@ -45,8 +45,8 @@ class BaseEditorController(ABC):
     @abstractmethod
     def execute(self) -> None: ...
 
-    @abstractmethod
-    def get_output(self) -> str: ...
+    def get_output(self) -> str:
+        return self.output_editor.toPlainText()
 
     @classmethod
     def _add_to_history(cls, text: str) -> None:
