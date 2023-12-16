@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 
 class NssSettingsModel:
-    def __init__(self, settings: '_NssSettings'):
+    def __init__(self, settings: _NssSettings):
         self._settings = settings
 
     def get(self, key: str, default: Any = None) -> Any:
