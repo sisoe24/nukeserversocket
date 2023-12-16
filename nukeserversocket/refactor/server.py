@@ -6,7 +6,7 @@ from typing import Optional
 from PySide2.QtCore import Slot, Signal, QObject
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
-from .controller import Controller
+from .controller import EditorController
 from .received_data import ReceivedData
 
 
@@ -22,7 +22,7 @@ class NssServer(QTcpServer):
 
         self._socket: Optional[QTcpSocket] = None
 
-        controller = Controller.get_instance()
+        controller = EditorController.get_instance()
         if not controller:
             raise RuntimeError('Controller is not set.')
         self._controller = controller()
@@ -34,7 +34,7 @@ class NssServer(QTcpServer):
 
         data = ReceivedData(self._socket.readAll().data())
 
-        output = self._controller.execute(data)
+        output = self._controller.run(data)
 
         self.on_data_received.emit(data.text)
         self.on_data_written.emit(output)
@@ -51,5 +51,5 @@ class NssServer(QTcpServer):
             # self._socket.disconnected.connect(lambda: print('disconnected'))
             # self._socket.error.connect(lambda err: print('error', err))
 
-    def can_connect(self, port: int) -> bool:
+    def try_connect(self, port: int) -> bool:
         return bool(self.listen(QHostAddress.Any, port))
