@@ -4,14 +4,17 @@ from __future__ import annotations
 import os
 import json
 import pathlib
+from pprint import pformat
 from typing import Any, Dict
 
 
 class _NssSettings:
     defaults = {
         'port': 54321,
-        'server_timeout': 10,
-        'format_output': False,
+        'server_timeout': 10000,
+        'mirror_script_editor': False,
+        'clear_output': True,
+        'format_output': '%d %f ->\n%t',
     }
 
     def __init__(self, settings_file: pathlib.Path):
@@ -21,13 +24,16 @@ class _NssSettings:
         for key, value in self.defaults.items():
             self._settings.setdefault(key, value)
 
+    def __str__(self) -> str:
+        return pformat(self._settings)
+
     def load(self, settings_file: pathlib.Path) -> Dict[str, Any]:
         with settings_file.open() as f:
             return json.load(f)
 
     def save(self):
         with self._settings_file.open('w') as f:
-            json.dump(self._settings, f)
+            json.dump(self._settings, f, indent=4)
 
     def get(self, key: str, default: Any = None) -> Any:
         return self._settings.get(key, default)
