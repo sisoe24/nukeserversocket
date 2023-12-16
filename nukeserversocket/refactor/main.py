@@ -16,7 +16,7 @@ from nukeserversocket.refactor.about import about
 from .server import NssServer
 from .toolbar import ToolBar
 from .settings import get_settings
-from .controller import EditorController, BaseEditorController
+from .controller import EditorController
 from .plugins.local import LocalController
 
 
@@ -99,14 +99,15 @@ class MainController:
         self._view = view
         self._model = model
 
+        self._server = NssServer()
+        self._server.on_data_received.connect(self._on_data_received)
+        self._server.on_data_written.connect(self._on_data_written)
+
         self._view.ip_label.setText(self._model.get_ip())
         self._view.port_input.setValue(self._model.get_port())
         self._view.port_input.valueChanged.connect(self._on_port_change)
         self._view.connect_btn.clicked.connect(self._on_connect)
-
-        self._server = NssServer()
-        self._server.on_data_received.connect(self._on_data_received)
-        self._server.on_data_written.connect(self._on_data_written)
+        self._view.clear_logs.clicked.connect(self._view.logs.clear)
 
         self._timer = QTimer()
         self._timer.timeout.connect(self._on_timeout)
@@ -165,8 +166,8 @@ class NukeServerSocket(QMainWindow):
     def __init__(self, parent=None):
         """Init method for NukeServerSocket."""
         super().__init__(parent)
-
         print(f'\nNukeServerSocket: {about()["version"]}')
+
         os.environ['NUKE_SERVER_SOCKET_PORT'] = '54321'
 
         self.view = MainView()
