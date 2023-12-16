@@ -3,27 +3,36 @@ from __future__ import annotations
 
 import os
 import sys
+import socket
 from datetime import datetime
 
-from PySide2.QtCore import Slot, QTimer, QObject
-from PySide2.QtNetwork import QTcpSocket
-from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QLineEdit,
-                               QFormLayout, QHBoxLayout, QMainWindow,
-                               QPushButton, QVBoxLayout, QApplication,
-                               QPlainTextEdit)
+from PySide2.QtCore import Slot, QTimer
+from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
+                               QMainWindow, QPushButton, QVBoxLayout,
+                               QApplication, QPlainTextEdit)
 
-from .api import get_ip
+from nukeserversocket.refactor.about import about
+
 from .server import NssServer
+from .toolbar import ToolBar
 from .settings import get_settings
-from .widgets.loggers import LogWidgets
 
 
 class MainModel:
     def get_ip(self):
-        return get_ip()
+        """Get the IP address of the current machine."""
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(('10.255.255.255', 1))
+            ip, _ = s.getsockname()
+        except socket.error:
+            ip = '127.0.0.1'
+        finally:
+            s.close()
+        return ip
 
     def get_port(self):
-        return get_settings().get('port', 54321)
+        return get_settings().get('port')
 
     def set_port(self, port: int):
         return get_settings().set('port', port)
@@ -43,10 +52,9 @@ class MainView(QWidget):
         self.clear_logs = QPushButton('Clear logs')
 
         self.status_label = QLabel('Idle')
-        self.status_label.setStyleSheet('color: orange')
+        self.set_disconnected()
 
         self.ip_label = QLabel()
-        self.ip_label.setText(get_ip())
 
         self.port_input = QSpinBox()
         self.port_input.setRange(49512, 65535)
@@ -94,9 +102,9 @@ class MainController:
         self._view.port_input.valueChanged.connect(self._on_port_change)
         self._view.connect_btn.clicked.connect(self._on_connect)
 
-        self.server = NssServer()
-        self.server.on_data_received.connect(self._on_data_received)
-        self.server.on_data_written.connect(self._on_data_written)
+        self._server = NssServer()
+        self._server.on_data_received.connect(self._on_data_received)
+        self._server.on_data_written.connect(self._on_data_written)
 
         self._timer = QTimer()
         self._timer.timeout.connect(self._on_timeout)
@@ -128,20 +136,21 @@ class MainController:
 
     @Slot(bool)
     def _on_connect(self, should_connect: bool):
-        if should_connect and not self.server.is_listening():
-            if self.server.listen(self._view.port_input.value()):
+        port = self._view.port_input.value()
+        if should_connect and not self._server.isListening():
+            if self._server.can_connect(port):
                 self._timer.start(10000)
-                self._write_log('Listening...')
+                self._write_log(f'Listening on {port}...')
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
             else:
-                self._write_log('Failed to listen.')
-                self._view.set_failed()
+                self._write_log(f'Failed to establish connection on port {port}.')
+                self._close_connection()
         else:
             self._close_connection()
 
     def _close_connection(self):
-        self.server.close()
+        self._server.close()
         self._view.set_disconnected()
         self._view.port_input.setEnabled(True)
         self._view.connect_btn.setChecked(False)
@@ -154,19 +163,16 @@ class NukeServerSocket(QMainWindow):
         """Init method for NukeServerSocket."""
         super().__init__(parent)
 
+        print(f'\nNukeServerSocket: {about()["version"]}')
         os.environ['NUKE_SERVER_SOCKET_PORT'] = '54321'
 
         self.view = MainView()
         self.model = MainModel()
         self.controller = MainController(self.view, self.model)
 
-        toolbar = self.addToolBar('Main')
-        self.addToolBar(toolbar)
+        self.toolbar = ToolBar(self.view)
 
-        toolbar.addAction('Clear logs', self.view.logs.clear)
-        toolbar.addAction('Help', self.close)
-        toolbar.addAction('Settings', self.close)
-
+        self.addToolBar(self.toolbar)
         self.setCentralWidget(self.view)
 
 
