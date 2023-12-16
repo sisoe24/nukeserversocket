@@ -9,9 +9,8 @@ from typing import TYPE_CHECKING
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
-from .about import about
-# from .main import NukeServerSocket
 from .utils import cache
+from .controller import Controller, BaseController
 
 if TYPE_CHECKING:
     from .server import ReceivedData
@@ -53,11 +52,8 @@ def get_run_button() -> QPushButton:
     )
 
 
-class NukeController:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        print(f'\nNukeServerSocket: {about()["version"]}')
-
+class NukeController(BaseController):
+    def __init__(self):
         self._input_editor = get_input_editor()
         self._output_editor = get_output_editor()
         self._run_button = get_run_button()
@@ -78,7 +74,7 @@ class NukeController:
         self.set_output(r)
         return r
 
-    def execute(self, data: ReceivedData):
+    def execute(self, data: ReceivedData) -> str:
         self.set_input(data.text)
         self._run_button.click()
         return self.get_output()
@@ -87,6 +83,8 @@ class NukeController:
 def install_nuke():
     with contextlib.suppress(ImportError):
         import nukescripts
+        Controller.set_instance(NukeController)
+
         nukescripts.panels.registerWidgetAsPanel(
             'nukeserversocket.refactor.main.NukeServerSocket', 'NukeController',
             # 'nukeserversocket.refactor.install_nuke.NukeController', 'NukeController',
