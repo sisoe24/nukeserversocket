@@ -1,6 +1,8 @@
 """Module that deals with the ui connection logic."""
 # coding: utf-8
 
+from __future__ import annotations
+
 from PySide2.QtCore import Qt, QObject
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QLineEdit,
                                QFormLayout, QGridLayout, QHBoxLayout,

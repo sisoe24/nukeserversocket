@@ -1,6 +1,8 @@
 """Text widgets that will log the connection state events."""
 # coding: utf-8
 
+from __future__ import annotations
+
 from PySide2.QtWidgets import (QWidget, QGroupBox, QPushButton, QVBoxLayout,
                                QPlainTextEdit)
 

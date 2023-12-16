@@ -1,6 +1,8 @@
 """Toolbar widget module."""
 # coding: utf-8
 
+from __future__ import annotations
+
 from PySide2.QtWidgets import QMenu, QAction, QWidget, QToolBar, QToolButton
 
 from .about_widget import AboutWidget

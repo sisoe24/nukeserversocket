@@ -1,6 +1,8 @@
 """Error dialog widget that shows when app had an exception at launch."""
 # coding: utf-8
 
+from __future__ import annotations
+
 import traceback
 
 from PySide2.QtGui import QClipboard, QDesktopServices
