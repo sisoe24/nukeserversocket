@@ -63,7 +63,8 @@ class NukeController(BaseEditorController):
     def output_editor(self) -> QTextEdit:
         return self._output_editor
 
-    def get_output(self):
+    def get_output(self) -> str:
+        """Override the base method to remove the '# Result:' prefix."""
         output = self._output_editor.toPlainText()
         return output[output.find('# Result:')+10:]
 
