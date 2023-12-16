@@ -22,6 +22,7 @@
 A Nuke plugin to run code from external applications.
 
 - [1. NukeServerSocket README](#1-nukeserversocket-readme)
+- [1.0.0 Release](#100-release)
 - [Note for Nuke 14/15 users](#note-for-nuke-1415-users)
   - [1.1. Features](#11-features)
   - [1.2. Client applications](#12-client-applications)
@@ -34,6 +35,22 @@ A Nuke plugin to run code from external applications.
   - [1.7. Test plugin locally](#17-test-plugin-locally)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
+
+# 1.0.0 Release
+
+This is the first stable release of NukeServerSocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The plugin is now more stable and reliable and more extendable than ever. The major changes are:
+
+- Drop support for Nuke <= 12 and Python 2.7.
+- The plugin now uses a custom server socket instead of the built-in QWebSocketServer.
+- Simplified the settings window.
+- Simplified the logs window.
+- Removed the "Send Nodes" feature. It will be re-added in a future release if requested.
+- Removed the "Nuke Internal" code execution engine. Now only the "Script Editor" engine is available.
+- Removed the "Test Receiver" button. Now the connection is tested when clicking the "Connect" button.
+- Removed the timeout UI counter.
+- Vastly improved the code base. Removed unnecessary code and improved the overall performance.
+
+If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<= 0.6.2` from the [releases page](https://github.com/sisoe24/NukeServerSocket/releases)
 
 # Note for Nuke 14/15 users
 
