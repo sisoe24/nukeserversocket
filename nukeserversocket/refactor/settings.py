@@ -14,7 +14,7 @@ class _NssSettings:
         'server_timeout': 10000,
         'mirror_script_editor': False,
         'clear_output': True,
-        'format_output': '%d %f ->\n%t',
+        'format_output': '[%d NukeTools] %F%n%t',
     }
 
     def __init__(self, settings_file: pathlib.Path):
