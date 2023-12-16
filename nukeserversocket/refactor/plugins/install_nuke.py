@@ -63,23 +63,9 @@ class NukeController(BaseEditorController):
     def output_editor(self) -> QTextEdit:
         return self._output_editor
 
-    def get_input(self):
-        return self._input_editor.toPlainText()
-
-    def set_input(self, value: str):
-        self._input_editor.setPlainText(value)
-
-    def set_output(self, value: str):
-        self._output_editor.setPlainText(value)
-
     def get_output(self):
         output = self._output_editor.toPlainText()
-
-        result = output[output.find('# Result:')+10:]
-
-        self.set_output(result)
-
-        return result
+        return output[output.find('# Result:')+10:]
 
     def execute(self):
         self._run_button.click()
