@@ -1,9 +1,10 @@
 
 from __future__ import annotations
 
-import os
 import sys
+import site
 import socket
+import logging
 from datetime import datetime
 
 from PySide2.QtCore import Slot, QTimer
@@ -18,6 +19,9 @@ from .toolbar import ToolBar
 from .settings import get_settings
 from .controller import EditorController
 from .plugins.local import LocalController
+
+logging.basicConfig(level=logging.DEBUG)
+logging.debug('site packages: %s', site.getsitepackages())
 
 
 class MainModel:
@@ -38,6 +42,9 @@ class MainModel:
 
     def set_port(self, port: int):
         return get_settings().set('port', port)
+
+    def get_server_timeout(self):
+        return get_settings().get('server_timeout')
 
 
 class MainView(QWidget):
@@ -112,7 +119,6 @@ class MainController:
         self._timer = QTimer()
         self._timer.timeout.connect(self._on_timeout)
         self._timer.setSingleShot(True)
-        self._timer_interval = get_settings().get('server_timeout')
 
     def _write_log(self, text: str):
         time = datetime.now().strftime('%H:%M:%S')
@@ -128,7 +134,7 @@ class MainController:
     @Slot(str)
     def _on_data_received(self, data: str):
         self._write_log(f'Received data:\n {data}')
-        self._timer.start(self._timer_interval)
+        self._timer.start(self._model.get_server_timeout())
 
     @Slot(str)
     def _on_data_written(self, data: str):
@@ -141,9 +147,9 @@ class MainController:
     @Slot(bool)
     def _on_connect(self, should_connect: bool):
         port = self._view.port_input.value()
-        if should_connect and not self._server.isListening():
+        if should_connect and not self._server.is_listening():
             if self._server.try_connect(port):
-                self._timer.start(self._timer_interval)
+                self._timer.start(self._model.get_server_timeout())
                 self._write_log(f'Listening on {port}...')
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
@@ -167,8 +173,6 @@ class NukeServerSocket(QMainWindow):
         """Init method for NukeServerSocket."""
         super().__init__(parent)
         print(f'\nNukeServerSocket: {about()["version"]}')
-
-        os.environ['NUKE_SERVER_SOCKET_PORT'] = '54321'
 
         self.view = MainView()
         self.model = MainModel()
