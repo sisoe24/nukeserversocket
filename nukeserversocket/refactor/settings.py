@@ -10,7 +10,7 @@ from typing import Any, Dict
 class _NssSettings:
     defaults = {
         'port': 54321,
-        'timeout': 10000,
+        'server_timeout': 10,
         'format_output': False,
     }
 
