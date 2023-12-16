@@ -16,6 +16,8 @@ from nukeserversocket.refactor.about import about
 from .server import NssServer
 from .toolbar import ToolBar
 from .settings import get_settings
+from .controller import EditorController, BaseEditorController
+from .plugins.local import LocalController
 
 
 class MainModel:
@@ -109,6 +111,7 @@ class MainController:
         self._timer = QTimer()
         self._timer.timeout.connect(self._on_timeout)
         self._timer.setSingleShot(True)
+        self._timer_interval = get_settings().get('server_timeout')
 
     def _write_log(self, text: str):
         time = datetime.now().strftime('%H:%M:%S')
@@ -124,7 +127,7 @@ class MainController:
     @Slot(str)
     def _on_data_received(self, data: str):
         self._write_log(f'Received data:\n {data}')
-        self._timer.start(10000)
+        self._timer.start(self._timer_interval)
 
     @Slot(str)
     def _on_data_written(self, data: str):
@@ -138,8 +141,8 @@ class MainController:
     def _on_connect(self, should_connect: bool):
         port = self._view.port_input.value()
         if should_connect and not self._server.isListening():
-            if self._server.can_connect(port):
-                self._timer.start(10000)
+            if self._server.try_connect(port):
+                self._timer.start(self._timer_interval)
                 self._write_log(f'Listening on {port}...')
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
@@ -178,6 +181,9 @@ class NukeServerSocket(QMainWindow):
 
 def main():
     """Main function for NukeServerSocket."""
+
+    EditorController.set_instance(LocalController)
+
     app = QApplication(sys.argv)
     window = NukeServerSocket()
     window.show()
