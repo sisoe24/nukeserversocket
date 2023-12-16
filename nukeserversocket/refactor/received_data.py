@@ -6,6 +6,8 @@ from dataclasses import field, dataclass
 
 @dataclass
 class ReceivedData:
+    """Data received from the client."""
+
     data: str
     file: str = field(init=False)
     text: str = field(init=False)
