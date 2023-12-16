@@ -1,6 +1,8 @@
 """Module that deals with the Nuke Script Editor widget."""
 # coding: utf-8
 
+from __future__ import annotations
+
 import logging
 from abc import ABCMeta, abstractmethod
 from functools import wraps

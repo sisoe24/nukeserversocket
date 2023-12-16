@@ -1,6 +1,6 @@
 """Socket modules that deals with the incoming data."""
 # coding: utf-8
-from __future__ import print_function
+from __future__ import annotations, print_function
 
 import abc
 import logging

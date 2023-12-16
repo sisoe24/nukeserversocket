@@ -1,6 +1,6 @@
 """Module with various utility functions."""
 # coding: utf-8
-from __future__ import print_function
+from __future__ import annotations, print_function
 
 import sys
 import socket

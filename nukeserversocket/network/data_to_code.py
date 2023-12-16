@@ -1,6 +1,8 @@
 """Module that deals with the data received from the network."""
 # coding: utf-8
 
+from __future__ import annotations
+
 import json
 import logging
 

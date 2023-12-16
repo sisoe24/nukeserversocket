@@ -1,6 +1,8 @@
 """Client code that deals with send nodes and send test functionality."""
 # coding: utf-8
 
+from __future__ import annotations
+
 import json
 import random
 import logging

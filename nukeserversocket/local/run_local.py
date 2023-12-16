@@ -1,5 +1,7 @@
 """Run application locally outside Nuke."""
 # coding: utf-8
+from __future__ import annotations
+
 import os
 import sys
 import logging

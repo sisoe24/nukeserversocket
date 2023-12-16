@@ -1,6 +1,6 @@
 """Fake nuke module to test some functionality when launch app locally."""
 # coding: utf-8
-from __future__ import print_function
+from __future__ import annotations, print_function
 
 import re
 from textwrap import dedent

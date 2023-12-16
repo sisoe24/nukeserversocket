@@ -1,6 +1,8 @@
 """Module for the nuke script editor controller classes."""
 # coding: utf-8
 
+from __future__ import annotations
+
 import os
 import re
 import sys

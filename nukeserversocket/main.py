@@ -1,6 +1,8 @@
 """Main application logic. This is where main window and widget are created."""
 # coding: utf-8
 
+from __future__ import annotations
+
 import os
 import logging
 

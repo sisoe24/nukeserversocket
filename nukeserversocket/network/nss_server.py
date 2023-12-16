@@ -1,6 +1,8 @@
 """Module that deals with the server connection."""
 # coding: utf-8
 
+from __future__ import annotations
+
 import logging
 
 from PySide2.QtCore import Signal, QObject

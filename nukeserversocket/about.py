@@ -1,6 +1,6 @@
 """Generate about information for the user or bug reports."""
 # coding: utf-8
-from __future__ import print_function, with_statement
+from __future__ import annotations, print_function, with_statement
 
 import os
 import re
