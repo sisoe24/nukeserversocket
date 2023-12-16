@@ -44,7 +44,7 @@ class ReceivedData:
 
     def output(self):
         if get_settings().get('format_output', False):
-            return f'File: {self.file}\nText: {self.text}'
+            return f'{self.file}\nText: {self.text}'.strip()
         return self.text
 
 
