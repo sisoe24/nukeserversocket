@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import os
+import json
+import logging
 import contextlib
-from typing import TYPE_CHECKING
+from textwrap import dedent
 
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
 from ..utils import cache
 from ..controller import EditorController, BaseEditorController
+from ..received_data import ReceivedData
 
-if TYPE_CHECKING:
-    from ..server import ReceivedData
+logging.basicConfig(level=logging.DEBUG)
 
 
 @cache
@@ -38,7 +41,6 @@ def get_output_editor() -> QTextEdit:
 
 @cache
 def get_run_button() -> QPushButton:
-    # naively assume that the button always exists
     return next(
         (
             button
@@ -68,7 +70,37 @@ class NukeController(BaseEditorController):
         output = self._output_editor.toPlainText()
         return output[output.find('# Result:')+10:]
 
+    def _blink_wrapper(self, data: ReceivedData) -> str:
+        return dedent("""
+            node = nuke.toNode("{filename}") or nuke.createNode('BlinkScript', 'name {filename}')
+            knobs = node.knobs()
+            knobs['kernelSourceFile'].setValue('{file}')
+            knobs['kernelSource'].setText({text})
+            knobs['recompile'].execute()
+            """).format(
+            filename=os.path.splitext(os.path.basename(data.file))[0],
+            file=data.file,
+            text=json.dumps(data.text)
+        )
+
+    def set_input(self, data: ReceivedData) -> None:
+        """Override the base method."""
+
+        logging.debug(f'file: {data.file}')
+
+        ext = os.path.splitext(data.file)[1]
+
+        if ext == '.py':
+            text = data.text
+        elif ext in ('.blink', '.cpp'):
+            text = self._blink_wrapper(data)
+        else:
+            raise RuntimeError(f'Unknown file extension: {data.file}')
+
+        self.input_editor.setPlainText(text)
+
     def execute(self):
+        # naively assume that the button always exists
         self._run_button.click()
 
 
