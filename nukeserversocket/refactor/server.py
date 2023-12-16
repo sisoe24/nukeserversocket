@@ -45,11 +45,7 @@ class NssServer(QTcpServer):
     def _on_new_connection(self) -> None:
         while self.hasPendingConnections():
             self._socket = self.nextPendingConnection()
-
             self._socket.readyRead.connect(self._on_socket_ready)
-            # self._socket.connected.connect(lambda: print('connected'))
-            # self._socket.disconnected.connect(lambda: print('disconnected'))
-            # self._socket.error.connect(lambda err: print('error', err))
 
     def try_connect(self, port: int) -> bool:
         return bool(self.listen(QHostAddress.Any, port))
