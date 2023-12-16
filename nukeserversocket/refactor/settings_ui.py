@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Dict
+from typing import TYPE_CHECKING, Any
 
 from PySide2.QtCore import Slot
-from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QCheckBox, QLineEdit,
-                               QFormLayout, QVBoxLayout)
+from PySide2.QtWidgets import (QWidget, QSpinBox, QCheckBox, QLineEdit,
+                               QFormLayout)
 
 from .settings import get_settings
 
@@ -66,10 +66,10 @@ class NssSettingsController:
 
     @Slot(int)
     def _on_timeout_changed(self, timeout: int):
-        self._model.set('server_timeout', timeout * 10000)
+        self._model.set('server_timeout', timeout * 60000)
 
     def init(self):
-        self._view.timeout.setValue(self._model.get('server_timeout') / 10000)
+        self._view.timeout.setValue(self._model.get('server_timeout') / 60000)
         self._view.mirror_script_editor.setChecked(self._model.get('mirror_script_editor'))
         self._view.format_output.setText(self._model.get('format_output'))
         self._view.clear_output.setChecked(self._model.get('clear_output'))
