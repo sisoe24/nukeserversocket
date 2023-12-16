@@ -1,4 +1,6 @@
 """Test the CodeEditor class."""
+from __future__ import annotations
+
 from PySide2.QtNetwork import QTcpServer, QTcpSocket
 from PySide2.QtWebSockets import QWebSocket, QWebSocketServer
 

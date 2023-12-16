@@ -1,4 +1,6 @@
 """Test connection when is a websocket."""
+from __future__ import annotations
+
 import pytest
 
 

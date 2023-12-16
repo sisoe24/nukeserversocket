@@ -1,4 +1,6 @@
 """Test module for the UI elements when various connection modes happen."""
+from __future__ import annotations
+
 import random
 import configparser
 from abc import ABC, abstractmethod

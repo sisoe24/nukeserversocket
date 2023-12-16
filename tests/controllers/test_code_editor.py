@@ -1,4 +1,6 @@
 """Test the CodeEditor class."""
+from __future__ import annotations
+
 import json
 
 import pytest

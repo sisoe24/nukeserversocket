@@ -1,4 +1,6 @@
 """Test sending nodes module."""
+from __future__ import annotations
+
 import os
 import configparser
 from shutil import rmtree

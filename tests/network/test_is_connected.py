@@ -1,4 +1,6 @@
 """Test sending messages via TCP when app is connected."""
+from __future__ import annotations
+
 import json
 import socket
 

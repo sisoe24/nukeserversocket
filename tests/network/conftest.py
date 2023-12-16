@@ -1,5 +1,7 @@
 """Configuration file for the connection tests."""
 
+from __future__ import annotations
+
 import pytest
 
 from nukeserversocket.network.nss_server import QServer

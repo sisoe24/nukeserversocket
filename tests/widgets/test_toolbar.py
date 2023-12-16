@@ -1,4 +1,6 @@
 """Test ToolBar class module."""
+from __future__ import annotations
+
 from collections import namedtuple
 
 import pytest

@@ -1,5 +1,7 @@
 """Test the CodeEditor class."""
 
+from __future__ import annotations
+
 import pytest
 
 from nukeserversocket.network.data_to_code import DataCode, InvalidData

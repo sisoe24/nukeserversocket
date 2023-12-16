@@ -1,5 +1,7 @@
 """Configuration file for controller tests."""
 
+from __future__ import annotations
+
 import pytest
 
 from nukeserversocket.local.fake_script_editor import FakeScriptEditor

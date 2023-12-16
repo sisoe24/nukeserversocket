@@ -4,6 +4,8 @@ Settings key are referenced with a string and usually if no settings is
 found, will be replaced with a default value. If then a string is misspelled
 its going to hard to debug.
 """
+from __future__ import annotations
+
 import os
 import re
 

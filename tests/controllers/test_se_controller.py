@@ -1,4 +1,6 @@
 """Test the Nuke Script Editor controller classes."""
+from __future__ import annotations
+
 import sys
 import subprocess
 
