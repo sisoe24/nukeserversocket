@@ -1,19 +1,16 @@
 from __future__ import annotations
 
-import os
-import sys
-import pathlib
 import contextlib
 from typing import TYPE_CHECKING
 
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
-from .utils import cache
-from .controller import Controller, BaseController
+from ..utils import cache
+from ..controller import EditorController, BaseEditorController
 
 if TYPE_CHECKING:
-    from .server import ReceivedData
+    from ..server import ReceivedData
 
 
 @cache
@@ -52,11 +49,19 @@ def get_run_button() -> QPushButton:
     )
 
 
-class NukeController(BaseController):
+class NukeController(BaseEditorController):
     def __init__(self):
         self._input_editor = get_input_editor()
         self._output_editor = get_output_editor()
         self._run_button = get_run_button()
+
+    @property
+    def input_editor(self) -> QPlainTextEdit:
+        return self._input_editor
+
+    @property
+    def output_editor(self) -> QTextEdit:
+        return self._output_editor
 
     def get_input(self):
         return self._input_editor.toPlainText()
@@ -69,21 +74,21 @@ class NukeController(BaseController):
 
     def get_output(self):
         output = self._output_editor.toPlainText()
-        f = output.find('# Result:')
-        r = output[f+10:]
-        self.set_output(r)
-        return r
 
-    def execute(self, data: ReceivedData) -> str:
-        self.set_input(data.text)
+        result = output[output.find('# Result:')+10:]
+
+        self.set_output(result)
+
+        return result
+
+    def execute(self):
         self._run_button.click()
-        return self.get_output()
 
 
 def install_nuke():
     with contextlib.suppress(ImportError):
         import nukescripts
-        Controller.set_instance(NukeController)
+        EditorController.set_instance(NukeController)
 
         nukescripts.panels.registerWidgetAsPanel(
             'nukeserversocket.refactor.main.NukeServerSocket', 'NukeController',
