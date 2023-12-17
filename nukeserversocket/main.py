@@ -11,14 +11,12 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
                                QMainWindow, QPushButton, QVBoxLayout,
                                QPlainTextEdit)
 
-from nukeserversocket.refactor.about import about
-
+from .about import about
 from .server import NssServer
 from .toolbar import ToolBar
 from .settings import get_settings
 
 logging.basicConfig(level=logging.DEBUG)
-logging.debug('site packages: %s', site.getsitepackages())
 
 
 class MainModel:
