@@ -19,8 +19,7 @@
             },
             "args": [
                 "-m",
-                // "nukeserversocket.local.run_local"
-                "nukeserversocket.refactor.main"
+                "nukeserversocket.refactor.plugins.local"
             ],
             "problemMatcher": []
         },
