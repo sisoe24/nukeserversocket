@@ -15,7 +15,7 @@ from .utils import cache
 @cache
 def load_version() -> str:
     # so much code to get the version number :(
-    pyproject = pathlib.Path(__file__).parent.parent.parent / 'pyproject.toml'
+    pyproject = pathlib.Path(__file__).parent.parent / 'pyproject.toml'
     version = re.search(r'version = "(.*)"', pyproject.read_text())
     version = version[1] if version else 'unknown'
     os.environ['NUKE_SERVER_SOCKET_VERSION'] = version
