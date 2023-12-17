@@ -10,7 +10,6 @@ from .received_data import ReceivedData
 
 
 class NssServer(QTcpServer):
-    on_new_connection = Signal()
     on_data_received = Signal(str)
     on_data_written = Signal(str)
 
