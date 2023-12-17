@@ -4,7 +4,7 @@ import sys
 
 from PySide2.QtWidgets import QTextEdit, QApplication, QPlainTextEdit
 
-from ...refactor.main import NukeServerSocket
+from ..main import NukeServerSocket
 from ..editor_controller import EditorController, BaseEditorController
 
 
