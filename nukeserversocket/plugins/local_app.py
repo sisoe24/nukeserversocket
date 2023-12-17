@@ -1,3 +1,8 @@
+"""Local application for NukeServerSocket.
+
+Only used for testing purposes.
+
+"""
 from __future__ import annotations
 
 import sys
@@ -6,6 +11,8 @@ from PySide2.QtWidgets import QTextEdit, QApplication, QPlainTextEdit
 
 from ..main import NukeServerSocket
 from ..editor_controller import EditorController, BaseEditorController
+
+# TODO: Implement a fake script editor.
 
 
 class LocalController(BaseEditorController):
