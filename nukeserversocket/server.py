@@ -10,6 +10,15 @@ from .editor_controller import EditorController
 
 
 class NssServer(QTcpServer):
+    """NukeServerSocket server.
+
+    This class is responsible for receiving data from the client, and sending the output back.
+
+    Signals:
+        on_data_received (str): Signal emitted when data is received from the client.
+        on_data_written (str): Signal emitted when data is written to the client.
+
+    """
     on_data_received = Signal(str)
     on_data_written = Signal(str)
 
