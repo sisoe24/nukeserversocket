@@ -29,7 +29,6 @@ A Nuke plugin to run code from external applications.
   - [1.3. Installation](#13-installation)
   - [1.4. Usage](#14-usage)
     - [1.4.1. Execute code](#141-execute-code)
-    - [1.4.2. Receive/Send nodes](#142-receivesend-nodes)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
   - [1.7. Test plugin locally](#17-test-plugin-locally)
@@ -38,17 +37,9 @@ A Nuke plugin to run code from external applications.
 
 # 1.0.0 Release
 
-This is the first stable release of NukeServerSocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The plugin is now more stable and reliable and more extendable than ever. The major changes are:
+This is the first stable release of NukeServerSocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The main goal of this release was to make the plugin more stable and easier to maintain. The plugin is now more extendable and easier to implement in other applications as well.
 
-- Drop support for Nuke <= 12 and Python 2.7.
-- The plugin now uses a custom server socket instead of the built-in QWebSocketServer.
-- Simplified the settings window.
-- Simplified the logs window.
-- Removed the "Send Nodes" feature. It will be re-added in a future release if requested.
-- Removed the "Nuke Internal" code execution engine. Now only the "Script Editor" engine is available.
-- Removed the "Test Receiver" button. Now the connection is tested when clicking the "Connect" button.
-- Removed the timeout UI counter.
-- Vastly improved the code base. Removed unnecessary code and improved the overall performance.
+For a full list of changes, see the [CHANGELOG](TODO)
 
 If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<= 0.6.2` from the [releases page](https://github.com/sisoe24/NukeServerSocket/releases)
 
@@ -62,9 +53,6 @@ If you are using Nuke 14/15, make sure to [download](https://github.com/sisoe24/
 
 - Receive Python or BlinkScript code from any client in your local network. (More on [Extendibility](#16-extendibility))
 - Connect more than one client to the same Nuke instance.
-- Receive/Send nodes from another Nuke instance in your local network.
-- WebSocket-ready for browser-based text editors.
-  > Note: WebSocket connection does not work in Nuke 14/15.
 
 ## 1.2. Client applications
 
@@ -78,13 +66,9 @@ Client applications that use NukeServerSocket:
 
 1. Download the repository via the [releases page](https://github.com/sisoe24/NukeServerSocket/releases) or by cloning it from GitHub.
 2. Place the folder inside the _~/.nuke_ directory or into a custom one.
-3. Write `import NukeServerSocket` into your _menu.py_.
+3. Write `import nukeserversocket` into your _menu.py_.
 
-NOTES
-
-- If you use a custom plugin path, add the path in your init.py: `nuke.pluginAddPath('custom/path')`
-- The folder name must be named **NukeServerSocket**.
-- If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), use the command `Nuke Tools: Add NukeServerSocket`.
+> If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), use the command `Nuke Tools: Add NukeServerSocket`.
 
 ## 1.4. Usage
 
@@ -97,26 +81,7 @@ NOTES
 
 NOTES:
 
-- You can troubleshoot the connection by using the **Test Receiver** button.
 - If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a random number between `49152` and `65535` and try again. It probably means that you have a connection listening on that port already.
-
-### 1.4.2. Receive/Send nodes
-
-![Send Nodes](images/send_nodes.gif)
-
-- Receive nodes
-
-   When receiving nodes, start the server with the mode on **Receiver**.
-
-- Sending nodes
-
-  1. Switch the mode from **Receiver** to **Sender** and be sure that there is another NukeServerSocket instance listening for incoming network requests.
-  2. Select the nodes you wish to send a click **Send Selected Nodes**.
-
-NOTES:
-
-- When sending nodes to the same computer, only the **Port** value must match the two Nuke instances.
-- When sending nodes between different computers, both **IP Address** and **Port** must match the two Nuke instances.
 
 ## 1.5. Settings
 
@@ -164,18 +129,13 @@ You can find more information and examples on the [wiki page](https://github.com
 
 ## 1.8. Known Issues
 
-- Nuke 14/15 does not ship with QWebSocket module so the WebSocket connection is not enabled.
-- Creating a modal window with the Nuke internal code execution engine will cause Nuke to freeze. A workaround is to switch to the Script Editor engine.
-- Settings window doesn't display the tooltip text.
 - Changing workspace with an active open connection makes Nuke load a new plugin instance with the default UI state. So it would look as if the previous connection has been closed, whereas in reality is still open and listening. To force close all of the listening connections, you can:
   - Restart the Nuke instance.
   - Wait for the connection timeout.
 
 ## 1.9. Compatibility
 
-Nuke version: 11,12, 13, 14, 15
-
-> Because Nuke 11 uses an early version of PySide2, future compatibility is not a guarantee.
+Nuke version: 13, 14, 15
 
 While it should work the same on all platforms, I have tested the plugin only on:
 
