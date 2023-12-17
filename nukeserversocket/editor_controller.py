@@ -104,6 +104,16 @@ C = Callable[[], BaseEditorController]
 
 
 class EditorController:
+    """EditorController singleton.
+
+    This class is used to set and get the current editor controller. It is used
+    as a singleton to avoid having to pass the controller around.
+
+    >>> from nukeserversocket.editor_controller import EditorController
+    >>> from nukeserversocket.plugins.nuke import NukeController
+    >>> EditorController.set_instance(NukeController)
+
+    """
     _controller: Optional[C] = None
 
     @classmethod
@@ -112,4 +122,11 @@ class EditorController:
 
     @classmethod
     def set_instance(cls, controller: C) -> None:
+        """Set the current editor controller.
+
+        Args:
+            controller (BaseEditorController): A callable that returns an instance
+            of BaseEditorController.
+
+        """
         cls._controller = controller
