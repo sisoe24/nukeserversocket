@@ -1,3 +1,4 @@
+"""Nuke-specific plugin for the NukeServerSocket."""
 from __future__ import annotations
 
 import os
