@@ -23,11 +23,11 @@ directory = "coverage"
 omit = ["nukeserversocket/refactor/tests/*", "nukeserversocket/refactor/__init__.py"]
 
 [tool.pytest.ini_options]
-testpaths = "tests/refactor"
+testpaths = "tests"
 qt_api = "pyside2"
 markers = ["quick: mark test"]
 addopts = [
-    "--cov=nukeserversocket/refactor",
+    "--cov=nukeserversocket",
     "--cov-report=html",
     "-W ignore::DeprecationWarning",
 ]
@@ -38,7 +38,6 @@ python = "~3.9.10"
 [tool.poetry.group.dev.dependencies]
 pytest = "~6.2.5"
 pytest-qt = "~4.0.2"
-requests = "~2.26.0"
 pytest-cov = "~3.0.0"
 pytest-randomly = "^3.10.1"
 pytest-repeat = "^0.9.1"
