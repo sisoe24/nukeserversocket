@@ -1,7 +1,6 @@
 
 from __future__ import annotations
 
-import site
 import socket
 import logging
 from datetime import datetime
@@ -86,13 +85,6 @@ class MainView(QWidget):
 
     def set_disconnected(self):
         self._update_status_connection('Idle', 'color: orange', 'Connect')
-
-    def set_failed(self):
-        self._update_status_connection('Failed', 'color: red', 'Connect')
-
-    def set_connecting(self):
-        self._update_status_connection('Connecting...', 'color: orange', 'Connecting...')
-        self.connect_btn.setEnabled(False)
 
 
 class MainController:
