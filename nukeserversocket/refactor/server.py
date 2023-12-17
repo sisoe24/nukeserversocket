@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-import os
 from typing import Optional
 
-from PySide2.QtCore import Slot, Signal, QObject
+from PySide2.QtCore import Slot, Signal
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 from .controller import EditorController
