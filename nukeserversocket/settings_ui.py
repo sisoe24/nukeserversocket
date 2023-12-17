@@ -1,3 +1,9 @@
+"""Settings UI for Nuke Server Socket.
+
+This module is a wrapper around the settings module, and provides a UI for it.
+
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
