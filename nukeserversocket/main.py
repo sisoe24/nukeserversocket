@@ -1,232 +1,181 @@
-"""Main application logic. This is where main window and widget are created."""
-# coding: utf-8
 
 from __future__ import annotations
 
-import os
+import site
+import socket
 import logging
+from datetime import datetime
 
-from PySide2.QtWidgets import (QWidget, QStatusBar, QMainWindow, QPushButton,
-                               QVBoxLayout)
+from PySide2.QtCore import Slot, QTimer
+from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
+                               QMainWindow, QPushButton, QVBoxLayout,
+                               QPlainTextEdit)
 
-from .network import QServer, SendTestClient, SendNodesClient
-from .widgets import ToolBar, LogWidgets, ErrorDialog, ConnectionsWidget
-from .settings import AppSettings
-from .local.mock import nuke
+from nukeserversocket.refactor.about import about
 
-LOGGER = logging.getLogger('nukeserversocket')
+from .server import NssServer
+from .toolbar import ToolBar
+from .settings import get_settings
 
-# TODO: Refactor
-
-
-def _init_settings():
-    """Set up initial settings for the application.
-
-    When called, will:
-      1. Create the src/.tmp folder if doesn't exists.
-      2. Set the transfer_nodes.tmp file path in the configuration file.
-      3. Validate the server port value in the configuration file.
-    """
-    tmp_folder = os.path.join(
-        os.path.abspath(os.path.dirname(__file__)), '.tmp'
-    )
-
-    if not os.path.exists(tmp_folder):
-        os.mkdir(tmp_folder)
-
-    settings = AppSettings()
-    settings.validate_port_settings()
-
-    if nuke.env.get('NukeVersionMajor') == 14:
-        settings.setValue('connection_type/tcp', True)
-        settings.setValue('connection_type/websocket', False)
-
-    settings.setValue('path/transfer_file',
-                      os.path.join(tmp_folder, 'transfer_nodes.tmp'))
-
-    LOGGER.debug('Settings file: %s', settings.fileName())
+logging.basicConfig(level=logging.DEBUG)
+logging.debug('site packages: %s', site.getsitepackages())
 
 
-class MainWindowWidget(QWidget):
-    """Main window widgets and logic.
+class MainModel:
+    def get_ip(self):
+        """Get the IP address of the current machine."""
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        try:
+            s.connect(('10.255.255.255', 1))
+            ip, _ = s.getsockname()
+        except socket.error:
+            ip = '127.0.0.1'
+        finally:
+            s.close()
+        return ip
 
-    This is were all of the main widgets are laid out. Class also deals with
-    a higher level logic of user interaction when clicking the various buttons.
-    """
+    def get_port(self):
+        return get_settings().get('port')
 
-    def __init__(self):
+    def set_port(self, port: int):
+        return get_settings().set('port', port)
+
+    def get_server_timeout(self):
+        return get_settings().get('server_timeout')
+
+
+class MainView(QWidget):
+    def __init__(self, parent=None):
         """Init method for MainWindowWidget."""
-        QWidget.__init__(self)
-        LOGGER.debug('Main :: init')
-        _init_settings()
+        super().__init__(parent)
 
-        self.connections = ConnectionsWidget(parent=self)
+        self.connect_btn = QPushButton('Connect')
+        self.connect_btn.setCheckable(True)
 
-        self.connect_btn = self.connections.buttons.connect_btn
-        self.connect_btn.toggled.connect(self.toggle_connection)
+        self.logs = QPlainTextEdit()
+        self.logs.setReadOnly(True)
 
-        self.send_btn = self.connections.buttons.send_btn
-        self.send_btn.clicked.connect(self.send_nodes)
+        self.clear_logs = QPushButton('Clear logs')
 
-        self.test_btn = self.connections.buttons.test_btn
-        self.test_btn.clicked.connect(self.send_test)
+        self.status_label = QLabel('Idle')
+        self.set_disconnected()
 
-        self.log_widgets = LogWidgets()
+        self.ip_label = QLabel()
 
-        _layout = QVBoxLayout()
-        _layout.addWidget(self.connections)
-        _layout.addWidget(self.log_widgets)
+        self.port_input = QSpinBox()
+        self.port_input.setRange(49512, 65535)
 
-        self.setLayout(_layout)
+        form_layout = QFormLayout()
+        form_layout.addRow('Status:', self.status_label)
+        form_layout.addRow('IP:', self.ip_label)
+        form_layout.addRow('Port:', self.port_input)
 
-        self._server = None
-        self._client = None
+        layout = QVBoxLayout()
+        layout.addLayout(form_layout)
+        layout.addWidget(self.connect_btn)
+        layout.addWidget(QLabel('Logs'))
+        layout.addWidget(self.logs)
+        layout.addWidget(self.clear_logs)
+        self.setLayout(layout)
 
-    def _toggle_widget_modification(self, state):  # type: (bool) -> None
-        """Enable/disable connection widgets modification.
+    def _update_status_connection(self, label: str, style: str, button_txt: str):
+        self.status_label.setText(label)
+        self.status_label.setStyleSheet(style)
+        self.connect_btn.setText(button_txt)
 
-        When connected the port and the sender mode will be disabled.
+    def set_connected(self):
+        self._update_status_connection('Connected', 'color: green', 'Disconnect')
 
-        Args:
-            state (bool): state of the widget.
-        """
-        self.connections.server_port.setEnabled(state)
-        self.connections.sender_mode.setEnabled(state)
+    def set_disconnected(self):
+        self._update_status_connection('Idle', 'color: orange', 'Connect')
 
-    def _disconnect(self):
-        """Disconnect server.
+    def set_failed(self):
+        self._update_status_connection('Failed', 'color: red', 'Connect')
 
-        Set the connection button state to `False`, which will trigger a signal
-        that toggles the connection with a falsy value.
-        """
-        # Review: why not calling directly toggle_connection(False)?
-        self.connect_btn.setChecked(False)
+    def set_connecting(self):
+        self._update_status_connection('Connecting...', 'color: orange', 'Connecting...')
+        self.connect_btn.setEnabled(False)
 
-    def setup_server(self):
-        """Set up the server class and its custom signals.
 
-        Returns:
-            QServer: the server object.
-        """
-        def _setup_socket_log(socket):
-            """Set up socket log signals."""
-            socket.state_changed.connect(self.log_widgets.set_status_text)
-            socket.received_text.connect(self.log_widgets.set_received_text)
-            socket.output_text.connect(self.log_widgets.set_output_text)
-            socket.execution_error.connect(
-                lambda text: ErrorDialog(text, self).show()
-            )
+class MainController:
+    def __init__(self, view: MainView, model: MainModel):
+        """Init method for MainWindowWidget."""
+        self._view = view
+        self._model = model
 
-        _server = QServer()
-        _server.server_timeout.connect(
-            self.connections._timeout._server_timeout.setText)
+        self._server = NssServer()
+        self._server.on_data_received.connect(self._on_data_received)
+        self._server.on_data_written.connect(self._on_data_written)
 
-        _server.timeout.connect(self._disconnect)
-        _server.state_changed.connect(self.log_widgets.set_status_text)
-        _server.socket_ready.connect(_setup_socket_log)
+        self._view.ip_label.setText(self._model.get_ip())
+        self._view.port_input.setValue(self._model.get_port())
+        self._view.port_input.valueChanged.connect(self._on_port_change)
+        self._view.connect_btn.clicked.connect(self._on_connect)
+        self._view.clear_logs.clicked.connect(self._view.logs.clear)
 
-        return _server
+        self._timer = QTimer()
+        self._timer.timeout.connect(self._on_timeout)
+        self._timer.setSingleShot(True)
 
-    def toggle_connection(self, state):  # type: (bool) -> None
-        """Toggle connection state."""
-        def _start_connection():
-            """Start connection to server."""
-            self._server = self.setup_server()
+    def _write_log(self, text: str):
+        time = datetime.now().strftime('%H:%M:%S')
+        self._view.logs.appendPlainText(f'[{time}] {text}')
+        self._view.logs.verticalScrollBar().setValue(
+            self._view.logs.verticalScrollBar().maximum())
 
-            try:
-                status = self._server.start_server()
-            except RuntimeError as err:
-                LOGGER.error('server did not connect: %s', err)
-                self.connections._disconnect()
-                return False
+    @Slot()
+    def _on_timeout(self):
+        self._write_log('Server Timeout.')
+        self._close_connection()
+
+    @Slot(str)
+    def _on_data_received(self, data: str):
+        self._write_log(f'Received data:\n {data}')
+        self._timer.start(self._model.get_server_timeout())
+
+    @Slot(str)
+    def _on_data_written(self, data: str):
+        self._write_log(f'Data written:\n {data}')
+
+    @Slot(int)
+    def _on_port_change(self):
+        self._model.set_port(self._view.port_input.value())
+
+    @Slot(bool)
+    def _on_connect(self, should_connect: bool):
+        port = self._view.port_input.value()
+        if should_connect and not self._server.is_listening():
+            if self._server.try_connect(port):
+                self._timer.start(self._model.get_server_timeout())
+                self._write_log(f'Listening on {port}...')
+                self._view.port_input.setEnabled(False)
+                self._view.set_connected()
             else:
-                LOGGER.debug('server is connected: %s', status)
-                self._toggle_widget_modification(False)
-
-            return bool(status)
-
-        if state:
-            return _start_connection()
-        try:
-            self._server.close_server()
-        except AttributeError:
-            # if function is called with False as an argument when connection
-            # has never started, will cause a AttributeError  because _server
-            # hasn't been declared yet
-            pass
-
-        self._toggle_widget_modification(True)
-
-    def send_nodes(self):
-        """Send the selected Nuke Nodes using the internal client.
-
-        Returns:
-            SendNodesClient: SendNodesClient object.
-        """
-        self._client = SendNodesClient()
-        self._connect_client(self.send_btn)
-        self._client.client_timeout.connect(
-            self.connections._timeout._socket_timeout.setText)
-        return self._client
-
-    def send_test(self):
-        """Send a test message using the internal _client.
-
-        Returns:
-            SendTestClient: SendTestClient object.
-        """
-        # BUG: the send nodes is not working
-        self._client = SendTestClient()
-        self._connect_client(self.test_btn)
-        self._client.client_timeout.connect(
-            self.connections._timeout._client_timeout.setText)
-        return self._client
-
-    def _connect_client(self, client_btn):  # type: (QPushButton) -> None
-        """Connect the client to host and update status log.
-
-        Args:
-            client_btn (QPushButton): the client button to enable back when
-            client is ready so send new data. This will be emitted from the
-            client object signal.
-        """
-        self._client.client_ready.connect(client_btn.setEnabled)
-        self._client.state_changed.connect(self.log_widgets.set_status_text)
-        self._client.connect_to_host()
-
-
-class MainWindow(QMainWindow):
-    """Custom QMainWindow class.
-
-    The class comes with a statusbar and a toolbar. When an exception happens,
-    it will spawn an ErrorDialog widget.
-    """
-
-    def __init__(self, main_widget=MainWindowWidget):
-        """Init method for main window widget."""
-        QMainWindow.__init__(self)
-        self.setWindowTitle('NukeServerSocket')
-
-        toolbar = ToolBar()
-        self.addToolBar(toolbar)
-
-        self.status_bar = QStatusBar(self)
-        self.setStatusBar(self.status_bar)
-
-        try:
-            main_widgets = main_widget()
-        except Exception as err:  # skipcq: PYL-W0703
-            ErrorDialog(err, self).show()
-            LOGGER.exception(err)
+                self._write_log(f'Failed to establish connection on port {port}.')
+                self._close_connection()
         else:
-            self.setCentralWidget(main_widgets)
+            self._close_connection()
+
+    def _close_connection(self):
+        self._server.close()
+        self._view.set_disconnected()
+        self._view.port_input.setEnabled(True)
+        self._view.connect_btn.setChecked(False)
+        self._write_log('Closing connection...')
 
 
-try:
-    import nukescripts
-except ImportError:
-    pass
-else:
-    nukescripts.panels.registerWidgetAsPanel(
-        'NukeServerSocket.nukeserversocket.main.MainWindow', 'NukeServerSocket',
-        'NukeServerSocket.MainWindow')
+class NukeServerSocket(QMainWindow):
+
+    def __init__(self, parent=None):
+        """Init method for NukeServerSocket."""
+        super().__init__(parent)
+        print(f'\nNukeServerSocket: {about()["version"]}')
+
+        self.view = MainView()
+        self.model = MainModel()
+        self.controller = MainController(self.view, self.model)
+
+        self.toolbar = ToolBar(self.view)
+
+        self.addToolBar(self.toolbar)
+        self.setCentralWidget(self.view)

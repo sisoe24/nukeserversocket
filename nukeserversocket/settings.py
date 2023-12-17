@@ -1,55 +1,63 @@
-"""Application settings module."""
-# coding: utf-8
-from __future__ import annotations, print_function
+
+from __future__ import annotations
 
 import os
-import logging
+import json
+import pathlib
+from pprint import pformat
+from typing import Any, Dict
 
-from PySide2.QtCore import QSettings
-
-LOGGER = logging.getLogger('nukeserversocket')
-
-
-CONFIG_FILE = os.path.join(
-    os.path.expanduser('~'), '.nuke', 'NukeServerSocket.ini'
-)
+from .utils import cache
 
 
-class AppSettings(QSettings):
-    """Custom QSettings app."""
+class _NssSettings:
+    defaults = {
+        'port': 54321,
+        'server_timeout': 60000,
+        'mirror_script_editor': False,
+        'clear_output': True,
+        'format_output': '[%d NukeTools] %F%n%t',
+    }
 
-    def __init__(self):
-        """Init method for the AppSettings class.
+    def __init__(self, settings_file: pathlib.Path):
+        self._settings_file = settings_file
+        self._settings = self.load(settings_file)
 
-        Class will be initialized by calling its parent class QSettings with a
-        file path and the IniFormat option.
-        """
-        QSettings.__init__(self, CONFIG_FILE, QSettings.IniFormat)
+        for key, value in self.defaults.items():
+            self._settings.setdefault(key, value)
 
-    def validate_port_settings(self, default_port='54321'):
-        """Check if the port config value in the ini file.
+    def __str__(self) -> str:
+        return pformat(self._settings)
 
-        If value is not found or is wrong, then create a default one with value
-        `54321`.
-        """
-        port = self.value('server/port')
-        LOGGER.debug('Verify port configuration: %s', port)
+    def load(self, settings_file: pathlib.Path) -> Dict[str, Any]:
+        with settings_file.open() as f:
+            return json.load(f)
 
-        if not port or not 49512 <= int(port) <= 65535:
-            self.setValue('server/port', default_port)
+    def save(self):
+        with self._settings_file.open('w') as f:
+            json.dump(self._settings, f, indent=4)
 
-    def get_bool(self, value, default=False):
-        """Convert .ini bool to python valid bool type.
+    def get(self, key: str, default: Any = None) -> Any:
+        return self._settings.get(key, default)
 
-        A .ini bool will be a lowercase string so it must be converted into a
-        valid python bool.
+    def set(self, key: str, value: Any):
+        self._settings[key] = value
+        self.save()
 
-        Args:
-            value (str): the value to get from the config file.
-            default (bool, optional): Default value if not present in config.
-            Defaults to False.
 
-        Returns:
-            bool: value of the setting.
-        """
-        return self.value(value, default) in (True, 'true')
+def _nss_settings_path() -> pathlib.Path:
+    runtime_settings = os.environ.get('NUKE_SERVER_SOCKET_SETTINGS')
+    if runtime_settings:
+        return pathlib.Path(runtime_settings)
+
+    file = pathlib.Path().home() / '.nuke' / 'nukeserversocket.json'
+
+    if not os.path.exists(file):
+        file.write_text('{}')
+
+    return file
+
+
+@cache
+def get_settings():
+    return _NssSettings(_nss_settings_path())
