@@ -10,8 +10,8 @@ from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
 from ..utils import cache
-from ..controller import EditorController, BaseEditorController
 from ..received_data import ReceivedData
+from ..editor_controller import EditorController, BaseEditorController
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -110,7 +110,6 @@ def install_nuke():
         EditorController.set_instance(NukeController)
 
         nukescripts.panels.registerWidgetAsPanel(
-            'nukeserversocket.refactor.main.NukeServerSocket', 'NukeController',
-            # 'nukeserversocket.refactor.install_nuke.NukeController', 'NukeController',
-            'uk.co.thefoundry.NukeController'
+            'nukeserversocket.refactor.main.NukeServerSocket', 'NukeServerSocket',
+            'uk.co.thefoundry.NukeServerSocket'
         )
