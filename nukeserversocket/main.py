@@ -142,7 +142,7 @@ class MainController:
     @Slot(bool)
     def _on_connect(self, should_connect: bool):
         port = self._view.port_input.value()
-        if should_connect and not self._server.is_listening():
+        if should_connect and not self._server.isListening():
             if self._server.try_connect(port):
                 self._timer.start(self._model.get_server_timeout())
                 self._write_log(f'Listening on {port}...')
