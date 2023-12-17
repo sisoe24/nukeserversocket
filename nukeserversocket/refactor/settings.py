@@ -7,6 +7,8 @@ import pathlib
 from pprint import pformat
 from typing import Any, Dict
 
+from .utils import cache
+
 
 class _NssSettings:
     defaults = {
@@ -43,7 +45,7 @@ class _NssSettings:
         self.save()
 
 
-def _nss_settings() -> pathlib.Path:
+def _nss_settings_path() -> pathlib.Path:
     runtime_settings = os.environ.get('NUKE_SERVER_SOCKET_SETTINGS')
     if runtime_settings:
         return pathlib.Path(runtime_settings)
@@ -56,10 +58,6 @@ def _nss_settings() -> pathlib.Path:
     return file
 
 
-_SETTINGS_CACHE: Dict[str, _NssSettings] = {}
-
-
+@cache
 def get_settings():
-    if _SETTINGS_CACHE.get('settings') is None:
-        _SETTINGS_CACHE['settings'] = _NssSettings(_nss_settings())
-    return _SETTINGS_CACHE['settings']
+    return _NssSettings(_nss_settings_path())
