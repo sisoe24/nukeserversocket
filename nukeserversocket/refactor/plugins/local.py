@@ -1,17 +1,11 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+import sys
 
-from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
-                               QApplication, QPlainTextEdit)
+from PySide2.QtWidgets import QTextEdit, QApplication, QPlainTextEdit
 
-from nukeserversocket.refactor.received_data import ReceivedData
-
-from ..utils import cache
-from ..controller import EditorController, BaseEditorController
-
-if TYPE_CHECKING:
-    from ..server import ReceivedData
+from ...refactor.main import NukeServerSocket
+from ..editor_controller import EditorController, BaseEditorController
 
 
 class LocalController(BaseEditorController):
@@ -25,3 +19,18 @@ class LocalController(BaseEditorController):
         return QTextEdit()
 
     def execute(self) -> None: ...
+
+
+def main():
+    """Main function for NukeServerSocket."""
+
+    EditorController.set_instance(LocalController)
+
+    app = QApplication(sys.argv)
+    window = NukeServerSocket()
+    window.show()
+    app.exec_()
+
+
+if __name__ == '__main__':
+    main()

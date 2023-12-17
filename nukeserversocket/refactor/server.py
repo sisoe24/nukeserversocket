@@ -5,8 +5,8 @@ from typing import Optional
 from PySide2.QtCore import Slot, Signal
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
-from .controller import EditorController
 from .received_data import ReceivedData
+from .editor_controller import EditorController
 
 
 class NssServer(QTcpServer):

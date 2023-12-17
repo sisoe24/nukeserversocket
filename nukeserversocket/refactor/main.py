@@ -1,7 +1,6 @@
 
 from __future__ import annotations
 
-import sys
 import site
 import socket
 import logging
@@ -10,15 +9,13 @@ from datetime import datetime
 from PySide2.QtCore import Slot, QTimer
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
                                QMainWindow, QPushButton, QVBoxLayout,
-                               QApplication, QPlainTextEdit)
+                               QPlainTextEdit)
 
 from nukeserversocket.refactor.about import about
 
 from .server import NssServer
 from .toolbar import ToolBar
 from .settings import get_settings
-from .controller import EditorController
-from .plugins.local import LocalController
 
 logging.basicConfig(level=logging.DEBUG)
 logging.debug('site packages: %s', site.getsitepackages())
@@ -182,18 +179,3 @@ class NukeServerSocket(QMainWindow):
 
         self.addToolBar(self.toolbar)
         self.setCentralWidget(self.view)
-
-
-def main():
-    """Main function for NukeServerSocket."""
-
-    EditorController.set_instance(LocalController)
-
-    app = QApplication(sys.argv)
-    window = NukeServerSocket()
-    window.show()
-    app.exec_()
-
-
-if __name__ == '__main__':
-    main()
