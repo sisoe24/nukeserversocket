@@ -29,9 +29,16 @@ class NssSettingsView(QWidget):
         self.setMinimumSize(400, 200)
 
         self.timeout = QSpinBox()
+        self.timeout.setToolTip('Server timeout in minutes')
+
         self.format_output = QLineEdit()
+        self.format_output.setToolTip('Format output before sending to client')
+
         self.mirror_script_editor = QCheckBox()
+        self.mirror_script_editor.setToolTip('Mirror script editor')
+
         self.clear_output = QCheckBox()
+        self.clear_output.setToolTip('Clear output before running script')
 
         form_layout = QFormLayout()
         form_layout.addRow('Server Timeout (min):', self.timeout)
