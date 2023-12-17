@@ -46,7 +46,13 @@ class _NssSettings:
 
 
 def _nss_settings_path() -> pathlib.Path:
-    runtime_settings = os.environ.get('NUKE_SERVER_SOCKET_SETTINGS')
+    """Return the path to the settings file.
+
+    The settings file is located in the user home directory under the .nuke folder
+    but can be overridden by setting the `NSS_SETTINGS` environment
+
+    """
+    runtime_settings = os.environ.get('NSS_SETTINGS')
     if runtime_settings:
         return pathlib.Path(runtime_settings)
 
@@ -60,4 +66,9 @@ def _nss_settings_path() -> pathlib.Path:
 
 @cache
 def get_settings():
+    """A singleton instance of the settings.
+
+    Always use this function to get the settings.
+
+    """
     return _NssSettings(_nss_settings_path())
