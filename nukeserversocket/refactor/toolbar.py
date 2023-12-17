@@ -10,19 +10,6 @@ from .about import about
 from .settings_ui import NssSettings
 
 
-def show_window(widget: QWidget) -> None:
-    """Show a widget window.
-
-    If widget is already visible then regain focus.
-
-    Args:
-        widget (QWidget): a widget to insert inside the dialog widget.
-    """
-    widget.show()
-    widget.activateWindow()
-    widget.raise_()
-
-
 class HelpWidget(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -58,6 +45,17 @@ class HelpWidget(QDialog):
         webbrowser.open(links[link.lower()])
 
 
+def _show_window(widget: QWidget) -> None:
+    """Show a widget window.
+
+    If widget is already visible then regain focus.
+
+    """
+    widget.show()
+    widget.activateWindow()
+    widget.raise_()
+
+
 class ToolBar(QToolBar):
     """Custom QToolBar class."""
 
@@ -74,6 +72,6 @@ class ToolBar(QToolBar):
     def add_widget(self, title: str, widget: QWidget) -> QAction:
         widget.setWindowTitle(title)
         action = QAction(title, self)
-        action.triggered.connect(lambda: show_window(widget))
+        action.triggered.connect(lambda: _show_window(widget))
         self.addAction(action)
         return action
