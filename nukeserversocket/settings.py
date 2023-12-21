@@ -20,28 +20,28 @@ class _NssSettings:
     }
 
     def __init__(self, settings_file: pathlib.Path):
-        self._settings_file = settings_file
-        self._settings = self.load(settings_file)
+        self.path = settings_file
+        self.data = self.load(settings_file)
 
         for key, value in self.defaults.items():
-            self._settings.setdefault(key, value)
+            self.data.setdefault(key, value)
 
     def __str__(self) -> str:
-        return pformat(self._settings)
+        return pformat(self.data)
 
     def load(self, settings_file: pathlib.Path) -> Dict[str, Any]:
         with settings_file.open() as f:
             return json.load(f)
 
     def save(self):
-        with self._settings_file.open('w') as f:
-            json.dump(self._settings, f, indent=4)
+        with self.path.open('w') as f:
+            json.dump(self.data, f, indent=4)
 
     def get(self, key: str, default: Any = None) -> Any:
-        return self._settings.get(key, default)
+        return self.data.get(key, default)
 
     def set(self, key: str, value: Any):
-        self._settings[key] = value
+        self.data[key] = value
         self.save()
 
 
