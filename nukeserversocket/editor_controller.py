@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Callable, Optional
+from typing import List
 from datetime import datetime
 
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
@@ -31,7 +31,7 @@ def format_output(data: ReceivedData, result: str) -> str:
     return output_format
 
 
-class BaseEditorController(ABC):
+class EditorController(ABC):
     history: List[str] = []
 
     @property
@@ -98,35 +98,3 @@ class BaseEditorController(ABC):
             return result
 
         return self._process_output(data, result)
-
-
-C = Callable[[], BaseEditorController]
-
-
-class EditorController:
-    """EditorController singleton.
-
-    This class is used to set and get the current editor controller. It is used
-    as a singleton to avoid having to pass the controller around.
-
-    >>> from nukeserversocket.editor_controller import EditorController
-    >>> from nukeserversocket.plugins.nuke import NukeController
-    >>> EditorController.set_instance(NukeController)
-
-    """
-    _controller: Optional[C] = None
-
-    @classmethod
-    def get_instance(cls) -> Optional[C]:
-        return cls._controller
-
-    @classmethod
-    def set_instance(cls, controller: C) -> None:
-        """Set the current editor controller.
-
-        Args:
-            controller (BaseEditorController): A callable that returns an instance
-            of BaseEditorController.
-
-        """
-        cls._controller = controller

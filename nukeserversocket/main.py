@@ -162,17 +162,14 @@ class MainController:
 
 class NukeServerSocket(QMainWindow):
 
-    def __init__(self, parent=None):
+    def __init__(self, editor: EditorController, parent=None):
         """Init method for NukeServerSocket."""
         super().__init__(parent)
+
         self.setWindowTitle('NukeServerSocket')
-        print(f'\nNukeServerSocket: {about()["version"]}')
+        print(f'\nLoading NukeServerSocket: {about()["version"]}')
 
-        editor_instance = EditorController.get_instance()
-        if not editor_instance:
-            raise RuntimeError('Controller is not set.')
-
-        server = NssServer(editor_instance())
+        server = NssServer(editor)
 
         self.view = MainView()
         self.model = MainModel(get_settings())

@@ -6,7 +6,7 @@ from PySide2.QtCore import Slot, Signal
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 from .received_data import ReceivedData
-from .editor_controller import BaseEditorController
+from .editor_controller import EditorController
 
 
 class NssServer(QTcpServer):
@@ -22,7 +22,7 @@ class NssServer(QTcpServer):
     on_data_received = Signal(str)
     on_data_written = Signal(str)
 
-    def __init__(self, editor: BaseEditorController, parent=None):
+    def __init__(self, editor: EditorController, parent=None):
         super().__init__(parent)
 
         self._editor = editor

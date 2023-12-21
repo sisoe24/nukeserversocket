@@ -10,9 +10,11 @@ from textwrap import dedent
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
+from nukeserversocket.main import NukeServerSocket
+
 from ..utils import cache
 from ..received_data import ReceivedData
-from ..editor_controller import EditorController, BaseEditorController
+from ..editor_controller import EditorController
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -52,7 +54,7 @@ def get_run_button() -> QPushButton:
     )
 
 
-class NukeController(BaseEditorController):
+class NukeController(EditorController):
     def __init__(self):
         self._input_editor = get_input_editor()
         self._output_editor = get_output_editor()
@@ -91,11 +93,7 @@ class NukeController(BaseEditorController):
 
         ext = os.path.splitext(data.file)[1]
 
-        if ext in ('.blink', '.cpp'):
-            text = self._blink_wrapper(data)
-        else:
-            text = data.text
-
+        text = self._blink_wrapper(data) if ext in ('.blink', '.cpp') else data.text
         self.input_editor.setPlainText(text)
 
     def execute(self):
@@ -103,12 +101,16 @@ class NukeController(BaseEditorController):
         self._run_button.click()
 
 
+class NukeEditor(NukeServerSocket):
+    def __init__(self, parent=None):
+        super().__init__(NukeController(), parent)
+
+
 def install_nuke():
     with contextlib.suppress(ImportError):
         import nukescripts
-        EditorController.set_instance(NukeController)
 
         nukescripts.panels.registerWidgetAsPanel(
-            'nukeserversocket.main.NukeServerSocket', 'NukeServerSocket',
+            'nukeserversocket.controllers.nuke.NukeEditor', 'NukeServerSocket',
             'uk.co.thefoundry.NukeServerSocket'
         )
