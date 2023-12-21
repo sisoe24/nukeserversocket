@@ -6,7 +6,7 @@ from PySide2.QtCore import Slot, Signal
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
 from .received_data import ReceivedData
-from .editor_controller import EditorController
+from .editor_controller import BaseEditorController
 
 
 class NssServer(QTcpServer):
@@ -22,27 +22,23 @@ class NssServer(QTcpServer):
     on_data_received = Signal(str)
     on_data_written = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, editor: BaseEditorController, parent=None):
         super().__init__(parent)
 
-        self.newConnection.connect(self._on_new_connection)
-
+        self._editor = editor
         self._socket: Optional[QTcpSocket] = None
 
-        controller = EditorController.get_instance()
-        if not controller:
-            raise RuntimeError('Controller is not set.')
-        self._controller = controller()
+        self.newConnection.connect(self._on_new_connection)
 
     @Slot()
     def _on_socket_ready(self):
         if not self._socket:
             raise RuntimeError('Socket is not set.')
 
+        # parse the incoming data
         data = ReceivedData(self._socket.readAll().data())
 
-        output = self._controller.run(data)
-
+        output = self._editor.run(data)
         self.on_data_received.emit(data.text)
         self.on_data_written.emit(output)
 
@@ -55,4 +51,4 @@ class NssServer(QTcpServer):
             self._socket.readyRead.connect(self._on_socket_ready)
 
     def try_connect(self, port: int) -> bool:
-        return bool(self.listen(QHostAddress.Any, port))
+        return self.listen(QHostAddress.Any, port)
