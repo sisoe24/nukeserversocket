@@ -7,15 +7,14 @@ from __future__ import annotations
 
 import sys
 
-from PySide2.QtWidgets import QTextEdit, QApplication, QPlainTextEdit
+from PySide2.QtWidgets import (QLabel, QTextEdit, QPushButton, QVBoxLayout,
+                               QApplication, QPlainTextEdit)
 
 from ..main import NukeServerSocket
-from ..editor_controller import EditorController, BaseEditorController
-
-# TODO: Implement a fake script editor.
+from ..editor_controller import EditorController
 
 
-class LocalController(BaseEditorController):
+class LocalController(EditorController):
 
     @property
     def input_editor(self) -> QPlainTextEdit:
@@ -28,13 +27,27 @@ class LocalController(BaseEditorController):
     def execute(self) -> None: ...
 
 
+class LocalEditor(NukeServerSocket):
+    def __init__(self):
+        super().__init__(LocalController())
+
+        # TODO: Implement a fake script editor.
+
+        run_button = QPushButton('Run')
+        run_button.clicked.connect(self.editor.execute)
+
+        # main_layout = self.view.layout()
+        # main_layout.addWidget(QLabel('<h3>Local Editor</h3>'))
+        # main_layout.addWidget(self.editor.input_editor)
+        # main_layout.addWidget(self.editor.output_editor)
+        # main_layout.addWidget(run_button)
+
+
 def main():
     """Main function for NukeServerSocket."""
 
-    EditorController.set_instance(LocalController)
-
     app = QApplication(sys.argv)
-    window = NukeServerSocket()
+    window = LocalEditor()
     window.show()
     app.exec_()
 
