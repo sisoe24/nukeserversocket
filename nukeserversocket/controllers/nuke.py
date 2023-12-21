@@ -91,12 +91,10 @@ class NukeController(BaseEditorController):
 
         ext = os.path.splitext(data.file)[1]
 
-        if ext == '.py':
-            text = data.text
-        elif ext in ('.blink', '.cpp'):
+        if ext in ('.blink', '.cpp'):
             text = self._blink_wrapper(data)
         else:
-            raise RuntimeError(f'Unknown file extension: {data.file}')
+            text = data.text
 
         self.input_editor.setPlainText(text)
 
