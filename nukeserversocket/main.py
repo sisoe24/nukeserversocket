@@ -169,6 +169,7 @@ class NukeServerSocket(QMainWindow):
         self.setWindowTitle('NukeServerSocket')
         print(f'\nLoading NukeServerSocket: {about()["version"]}')
 
+        self.editor = editor
         server = NssServer(editor)
 
         self.view = MainView()
