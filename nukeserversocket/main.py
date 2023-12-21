@@ -10,15 +10,20 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
                                QMainWindow, QPushButton, QVBoxLayout,
                                QPlainTextEdit)
 
+from nukeserversocket.editor_controller import EditorController
+
 from .about import about
 from .server import NssServer
 from .toolbar import ToolBar
-from .settings import get_settings
+from .settings import _NssSettings, get_settings
 
 logging.basicConfig(level=logging.DEBUG)
 
 
 class MainModel:
+    def __init__(self, settings: _NssSettings):
+        self._settings = settings
+
     def get_ip(self):
         """Get the IP address of the current machine."""
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -32,13 +37,13 @@ class MainModel:
         return ip
 
     def get_port(self):
-        return get_settings().get('port')
+        return self._settings.get('port')
 
     def set_port(self, port: int):
-        return get_settings().set('port', port)
+        return self._settings.set('port', port)
 
     def get_server_timeout(self):
-        return get_settings().get('server_timeout')
+        return self._settings.get('server_timeout')
 
 
 class MainView(QWidget):
@@ -73,6 +78,7 @@ class MainView(QWidget):
         layout.addWidget(QLabel('Logs'))
         layout.addWidget(self.logs)
         layout.addWidget(self.clear_logs)
+
         self.setLayout(layout)
 
     def _update_status_connection(self, label: str, style: str, button_txt: str):
@@ -88,12 +94,12 @@ class MainView(QWidget):
 
 
 class MainController:
-    def __init__(self, view: MainView, model: MainModel):
+    def __init__(self, view: MainView, model: MainModel, server: NssServer):
         """Init method for MainWindowWidget."""
         self._view = view
         self._model = model
 
-        self._server = NssServer()
+        self._server = server
         self._server.on_data_received.connect(self._on_data_received)
         self._server.on_data_written.connect(self._on_data_written)
 
@@ -159,11 +165,18 @@ class NukeServerSocket(QMainWindow):
     def __init__(self, parent=None):
         """Init method for NukeServerSocket."""
         super().__init__(parent)
+        self.setWindowTitle('NukeServerSocket')
         print(f'\nNukeServerSocket: {about()["version"]}')
 
+        editor_instance = EditorController.get_instance()
+        if not editor_instance:
+            raise RuntimeError('Controller is not set.')
+
+        server = NssServer(editor_instance())
+
         self.view = MainView()
-        self.model = MainModel()
-        self.controller = MainController(self.view, self.model)
+        self.model = MainModel(get_settings())
+        self.controller = MainController(self.view, self.model, server)
 
         self.toolbar = ToolBar(self.view)
 
