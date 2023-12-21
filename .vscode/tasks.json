@@ -19,7 +19,7 @@
             },
             "args": [
                 "-m",
-                "nukeserversocket.plugins.local_app"
+                "nukeserversocket.controllers.local_app"
             ],
             "problemMatcher": []
         },
