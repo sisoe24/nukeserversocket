@@ -20,13 +20,13 @@ if TYPE_CHECKING:
 
 class NssSettingsModel:
     def __init__(self, settings: _NssSettings):
-        self._settings = settings
+        self.settings = settings
 
     def get(self, key: str, default: Any = None) -> Any:
-        return self._settings.get(key, default)
+        return self.settings.get(key, default)
 
     def set(self, key: str, value: Any):
-        self._settings.set(key, value)
+        self.settings.set(key, value)
 
 
 class NssSettingsView(QWidget):
@@ -61,7 +61,7 @@ class NssSettingsController:
         self._model = model
 
         self._view.timeout.valueChanged.connect(self._on_timeout_changed)
-        self._view.format_output.textEdited.connect(self._on_format_output_changed)
+        self._view.format_output.textChanged.connect(self._on_format_output_changed)
         self._view.mirror_script_editor.stateChanged.connect(self._on_mirror_script_editor_changed)
         self._view.clear_output.stateChanged.connect(self._on_clear_output_changed)
 
@@ -73,7 +73,7 @@ class NssSettingsController:
     def _on_clear_output_changed(self, state: int):
         self._model.set('clear_output', state == 2)
 
-    @Slot(int)
+    @Slot(str)
     def _on_format_output_changed(self, text: str):
         self._model.set('format_output', text)
 
@@ -90,16 +90,7 @@ class NssSettingsController:
 
 class NssSettings:
     def __init__(self):
-        self._model = NssSettingsModel(get_settings())
-        self._view = NssSettingsView()
-        self._controller = NssSettingsController(self._view, self._model)
-        self._controller.init()
-
-    def view(self):
-        return self._view
-
-    def model(self):
-        return self._model
-
-    def controller(self):
-        return self._controller
+        self.model = NssSettingsModel(get_settings())
+        self.view = NssSettingsView()
+        self.controller = NssSettingsController(self.view, self.model)
+        self.controller.init()
