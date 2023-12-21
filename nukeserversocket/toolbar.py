@@ -66,7 +66,7 @@ class ToolBar(QToolBar):
         self.setStyleSheet('color: white;')
 
         self.settings = NssSettings()
-        self.add_widget(title='Settings', widget=self.settings.view())
+        self.add_widget(title='Settings', widget=self.settings.view)
         self.addAction('Help', HelpWidget(self).show)
 
     def add_widget(self, title: str, widget: QWidget) -> QAction:
