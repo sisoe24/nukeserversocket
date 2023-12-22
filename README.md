@@ -1,4 +1,4 @@
-# 1. NukeServerSocket README
+# 1. NukeServerSocket README WIP
 
 [![Main Build](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)](https://github.com/sisoe24/NukeServerSocket/releases)
 [![Pre Release](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&include_prereleases)](https://github.com/sisoe24/NukeServerSocket/releases)
@@ -21,9 +21,8 @@
 
 A Nuke plugin to run code from external applications.
 
-- [1. NukeServerSocket README](#1-nukeserversocket-readme)
+- [1. NukeServerSocket README WIP](#1-nukeserversocket-readme-wip)
 - [1.0.0 Release](#100-release)
-- [Note for Nuke 14/15 users](#note-for-nuke-1415-users)
   - [1.1. Features](#11-features)
   - [1.2. Client applications](#12-client-applications)
   - [1.3. Installation](#13-installation)
@@ -42,10 +41,6 @@ This is the first stable release of NukeServerSocket. It is a complete rewrite o
 For a full list of changes, see the [CHANGELOG](TODO)
 
 If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<= 0.6.2` from the [releases page](https://github.com/sisoe24/NukeServerSocket/releases)
-
-# Note for Nuke 14/15 users
-
-If you are using Nuke 14/15, make sure to [download](https://github.com/sisoe24/NukeServerSocket/releases#latest) NukeServerSocket's latest version (>= 0.6.0), as Nuke currently does not include the QWebSocket modules that NukeServerSocket < 0.6.0 relies on.
 
 ---
 
@@ -66,7 +61,11 @@ Client applications that use NukeServerSocket:
 
 1. Download the repository via the [releases page](https://github.com/sisoe24/NukeServerSocket/releases) or by cloning it from GitHub.
 2. Place the folder inside the _~/.nuke_ directory or into a custom one.
-3. Write `import nukeserversocket` into your _menu.py_.
+3. Then, in your _menu.py_, write
+     ```python
+     from nukeserversocket import nukeserversocket
+     nukeserversocket.install_nuke()
+     ```
 
 > If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), use the command `Nuke Tools: Add NukeServerSocket`.
 
@@ -76,7 +75,7 @@ Client applications that use NukeServerSocket:
 
 ![Execute Code](images/execute_code.gif)
 
-1. Open the NukeServerSocket panel inside Nuke, and with the mode on **Receiver**, start the server by clicking **Connect**.
+1. Open the NukeServerSocket panel inside Nuke, and start the server by clicking **Connect**.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
 NOTES:
@@ -87,30 +86,11 @@ NOTES:
 
 You access the settings from the plugin toolbar.
 
-- **Code Execution Engine**: Change the engine that will executing the code.
-  - **Nuke Internal**: Nuke `executeInMainThread` function.
-  - **Script Editor**: Nuke Script Editor widget. [**Default**]
-
-  > Why use one over the other?
-  >
-  > You should almost always use the Script Editor engine, as it is safer and more reliable. The Nuke Internal engine causes many issues and it might get removed in the future.
-
-- **Connection Type**: Change the internal connection protocol for the client-server **(Not present in Nuke 14/15, which defaults to TCP)**.
-  - **TCP**: The default type of connection. If unsure, use this. [**Default**]
-  - **WebSocket**: Use this when using browser-based text editors.
-
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
-  - **Override Output Editor**: Mirror output to the internal script editor.
-  - **Format Text**: The script editor output window will receive a formatted version of the code result.
-  - **Clear Output**:  The script editor output window will clear the code after each execution.
-  - **Show File Path**: The script editor output window will display the full path for the executed file.
-  - **Show Unicode**: The script editor output window will display a Unicode character `` that indicates the start of the code execution result.
-  - **Override Input Editor**: Mirror input to the internal script editor.
+- **Format Text**: The script editor output window will receive a formatted version of the code result.
+- **Clear Output**: The script editor output window will clear the code after each execution.
 
-- **Timeout**: Terminate the connection when the Server is inactive or did not establish a successful contact in the time specified.
-  - **Server**: Set the Timeout when clicking the **Connect** button. The default value is `10` minutes.
-  - **Receiver**: Set the Timeout for when clicking the **Test Receiver** button. The default value is `10` seconds.
-  - **Send Nodes**: Set the Timeout when clicking **Send Nodes** button. The default value is `30` seconds.
+- **Server Timeout**: Set the Timeout when clicking the **Connect** button. The default value is `10` minutes.
 
 ## 1.6. Extendibility
 
