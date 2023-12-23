@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 
 from PySide2.QtCore import Slot
-from PySide2.QtWidgets import (QFrame, QLabel, QCheckBox, QPushButton,
+from PySide2.QtWidgets import (QCheckBox, QGroupBox, QHBoxLayout, QPushButton,
                                QVBoxLayout, QPlainTextEdit)
 
 from .logger import get_logger
@@ -24,11 +24,9 @@ class _ConsoleHandler(logging.Handler):
         self._console.write(self.format(record) + '\n')
 
 
-class NssConsole(QFrame):
+class NssConsole(QGroupBox):
     def __init__(self, parent=None):
-        super().__init__(parent)
-        # self.setFrameStyle(QFrame.StyledPanel )
-        # self.setStyleSheet("QFrame {background-color: #3B3B3B;}")
+        super().__init__(parent, title='Logs')
 
         self._console_handler = _ConsoleHandler(self)
         get_logger().addHandler(self._console_handler)
@@ -38,17 +36,19 @@ class NssConsole(QFrame):
         self._enable_debug = QCheckBox('Enable Debug')
         self._enable_debug.stateChanged.connect(self._on_enable_debug)
 
-        # self._console.setStyleSheet("QPlainTextEdit {background-color: #FFFFFF}")
         self._console.setReadOnly(True)
 
         self.clear_logs_btn = QPushButton('Clear Logs')
         self.clear_logs_btn.clicked.connect(self._console.clear)
 
+        top_layout = QHBoxLayout()
+        top_layout.addWidget(self._enable_debug)
+        top_layout.addStretch()
+        top_layout.addWidget(self.clear_logs_btn)
+
         layout = QVBoxLayout()
-        layout.addWidget(QLabel('<h3>Logs</h3>'))
-        layout.addWidget(self._enable_debug)
+        layout.addLayout(top_layout)
         layout.addWidget(self._console)
-        layout.addWidget(self.clear_logs_btn)
 
         self.setLayout(layout)
 
