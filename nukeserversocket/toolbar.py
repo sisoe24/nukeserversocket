@@ -1,13 +1,29 @@
 from __future__ import annotations
 
+import os
+import sysconfig
 import webbrowser
+from typing import Dict
+from platform import python_version
 
+from PySide2 import __version__ as PySide2_version
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QLabel, QAction, QDialog, QWidget, QToolBar,
                                QFormLayout, QPushButton)
 
-from .about import about
+from .version import __version__
 from .settings_ui import NssSettings
+
+
+def about() -> Dict[str, str]:
+    """Return a dictionary with information about the application."""
+    return {
+        'version': __version__,
+        'python': python_version(),
+        'pyside': PySide2_version,
+        'machine': sysconfig.get_platform(),
+        'user': os.getenv('USER', os.getenv('USERNAME', 'unknown')),
+    }
 
 
 class HelpWidget(QDialog):
