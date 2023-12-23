@@ -4,6 +4,10 @@ import json
 from typing import Dict
 from dataclasses import field, dataclass
 
+from .logger import get_logger
+
+LOGGER = get_logger()
+
 
 @dataclass
 class ReceivedData:
@@ -13,10 +17,8 @@ class ReceivedData:
 
     {
         "text": "Text to run in the script editor",
-        "file": "File name to show in the output"
+        "file": "File name to show in the output (optional))"
     }
-
-    NOTE: From version 1.0.0, the `file` field is mandatory but it can be an empty string.
 
     Raises:
         ValueError: If the data is not a valid json string or if it does not contain a `text` field.
@@ -33,12 +35,17 @@ class ReceivedData:
         try:
             self.data = json.loads(self.raw)
             self.data.setdefault('file', '')
+            LOGGER.debug('Received data: %s', self.data)
         except Exception as e:
-            raise ValueError(f'An exception occurred while decoding the data. {e}') from e
+            msg = f'An exception occurred while decoding the data. {e}'
+            LOGGER.error(msg)
+            raise ValueError(msg) from e
 
         self.text = self.data.get('text')
         if not self.text:
-            raise ValueError('Data does not contain a text field.')
+            msg = 'Data does not contain a text field.'
+            LOGGER.error(msg)
+            raise ValueError(msg)
 
         # file is optional as is only used to show the file name in the output
         self.file = self.data.get('file')
