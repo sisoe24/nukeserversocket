@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-import logging
 from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime
@@ -10,8 +9,6 @@ from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from .settings import get_settings
 from .received_data import ReceivedData
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 def format_output(data: ReceivedData, result: str) -> str:
@@ -54,13 +51,9 @@ class EditorController(ABC):
         settings = get_settings()
 
         if settings.get('format_output'):
-            logging.debug('formatting output')
             output = format_output(data, result)
         else:
-            logging.debug('not formatting output')
             output = result
-
-        logging.debug(f'final output: -> {output} <-')
 
         self._add_to_history(output)
 
@@ -81,7 +74,6 @@ class EditorController(ABC):
         return self.output_editor.toPlainText()
 
     def set_input(self, data: ReceivedData) -> None:
-        logging.debug(f'base class file: {data.file}')
         self.input_editor.setPlainText(data.text)
 
     def run(self, data: ReceivedData) -> str:
