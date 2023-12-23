@@ -141,6 +141,7 @@ class MainController:
         self._view.set_disconnected()
         self._view.port_input.setEnabled(True)
         self._view.connect_btn.setChecked(False)
+        self._timer.stop()
         LOGGER.info('Closing connection...')
 
 
