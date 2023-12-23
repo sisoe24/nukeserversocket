@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import os
 import json
-import logging
 import contextlib
 from textwrap import dedent
 
@@ -15,8 +14,6 @@ from nukeserversocket.main import NukeServerSocket
 from ..utils import cache
 from ..received_data import ReceivedData
 from ..editor_controller import EditorController
-
-logging.basicConfig(level=logging.DEBUG)
 
 
 @cache
@@ -88,8 +85,6 @@ class NukeController(EditorController):
 
     def set_input(self, data: ReceivedData) -> None:
         """Override the base method."""
-
-        logging.debug(f'file: {data.file}')
 
         ext = os.path.splitext(data.file)[1]
 
