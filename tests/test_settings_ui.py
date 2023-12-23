@@ -20,16 +20,18 @@ def model(tmp_settings: pathlib.Path):
 
 
 @pytest.fixture()
-def view() -> View:
-    return View()
+def view(qtbot: QtBot) -> View:
+    view = View()
+    qtbot.addWidget(view)
+    return view
 
 
 @pytest.fixture()
-def controller(qtbot: QtBot, model: Model, view: View) -> Controller:
+def controller(model: Model, view: View) -> Controller:
     return Controller(view, model)
 
 
-def test_settings(qtbot: QtBot, controller: Controller, model: Model, view: View):
+def test_settings(controller: Controller, model: Model, view: View):
 
     controller.init()
 
