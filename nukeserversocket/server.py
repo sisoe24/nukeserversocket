@@ -30,7 +30,7 @@ class NssServer(QTcpServer):
         self._socket: Optional[QTcpSocket] = None
 
         self.newConnection.connect(self._on_new_connection)
-        self.acceptError.connect(lambda err: LOGGER.error('QServer error: %s', self.errorString()))
+        self.acceptError.connect(lambda err: LOGGER.error('Server error: %s', self.errorString()))
 
     @Slot()
     def _on_socket_ready(self):
@@ -49,12 +49,10 @@ class NssServer(QTcpServer):
         self.on_data_received.emit()
 
         LOGGER.info('Writing output to back socket...')
-
         self._socket.write(output.encode('utf-8'))
         LOGGER.debug('Output: %s', output.replace('\n', '\\n'))
 
         self._socket.close()
-
         LOGGER.debug('Socket closed.')
 
     def _on_new_connection(self) -> None:
