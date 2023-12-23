@@ -48,6 +48,7 @@ def main():
 
     app = QApplication(sys.argv)
     window = LocalEditor()
+    window.setGeometry(100, 100, 800, 600)
     window.show()
     app.exec_()
 
