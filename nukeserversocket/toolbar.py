@@ -1,6 +1,6 @@
-"""Toolbar widget module."""
-
 from __future__ import annotations
+
+import webbrowser
 
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QLabel, QAction, QDialog, QWidget, QToolBar,
@@ -19,16 +19,13 @@ class HelpWidget(QDialog):
         for name, value in about().items():
             form_layout.addRow(f'{name.title()}:', QLabel(value))
 
-        self.issues = self._button_factory('Issues')
-        self.readme = self._button_factory('Readme')
-        self.changelog = self._button_factory('Changelog')
+        form_layout.addRow(self._button_builder('Readme'))
+        form_layout.addRow(self._button_builder('Changelog'))
+        form_layout.addRow(self._button_builder('Issues'))
 
-        form_layout.addRow(self.readme)
-        form_layout.addRow(self.changelog)
-        form_layout.addRow(self.issues)
         self.setLayout(form_layout)
 
-    def _button_factory(self, text: str) -> QPushButton:
+    def _button_builder(self, text: str) -> QPushButton:
         button = QPushButton(text)
         button.clicked.connect(lambda: self._on_open_link(text))
         return button
@@ -41,7 +38,6 @@ class HelpWidget(QDialog):
             'changelog': f'{gitrepo}/blob/master/CHANGELOG.md',
             'readme': f'{gitrepo}/blob/master/README.md'
         }
-        import webbrowser
         webbrowser.open(links[link.lower()])
 
 
@@ -65,9 +61,10 @@ class ToolBar(QToolBar):
         self.setMovable(False)
         self.setStyleSheet('color: white;')
 
-        self.settings = NssSettings()
-        self.add_widget(title='Settings', widget=self.settings.view)
-        self.addAction('Help', HelpWidget(self).show)
+        self._settings = NssSettings()
+
+        self.add_widget(title='Settings', widget=self._settings.view)
+        self.add_widget(title='Help', widget=HelpWidget(self))
 
     def add_widget(self, title: str, widget: QWidget) -> QAction:
         widget.setWindowTitle(title)
