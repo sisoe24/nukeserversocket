@@ -4,23 +4,25 @@ version = "0.6.2"
 description = "A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more."
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 
+[tool.poetry.scripts]
+nukeserversocket = "nukeserversocket.controllers.local_app:main"
+
 [tool.isort]
 skip = ["__init__.py"]
 length_sort = true
 add_imports = "from __future__ import annotations"
 
-
 [tool.autopep8]
 max_line_length = 100
 
 [tool.coverage.paths]
-source = ["nukeserversocket/refactor"]
+source = ["nukeserversocket"]
 
 [tool.coverage.html]
 directory = "coverage"
 
 [tool.coverage.run]
-omit = ["nukeserversocket/refactor/tests/*", "nukeserversocket/refactor/__init__.py"]
+omit = ["nukeserversocket/tests/*", "nukeserversocket/__init__.py"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
