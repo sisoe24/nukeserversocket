@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import logging
-import pathlib
 from logging.handlers import TimedRotatingFileHandler
 
-from .utils import cache
+from .utils import ROOT, cache
 
-PACKAGE_LOG = pathlib.Path(__file__).parent.parent / 'logs' / 'nukeserversocket.log'
+PACKAGE_LOG = ROOT / 'logs' / 'nukeserversocket.log'
 PACKAGE_LOG.parent.mkdir(parents=True, exist_ok=True)
 
 

@@ -9,13 +9,13 @@ from platform import python_version
 
 from PySide2 import __version__ as PySide2_version
 
-from .utils import cache
+from .utils import ROOT, cache
 
 
 @cache
 def load_version() -> str:
     # so much code to get the version number :(
-    pyproject = pathlib.Path(__file__).parent.parent / 'pyproject.toml'
+    pyproject = ROOT / 'pyproject.toml'
     version = re.search(r'version = "(.*)"', pyproject.read_text())
     version = version[1] if version else 'unknown'
     os.environ['NUKE_SERVER_SOCKET_VERSION'] = version
