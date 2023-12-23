@@ -1,47 +1,48 @@
 from __future__ import annotations
 
-import json
+from typing import Dict
+from dataclasses import dataclass
 
 import pytest
 
 from nukeserversocket.received_data import ReceivedData
 
 
-@pytest.fixture()
-def data():
-    return json.dumps({'text': 'Hello World', 'file': 'test.py'})
+@dataclass
+class TestData:
+    raw: str
+    data: Dict[str, str]
+    text: str
+    file: str
 
 
-def test_received_data(data: str):
+@pytest.mark.parametrize('data', [
+    TestData(
+        '{"text": "Hello World", "file": "test.py"}',
+        {'text': 'Hello World', 'file': 'test.py'},
+        'Hello World',
+        'test.py'
+    ),
+    TestData(
+        '{"text": "Hello World", "file": ""}',
+        {'text': 'Hello World', 'file': ''},
+        'Hello World',
+        ''
+    ),
+    TestData(
+        '{"text": "Hello World"}',
+        {'text': 'Hello World', 'file': ''},
+        'Hello World',
+        ''
+    ),
+])
+def test_received_data(data: TestData):
+    received = ReceivedData(data.raw)
 
-    received = ReceivedData(data)
-
-    assert received.raw == data
-    assert received.data == {'text': 'Hello World', 'file': 'test.py'}
-    assert received.text == 'Hello World'
-    assert received.file == 'test.py'
-
-
-def test_received_data_without_file():
-
-    data = json.dumps({'text': 'Hello World'})
-    received = ReceivedData(data)
-
-    assert received.raw == data
-    assert received.data == {'text': 'Hello World', 'file': ''}
-    assert received.text == 'Hello World'
-    assert received.file == ''
-
-
-def test_received_data_with_empty_file():
-
-    data = json.dumps({'text': 'Hello World', 'file': ''})
-    received = ReceivedData(data)
-
-    assert received.raw == data
-    assert received.data == {'text': 'Hello World', 'file': ''}
-    assert received.text == 'Hello World'
-    assert received.file == ''
+    assert received.raw == data.raw
+    assert received.data == data.data
+    assert received.text == data.text
+    assert received.file == data.file
 
 
 def test_received_data_no_text():
