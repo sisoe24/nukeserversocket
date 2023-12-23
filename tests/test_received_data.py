@@ -9,7 +9,7 @@ from nukeserversocket.received_data import ReceivedData
 
 
 @dataclass
-class TestData:
+class ReceivedTestData:
     raw: str
     data: Dict[str, str]
     text: str
@@ -17,26 +17,26 @@ class TestData:
 
 
 @pytest.mark.parametrize('data', [
-    TestData(
+    ReceivedTestData(
         '{"text": "Hello World", "file": "test.py"}',
         {'text': 'Hello World', 'file': 'test.py'},
         'Hello World',
         'test.py'
     ),
-    TestData(
+    ReceivedTestData(
         '{"text": "Hello World", "file": ""}',
         {'text': 'Hello World', 'file': ''},
         'Hello World',
         ''
     ),
-    TestData(
+    ReceivedTestData(
         '{"text": "Hello World"}',
         {'text': 'Hello World', 'file': ''},
         'Hello World',
         ''
     ),
 ])
-def test_received_data(data: TestData):
+def test_received_data(data: ReceivedTestData):
     received = ReceivedData(data.raw)
 
     assert received.raw == data.raw
