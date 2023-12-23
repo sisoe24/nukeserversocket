@@ -25,7 +25,7 @@ def _file_handler() -> TimedRotatingFileHandler:
     return handler
 
 
-@cache
+@cache('logger')
 def get_logger() -> logging.Logger:
     logger = logging.getLogger('nukeserversocket')
     logger.setLevel(logging.DEBUG)

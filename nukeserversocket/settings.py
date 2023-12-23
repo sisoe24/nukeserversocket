@@ -64,7 +64,7 @@ def _nss_settings_path() -> pathlib.Path:
     return file
 
 
-@cache
+@cache('settings')
 def get_settings():
     """A singleton instance of the settings.
 

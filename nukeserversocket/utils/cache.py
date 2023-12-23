@@ -5,16 +5,25 @@ from typing import Any, Dict, TypeVar, Callable
 R = TypeVar('R')
 GenericFunc = Callable[..., R]
 
-_CACHE: Dict[GenericFunc[Any], Any] = {}
+_CACHE: Dict[str, Dict[GenericFunc[Any], Any]] = {}
 
 
-def cache(func: GenericFunc[R]) -> GenericFunc[R]:
-    def wrapper(*args: Any, **kwargs: Any) -> R:
-        if func not in _CACHE:
-            _CACHE[func] = func(*args, **kwargs)
-        return _CACHE[func]
-    return wrapper
+def cache(name: str) -> Callable[[GenericFunc[R]], GenericFunc[R]]:
+    def inner(func: GenericFunc[R]) -> GenericFunc[R]:
+        def wrapper(*args: Any, **kwargs: Any) -> R:
+            if name not in _CACHE:
+                _CACHE[name] = {}
+
+            if func not in _CACHE[name]:
+                _CACHE[name].update({func: func(*args, **kwargs)})
+
+            return _CACHE[name][func]
+
+        return wrapper
+
+    return inner
 
 
-def clear_cache():
-    _CACHE.clear()
+def clear_cache(name: str):
+    if name in _CACHE:
+        _CACHE[name].clear()
