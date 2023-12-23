@@ -9,11 +9,11 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
 
 from nukeserversocket.editor_controller import EditorController
 
-from .about import about
 from .logger import get_logger
 from .server import NssServer
 from .console import NssConsole
 from .toolbar import ToolBar
+from .version import __version__
 from .settings import _NssSettings, get_settings
 
 LOGGER = get_logger()
@@ -149,9 +149,9 @@ class NukeServerSocket(QMainWindow):
     def __init__(self, editor: EditorController, parent=None):
         """Init method for NukeServerSocket."""
         super().__init__(parent)
-
         self.setWindowTitle('NukeServerSocket')
-        print(f'\nLoading NukeServerSocket: {about()["version"]}')
+
+        print(f'\nLoading NukeServerSocket: {__version__}')
 
         self.editor = editor
         server = NssServer(editor)
