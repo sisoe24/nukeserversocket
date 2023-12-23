@@ -33,16 +33,25 @@ class NssConsole(QGroupBox):
 
         self._console = QPlainTextEdit()
         self._console.setStyleSheet('font-family: menlo;')
+        self._console.setReadOnly(True)
+        self._console.setLineWrapMode(QPlainTextEdit.NoWrap)
+
         self._enable_debug = QCheckBox('Enable Debug')
         self._enable_debug.stateChanged.connect(self._on_enable_debug)
 
-        self._console.setReadOnly(True)
+        self._wrap_lines = QCheckBox('Wrap Lines')
+        self._wrap_lines.stateChanged.connect(
+            lambda state: self._console.setLineWrapMode(
+                QPlainTextEdit.WidgetWidth if state == 2 else QPlainTextEdit.NoWrap
+            )
+        )
 
         self.clear_logs_btn = QPushButton('Clear Logs')
         self.clear_logs_btn.clicked.connect(self._console.clear)
 
         top_layout = QHBoxLayout()
         top_layout.addWidget(self._enable_debug)
+        top_layout.addWidget(self._wrap_lines)
         top_layout.addStretch()
         top_layout.addWidget(self.clear_logs_btn)
 
