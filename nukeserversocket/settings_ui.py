@@ -7,6 +7,7 @@ This module is a wrapper around the settings module, and provides a UI for it.
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from textwrap import dedent
 
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QWidget, QSpinBox, QCheckBox, QLineEdit,
@@ -38,7 +39,14 @@ class NssSettingsView(QWidget):
         self.timeout.setToolTip('Server timeout in minutes')
 
         self.format_output = QLineEdit()
-        self.format_output.setToolTip('Format output before sending to client')
+        self.format_output.setToolTip(dedent('''
+        Format output using the following placeholders:
+        - %d: current time
+        - %f: file name
+        - %F: file name without path
+        - %t: output text
+        - %n: new line
+        '''))
 
         self.mirror_script_editor = QCheckBox()
         self.mirror_script_editor.setToolTip('Mirror script editor')
