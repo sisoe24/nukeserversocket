@@ -5,6 +5,9 @@ import pathlib
 
 import pytest
 
+from nukeserversocket.utils.cache import clear_cache
+from nukeserversocket.controllers.local_app import LocalEditor
+
 
 @pytest.fixture()
 def tmp_settings():
@@ -13,5 +16,8 @@ def tmp_settings():
     f.write_text('{}')
 
     os.environ['NSS_SETTINGS'] = str(f)
+
     yield f
+    clear_cache('settings')
+
     f.unlink()
