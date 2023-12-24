@@ -14,6 +14,7 @@ from .console import NssConsole
 from .toolbar import ToolBar
 from .version import __version__
 from .settings import get_settings
+from .settings_ui import NssSettingsUI
 
 if TYPE_CHECKING:
     from .settings import _NssSettings
@@ -157,14 +158,19 @@ class NukeServerSocket(QMainWindow):
 
         print(f'\nLoading NukeServerSocket: {__version__}')
 
+        self.settings = get_settings()
+
         self.editor = editor
-        server = NssServer(editor)
+        self.editor.settings = self.settings
 
         self.view = MainView()
-        self.model = MainModel(get_settings())
-        self.controller = MainController(self.view, self.model, server)
+        self.model = MainModel(self.settings)
+        self.controller = MainController(self.view, self.model, NssServer(editor))
+
+        self._settings_ui = NssSettingsUI(self.settings)
 
         self.toolbar = ToolBar(self.view)
+        self.toolbar.add_widget(title='Settings', widget=self._settings_ui.view)
 
         self.addToolBar(self.toolbar)
         self.setCentralWidget(self.view)
