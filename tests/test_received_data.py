@@ -7,8 +7,6 @@ import pytest
 
 from nukeserversocket.received_data import ReceivedData
 
-pytestmark = pytest.mark.quick
-
 
 @dataclass
 class ReceivedTestData:
