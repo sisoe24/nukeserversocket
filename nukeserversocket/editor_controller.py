@@ -1,25 +1,25 @@
 from __future__ import annotations
 
 import os
+import logging
 from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime
 
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
-from .logger import get_logger
 from .settings import get_settings
 from .received_data import ReceivedData
 
-LOGGER = get_logger()
+LOGGER = logging.getLogger('nukeserversocket')
 
 
-def format_output(data: ReceivedData, result: str) -> str:
+def format_output(file: str, text: str) -> str:
     placeholders = {
         '%d': datetime.now().strftime('%H:%M:%S'),
-        '%f': data.file,
-        '%F': os.path.basename(data.file),
-        '%t': result,
+        '%f': file,
+        '%F': os.path.basename(file),
+        '%t': text,
         '%n': '\n'
     }
 
@@ -51,17 +51,16 @@ class EditorController(ABC):
         cls.history.append(text)
 
     def _process_output(self, data: ReceivedData, result: str) -> str:
-        settings = get_settings()
 
-        if settings.get('format_output'):
-            output = format_output(data, result)
+        if get_settings().get('format_output'):
+            output = format_output(data.file, result)
             LOGGER.debug('Formatting output: %s', output.replace('\n', '\\n'))
         else:
             output = result
 
         self._add_to_history(output)
 
-        if settings.get('clear_output'):
+        if get_settings().get('clear_output'):
             LOGGER.debug('Clearing output.')
             self.output_editor.setPlainText(output)
         else:
@@ -82,6 +81,7 @@ class EditorController(ABC):
         self.input_editor.setPlainText(data.text)
 
     def run(self, data: ReceivedData) -> str:
+
         LOGGER.debug('Running script: %s', data.file)
 
         initial_input = self.input_editor.toPlainText()
@@ -91,6 +91,8 @@ class EditorController(ABC):
         self.execute()
 
         result = self.get_output()
+
+        LOGGER.debug('RUN get_settings(): %s', get_settings())
 
         if not get_settings().get('mirror_script_editor'):
             LOGGER.debug('Restoring script editor.')
