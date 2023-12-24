@@ -14,6 +14,7 @@ LOGGER = get_logger()
 class _ConsoleHandler(logging.Handler):
     def __init__(self, console: NssConsole) -> None:
         super().__init__()
+        self.set_name('console')
         self.setLevel(logging.INFO)
         self.setFormatter(
             logging.Formatter(
