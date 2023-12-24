@@ -13,8 +13,6 @@ from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QWidget, QSpinBox, QCheckBox, QLineEdit,
                                QFormLayout)
 
-from .settings import get_settings
-
 if TYPE_CHECKING:
     from .settings import _NssSettings
 
@@ -105,9 +103,9 @@ class NssSettingsController:
         self._view.clear_output.setChecked(self._model.get('clear_output'))
 
 
-class NssSettings:
-    def __init__(self):
-        self.model = NssSettingsModel(get_settings())
+class NssSettingsUI:
+    def __init__(self, settings: _NssSettings):
+        self.model = NssSettingsModel(settings)
         self.view = NssSettingsView()
         self.controller = NssSettingsController(self.view, self.model)
         self.controller.init()
