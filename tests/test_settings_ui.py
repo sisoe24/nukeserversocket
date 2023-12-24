@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import pathlib
-
 import pytest
 from pytestqt.qtbot import QtBot
 
@@ -15,8 +13,8 @@ Model = NssSettingsModel
 
 
 @pytest.fixture()
-def model(tmp_settings: pathlib.Path):
-    return Model(_NssSettings(tmp_settings))
+def model(settings: _NssSettings):
+    return Model(settings)
 
 
 @pytest.fixture()
