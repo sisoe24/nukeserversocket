@@ -1,11 +1,11 @@
 from __future__ import annotations
 
-from typing import Any, Dict, TypeVar, Callable
+from typing import Any, Dict, TypeVar, Callable, Optional
 
 R = TypeVar('R')
 GenericFunc = Callable[..., R]
 
-_CACHE: Dict[str, Dict[GenericFunc[Any], Any]] = {}
+_CACHE: Dict[str, Dict[str, Any]] = {}
 
 
 def cache(name: str) -> Callable[[GenericFunc[R]], GenericFunc[R]]:
@@ -14,10 +14,11 @@ def cache(name: str) -> Callable[[GenericFunc[R]], GenericFunc[R]]:
             if name not in _CACHE:
                 _CACHE[name] = {}
 
-            if func not in _CACHE[name]:
-                _CACHE[name].update({func: func(*args, **kwargs)})
+            func_name = func.__name__
+            if func_name not in _CACHE[name]:
+                _CACHE[name][func_name] = func(*args, **kwargs)
 
-            return _CACHE[name][func]
+            return _CACHE[name][func_name]
 
         return wrapper
 
