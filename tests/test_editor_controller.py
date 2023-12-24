@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import re
 import json
 import pathlib
+from typing import Any
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from pytestqt.qtbot import QtBot
@@ -10,9 +13,13 @@ from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings, get_settings
 from nukeserversocket.received_data import ReceivedData
-from nukeserversocket.editor_controller import EditorController
+from nukeserversocket.editor_controller import EditorController, format_output
 
 pytestmark = pytest.mark.quick
+
+
+def now():
+    return datetime.now().strftime('%H:%M:%S')
 
 
 class MockEditorController(EditorController):
@@ -63,15 +70,15 @@ def test_execute_mirror(editor: MockEditorController, data: ReceivedData, tmp_se
     settings = get_settings()
     settings.set('mirror_script_editor', True)
 
-    result = editor.run(data)
-    # XXX: risky test since it depends on the current time
+    with patch('nukeserversocket.editor_controller.datetime') as mock_datetime:
+        mock_datetime.now.return_value = datetime(2000, 1, 1, 0, 0, 0)
 
-    now = datetime.now().strftime('%H:%M:%S')
-    output = f'[{now} NukeTools] test.py\nhello world\n'
+        result = editor.run(data)
 
-    assert result == output
-    assert editor.output_editor.toPlainText() == output
-    assert editor.input_editor.toPlainText() == 'print("hello world")'
+        output = '[00:00:00 NukeTools] test.py\nhello world\n'
+        assert result == output
+        assert editor.output_editor.toPlainText() == output
+        assert editor.input_editor.toPlainText() == 'print("hello world")'
 
 
 def test_execute_mirror_no_output_format(editor: MockEditorController, data: ReceivedData, tmp_settings: pathlib.Path):
@@ -109,3 +116,18 @@ def test_execute_clear_output(editor: MockEditorController, data: ReceivedData, 
 
     assert editor.output_editor.toPlainText() == 'hello world\n'
     assert editor.history == []
+
+
+@pytest.mark.parametrize('file, text, format, expected', [
+    ('test.py', 'hello world', '%d', '00:00:00'),
+    ('path/test.py', 'hello world', '%f', 'path/test.py'),
+    ('path/test.py', 'hello world', '%F', 'test.py'),
+    ('test.py', 'hello world', '%t', 'hello world'),
+    ('test.py', 'hello world', '%n', '\n'),
+    ('path/test.py', 'hello world', '%d %f %F %t %n', '00:00:00 path/test.py test.py hello world \n'),
+])
+def test_formatting_placeholders(file: str, text: str, format: str, expected: str):
+    with patch('nukeserversocket.editor_controller.datetime') as mock_datetime:
+        mock_datetime.now.return_value = datetime(2000, 1, 1, 0, 0, 0)
+        output = format_output(file, text, format)
+        assert output == expected
