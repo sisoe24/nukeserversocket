@@ -16,7 +16,7 @@ from ..received_data import ReceivedData
 from ..editor_controller import EditorController
 
 
-@cache
+@cache('nuke')
 def get_script_editor() -> QWidget:
     for widget in QApplication.allWidgets():
         if 'scripteditor.1' in widget.objectName():
@@ -24,22 +24,22 @@ def get_script_editor() -> QWidget:
     raise RuntimeError('Could not find script editor')
 
 
-@cache
+@cache('nuke')
 def get_splitter() -> QSplitter:
     return get_script_editor().findChild(QSplitter)
 
 
-@cache
+@cache('nuke')
 def get_input_editor() -> QPlainTextEdit:
     return get_splitter().findChild(QPlainTextEdit)
 
 
-@cache
+@cache('nuke')
 def get_output_editor() -> QTextEdit:
     return get_splitter().findChild(QTextEdit)
 
 
-@cache
+@cache('nuke')
 def get_run_button() -> QPushButton:
     return next(
         (
