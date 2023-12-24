@@ -2,21 +2,20 @@
 from __future__ import annotations
 
 import socket
+import logging
 
 from PySide2.QtCore import Qt, Slot, QTimer
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
                                QMainWindow, QPushButton, QVBoxLayout)
 
-from nukeserversocket.editor_controller import EditorController
-
-from .logger import get_logger
 from .server import NssServer
 from .console import NssConsole
 from .toolbar import ToolBar
 from .version import __version__
 from .settings import _NssSettings, get_settings
+from .editor_controller import EditorController
 
-LOGGER = get_logger()
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class MainModel:
