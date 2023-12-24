@@ -1,12 +1,11 @@
 from __future__ import annotations
 
 import json
+import logging
 from typing import Dict
 from dataclasses import field, dataclass
 
-from .logger import get_logger
-
-LOGGER = get_logger()
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 @dataclass
