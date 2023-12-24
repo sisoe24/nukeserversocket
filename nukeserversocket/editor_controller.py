@@ -8,7 +8,7 @@ from datetime import datetime
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from .logger import get_logger
-from .settings import get_settings
+from .settings import _NssSettings
 from .received_data import ReceivedData
 
 LOGGER = get_logger()
@@ -46,6 +46,19 @@ def format_output(file: str, text: str, string_format: str) -> str:
 class EditorController(ABC):
     history: List[str] = []
 
+    def __init__(self):
+        self._settings = None
+
+    @property
+    def settings(self) -> _NssSettings:
+        if not self._settings:
+            raise ValueError('Settings not set.')
+        return self._settings
+
+    @settings.setter
+    def settings(self, settings: _NssSettings) -> None:
+        self._settings = settings
+
     @property
     @abstractmethod
     def input_editor(self) -> QPlainTextEdit: ...
@@ -63,13 +76,14 @@ class EditorController(ABC):
 
     def _process_output(self, data: ReceivedData, result: str) -> str:
 
-        if get_settings().get('format_output'):
-            output = format_output(data.file, result, get_settings().get('format_output'))
+        format_values = self.settings.get('format_output')
+        if format_values:
+            output = format_output(data.file, result, format_values)
             LOGGER.debug('Formatting output: %s', output.replace('\n', '\\n'))
         else:
             output = result
 
-        if get_settings().get('clear_output'):
+        if self.settings.get('clear_output'):
             LOGGER.debug('Clearing output.')
             self.history.clear()
             self.output_editor.setPlainText(output)
@@ -86,8 +100,8 @@ class EditorController(ABC):
     def get_output(self) -> str:
         return self.output_editor.toPlainText()
 
-    def set_input(self, text: str) -> None:
-        self.input_editor.setPlainText(text)
+    def set_input(self, data: ReceivedData) -> None:
+        self.input_editor.setPlainText(data.text)
 
     def run(self, data: ReceivedData) -> str:
 
@@ -96,11 +110,12 @@ class EditorController(ABC):
         initial_input = self.input_editor.toPlainText()
         initial_output = self.output_editor.toPlainText()
 
-        self.set_input(data.text)
+        self.set_input(data)
         self.execute()
 
         result = self.get_output()
-        if not get_settings().get('mirror_script_editor'):
+
+        if not self.settings.get('mirror_script_editor'):
             LOGGER.debug('Restoring script editor.')
             self.input_editor.setPlainText(initial_input)
             self.output_editor.setPlainText(initial_output)
