@@ -14,7 +14,20 @@ from .received_data import ReceivedData
 LOGGER = get_logger()
 
 
-def format_output(file: str, text: str) -> str:
+def format_output(file: str, text: str, string_format: str) -> str:
+    """Format the output sent to the Editor.
+
+    >>> format_output('/path/to/file.py', 'hello world', '%d %f %F %t %n')
+    >>> '12:00:00 /path/to/file.py file.py hello world \\n'
+
+    The following placeholders are available:
+        - %d: current time
+        - %f: file path
+        - %F: file name without path
+        - %t: output text
+        - %n: new line
+
+    """
     placeholders = {
         '%d': datetime.now().strftime('%H:%M:%S'),
         '%f': file,
@@ -23,12 +36,11 @@ def format_output(file: str, text: str) -> str:
         '%n': '\n'
     }
 
-    output_format = get_settings().get('format_output')
     for key, value in placeholders.items():
-        if key in output_format:
-            output_format = output_format.replace(key, value)
+        if key in string_format:
+            string_format = string_format.replace(key, value)
 
-    return output_format
+    return string_format
 
 
 class EditorController(ABC):
@@ -52,7 +64,7 @@ class EditorController(ABC):
     def _process_output(self, data: ReceivedData, result: str) -> str:
 
         if get_settings().get('format_output'):
-            output = format_output(data.file, result)
+            output = format_output(data.file, result, get_settings().get('format_output'))
             LOGGER.debug('Formatting output: %s', output.replace('\n', '\\n'))
         else:
             output = result
