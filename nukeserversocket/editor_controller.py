@@ -47,7 +47,6 @@ class EditorController(ABC):
 
     @classmethod
     def _add_to_history(cls, text: str) -> None:
-        # TODO: Limit history size
         cls.history.append(text)
 
     def _process_output(self, data: ReceivedData, result: str) -> str:
@@ -58,14 +57,12 @@ class EditorController(ABC):
         else:
             output = result
 
-        self._add_to_history(output)
-
         if get_settings().get('clear_output'):
             LOGGER.debug('Clearing output.')
+            self.history.clear()
             self.output_editor.setPlainText(output)
         else:
-            # TODO: Investigate why insertPlainText or appendPlainText
-            # does not work as expected
+            self._add_to_history(output)
             self.output_editor.setPlainText('\n'.join(self.history) + '\n')
 
         self.output_editor.verticalScrollBar().setValue(
