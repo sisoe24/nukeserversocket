@@ -3,17 +3,19 @@ from __future__ import annotations
 
 import os
 import json
+import logging
 import contextlib
 from textwrap import dedent
 
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
-from nukeserversocket.main import NukeServerSocket
-
+from ..main import NukeServerSocket
 from ..utils import cache
 from ..received_data import ReceivedData
 from ..editor_controller import EditorController
+
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 @cache('nuke')
@@ -98,7 +100,7 @@ class NukeController(EditorController):
 
 class NukeEditor(NukeServerSocket):
     def __init__(self, parent=None):
-        super().__init__(NukeController(), parent)
+        super().__init__(NukeController, parent)
 
 
 def install_nuke():
