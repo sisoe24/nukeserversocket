@@ -1,15 +1,17 @@
 from __future__ import annotations
 
-import logging
-from typing import Optional
+from typing import TYPE_CHECKING, Optional
 
 from PySide2.QtCore import Slot, Signal
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
 
+from .logger import get_logger
 from .received_data import ReceivedData
-from .editor_controller import EditorController
 
-LOGGER = logging.getLogger('nukeserversocket')
+if TYPE_CHECKING:
+    from .editor_controller import EditorController
+
+LOGGER = get_logger()
 
 
 class NssServer(QTcpServer):

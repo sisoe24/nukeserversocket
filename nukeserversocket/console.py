@@ -6,7 +6,9 @@ from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QCheckBox, QGroupBox, QHBoxLayout, QPushButton,
                                QVBoxLayout, QPlainTextEdit)
 
-LOGGER = logging.getLogger('nukeserversocket')
+from .logger import get_logger
+
+LOGGER = get_logger()
 
 
 class _ConsoleHandler(logging.Handler):

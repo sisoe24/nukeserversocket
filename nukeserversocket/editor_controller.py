@@ -1,17 +1,17 @@
 from __future__ import annotations
 
 import os
-import logging
 from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime
 
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
+from .logger import get_logger
 from .settings import get_settings
 from .received_data import ReceivedData
 
-LOGGER = logging.getLogger('nukeserversocket')
+LOGGER = get_logger()
 
 
 def format_output(file: str, text: str) -> str:
