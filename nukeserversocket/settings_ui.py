@@ -42,11 +42,11 @@ class NssSettingsView(QWidget):
         self.format_output.setToolTip(dedent('''
         Format output using the following placeholders:
         - %d: current time
-        - %f: file name
+        - %f: file path
         - %F: file name without path
         - %t: output text
         - %n: new line
-        '''))
+        '''.strip()))
 
         self.mirror_script_editor = QCheckBox()
         self.mirror_script_editor.setToolTip('Mirror script editor')
@@ -75,7 +75,10 @@ class NssSettingsController:
 
     @Slot(int)
     def _on_mirror_script_editor_changed(self, state: int):
-        self._model.set('mirror_script_editor', state == 2)
+        is_checked = state == 2
+        self._view.clear_output.setEnabled(is_checked)
+        self._view.format_output.setEnabled(is_checked)
+        self._model.set('mirror_script_editor', is_checked)
 
     @Slot(int)
     def _on_clear_output_changed(self, state: int):
@@ -91,7 +94,13 @@ class NssSettingsController:
 
     def init(self):
         self._view.timeout.setValue(self._model.get('server_timeout') / 60000)
-        self._view.mirror_script_editor.setChecked(self._model.get('mirror_script_editor'))
+
+        mirror_script_editor_state = self._model.get('mirror_script_editor')
+        self._view.mirror_script_editor.setChecked(mirror_script_editor_state)
+        if not mirror_script_editor_state:
+            self._view.clear_output.setEnabled(False)
+            self._view.format_output.setEnabled(False)
+
         self._view.format_output.setText(self._model.get('format_output'))
         self._view.clear_output.setChecked(self._model.get('clear_output'))
 
