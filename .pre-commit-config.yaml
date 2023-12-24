@@ -15,7 +15,7 @@ repos:
             args: [--global-config=pyproject.toml, --in-place]
             verbose: true
     - repo: https://github.com/pycqa/isort
-      rev: 5.12.0
+      rev: 5.13.2
       hooks:
           - id: isort
             name: isort (python)
