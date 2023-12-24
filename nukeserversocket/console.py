@@ -11,28 +11,14 @@ from .logger import get_logger
 LOGGER = get_logger()
 
 
-class _ConsoleHandler(logging.Handler):
-    def __init__(self, console: NssConsole) -> None:
-        super().__init__()
-        self.set_name('console')
-        self.setLevel(logging.INFO)
-        self.setFormatter(
-            logging.Formatter(
-                '[%(asctime)s] %(levelname)-8s - %(message)s', '%H:%M:%S'
-            )
-        )
-        self._console = console
-
-    def emit(self, record: logging.LogRecord) -> None:
-        self._console.write(self.format(record) + '\n')
-
-
 class NssConsole(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent, title='Logs')
 
-        self._console_handler = _ConsoleHandler(self)
-        LOGGER.addHandler(self._console_handler)
+        self._console_handler = next(
+            filter(lambda h: h.get_name() == 'console', LOGGER.handlers),
+            None
+        )
 
         self._console = QPlainTextEdit()
         self._console.setStyleSheet('font-family: menlo;')
@@ -66,6 +52,11 @@ class NssConsole(QGroupBox):
 
     @Slot(int)
     def _on_enable_debug(self, state: int) -> None:
+
+        if not self._console_handler:
+            LOGGER.warning('Console handler not found.')
+            return
+
         self._console_handler.setLevel(
             logging.DEBUG if state == 2 else logging.INFO
         )
