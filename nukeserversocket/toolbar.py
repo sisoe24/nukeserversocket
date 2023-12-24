@@ -12,7 +12,6 @@ from PySide2.QtWidgets import (QLabel, QAction, QDialog, QWidget, QToolBar,
                                QFormLayout, QPushButton)
 
 from .version import __version__
-from .settings_ui import NssSettings
 
 
 def about() -> Dict[str, str]:
@@ -76,10 +75,6 @@ class ToolBar(QToolBar):
         super().__init__(parent)
         self.setMovable(False)
         self.setStyleSheet('color: white;')
-
-        self._settings = NssSettings()
-
-        self.add_widget(title='Settings', widget=self._settings.view)
         self.add_widget(title='Help', widget=HelpWidget(self))
 
     def add_widget(self, title: str, widget: QWidget) -> QAction:
