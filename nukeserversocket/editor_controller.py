@@ -86,8 +86,8 @@ class EditorController(ABC):
     def get_output(self) -> str:
         return self.output_editor.toPlainText()
 
-    def set_input(self, data: ReceivedData) -> None:
-        self.input_editor.setPlainText(data.text)
+    def set_input(self, text: str) -> None:
+        self.input_editor.setPlainText(text)
 
     def run(self, data: ReceivedData) -> str:
 
@@ -96,13 +96,10 @@ class EditorController(ABC):
         initial_input = self.input_editor.toPlainText()
         initial_output = self.output_editor.toPlainText()
 
-        self.set_input(data)
+        self.set_input(data.text)
         self.execute()
 
         result = self.get_output()
-
-        LOGGER.debug('RUN get_settings(): %s', get_settings())
-
         if not get_settings().get('mirror_script_editor'):
             LOGGER.debug('Restoring script editor.')
             self.input_editor.setPlainText(initial_input)
