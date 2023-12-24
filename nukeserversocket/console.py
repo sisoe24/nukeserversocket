@@ -6,7 +6,7 @@ from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QCheckBox, QGroupBox, QHBoxLayout, QPushButton,
                                QVBoxLayout, QPlainTextEdit)
 
-from .logger import get_logger
+LOGGER = logging.getLogger('nukeserversocket')
 
 
 class _ConsoleHandler(logging.Handler):
@@ -29,7 +29,7 @@ class NssConsole(QGroupBox):
         super().__init__(parent, title='Logs')
 
         self._console_handler = _ConsoleHandler(self)
-        get_logger().addHandler(self._console_handler)
+        LOGGER.addHandler(self._console_handler)
 
         self._console = QPlainTextEdit()
         self._console.setStyleSheet('font-family: menlo;')
