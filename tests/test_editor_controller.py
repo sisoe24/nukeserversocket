@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import pathlib
 from datetime import datetime
 from unittest.mock import patch
 
@@ -9,13 +8,9 @@ import pytest
 from pytestqt.qtbot import QtBot
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
-from nukeserversocket.settings import get_settings
+from nukeserversocket.settings import _NssSettings
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.editor_controller import EditorController, format_output
-
-
-def now():
-    return datetime.now().strftime('%H:%M:%S')
 
 
 class MockEditorController(EditorController):
@@ -25,6 +20,8 @@ class MockEditorController(EditorController):
 
         self._output_editor = QTextEdit()
         self._output_editor.setPlainText('initial output')
+
+        self._settings = None
 
     @property
     def input_editor(self):
@@ -39,8 +36,9 @@ class MockEditorController(EditorController):
 
 
 @pytest.fixture()
-def editor(qtbot: QtBot) -> MockEditorController:
+def editor(qtbot: QtBot, settings: _NssSettings) -> MockEditorController:
     editor = MockEditorController()
+    editor.settings = settings
     qtbot.addWidget(editor.input_editor)
     yield editor
     editor.history.clear()
@@ -55,16 +53,15 @@ def data() -> ReceivedData:
     return ReceivedData(json.dumps(d))
 
 
-def test_execute_no_mirror(editor: MockEditorController, data: ReceivedData, tmp_settings: pathlib.Path):
+def test_execute_no_mirror(editor: MockEditorController, data: ReceivedData):
     result = editor.run(data)
     assert result == 'hello world\n'
     assert editor.output_editor.toPlainText() == 'initial output'
     assert editor.input_editor.toPlainText() == 'initial input'
 
 
-def test_execute_mirror(editor: MockEditorController, data: ReceivedData, tmp_settings: pathlib.Path):
-    settings = get_settings()
-    settings.set('mirror_script_editor', True)
+def test_execute_mirror(editor: MockEditorController, data: ReceivedData):
+    editor.settings.set('mirror_script_editor', True)
 
     with patch('nukeserversocket.editor_controller.datetime') as mock_datetime:
         mock_datetime.now.return_value = datetime(2000, 1, 1, 0, 0, 0)
@@ -77,10 +74,9 @@ def test_execute_mirror(editor: MockEditorController, data: ReceivedData, tmp_se
         assert editor.input_editor.toPlainText() == 'print("hello world")'
 
 
-def test_execute_mirror_no_output_format(editor: MockEditorController, data: ReceivedData, tmp_settings: pathlib.Path):
-    settings = get_settings()
-    settings.set('mirror_script_editor', True)
-    settings.set('format_output', '')
+def test_execute_mirror_no_output_format(editor: MockEditorController, data: ReceivedData):
+    editor.settings.set('mirror_script_editor', True)
+    editor.settings.set('format_output', '')
 
     result = editor.run(data)
     assert result == 'hello world\n'
@@ -88,11 +84,10 @@ def test_execute_mirror_no_output_format(editor: MockEditorController, data: Rec
     assert editor.input_editor.toPlainText() == 'print("hello world")'
 
 
-def test_execute_no_clear_output(editor: MockEditorController, data: ReceivedData, tmp_settings: pathlib.Path):
-    settings = get_settings()
-    settings.set('mirror_script_editor', True)
-    settings.set('format_output', '')
-    settings.set('clear_output', False)
+def test_execute_no_clear_output(editor: MockEditorController, data: ReceivedData):
+    editor.settings.set('mirror_script_editor', True)
+    editor.settings.set('format_output', '')
+    editor.settings.set('clear_output', False)
 
     editor.run(data)
     editor.run(data)
@@ -101,11 +96,10 @@ def test_execute_no_clear_output(editor: MockEditorController, data: ReceivedDat
     assert editor.history == ['hello world\n', 'hello world\n']
 
 
-def test_execute_clear_output(editor: MockEditorController, data: ReceivedData, tmp_settings: pathlib.Path):
-    settings = get_settings()
-    settings.set('mirror_script_editor', True)
-    settings.set('format_output', '')
-    settings.set('clear_output', True)
+def test_execute_clear_output(editor: MockEditorController, data: ReceivedData):
+    editor.settings.set('mirror_script_editor', True)
+    editor.settings.set('format_output', '')
+    editor.settings.set('clear_output', True)
 
     editor.run(data)
     editor.run(data)
