@@ -10,7 +10,7 @@ from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
 
 from .logger import get_logger
 from .server import NssServer
-from .console import NssConsole
+from .console import NssConsole, ConsoleHandler
 from .toolbar import ToolBar
 from .version import __version__
 from .settings import get_settings
@@ -166,6 +166,8 @@ class NukeServerSocket(QMainWindow):
         self.view = MainView()
         self.model = MainModel(self.settings)
         self.controller = MainController(self.view, self.model, NssServer(editor))
+
+        LOGGER.addHandler(ConsoleHandler(self.view.console))
 
         self._settings_ui = NssSettingsUI(self.settings)
 
