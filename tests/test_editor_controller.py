@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import re
 import json
 import pathlib
-from typing import Any
 from datetime import datetime
 from unittest.mock import patch
 
@@ -11,11 +9,9 @@ import pytest
 from pytestqt.qtbot import QtBot
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
-from nukeserversocket.settings import _NssSettings, get_settings
+from nukeserversocket.settings import get_settings
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.editor_controller import EditorController, format_output
-
-pytestmark = pytest.mark.quick
 
 
 def now():
