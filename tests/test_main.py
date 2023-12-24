@@ -19,8 +19,6 @@ Model = MainModel
 
 # TODO: Test the timeout
 
-# pytestmark = pytest.mark.quick
-
 
 class MockEditorController(EditorController):
     def __init__(self):
