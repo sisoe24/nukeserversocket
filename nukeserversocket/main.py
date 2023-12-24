@@ -8,9 +8,9 @@ from PySide2.QtCore import Qt, Slot, QTimer
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
                                QMainWindow, QPushButton, QVBoxLayout)
 
-from .logger import get_logger
+from .logger import ConsoleHandler, get_logger
 from .server import NssServer
-from .console import NssConsole, ConsoleHandler
+from .console import NssConsole
 from .toolbar import ToolBar
 from .version import __version__
 from .settings import get_settings
