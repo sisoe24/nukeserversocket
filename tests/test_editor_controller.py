@@ -37,9 +37,10 @@ class MockEditorController(EditorController):
 
 @pytest.fixture()
 def editor(qtbot: QtBot) -> MockEditorController:
-    app = MockEditorController()
-    qtbot.addWidget(app.input_editor)
-    return app
+    editor = MockEditorController()
+    qtbot.addWidget(editor.input_editor)
+    yield editor
+    editor.history.clear()
 
 
 @pytest.fixture()
@@ -95,9 +96,6 @@ def test_execute_no_clear_output(editor: MockEditorController, data: ReceivedDat
 
     assert editor.output_editor.toPlainText() == 'hello world\n\nhello world\n\n'
     assert editor.history == ['hello world\n', 'hello world\n']
-
-    # TODO: settings should reset after each test but it doesn't
-    settings.set('clear_output', True)
 
 
 def test_execute_clear_output(editor: MockEditorController, data: ReceivedData, tmp_settings: pathlib.Path):
