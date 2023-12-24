@@ -100,7 +100,7 @@ class NukeController(EditorController):
 
 class NukeEditor(NukeServerSocket):
     def __init__(self, parent=None):
-        super().__init__(NukeController, parent)
+        super().__init__(NukeController(), parent)
 
 
 def install_nuke():
