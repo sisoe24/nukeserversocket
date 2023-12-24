@@ -15,14 +15,18 @@ from ..editor_controller import EditorController
 
 
 class LocalController(EditorController):
+    def __init__(self):
+        super().__init__()
+        self._input_editor = QPlainTextEdit()
+        self._output_editor = QTextEdit()
 
     @property
     def input_editor(self) -> QPlainTextEdit:
-        return QPlainTextEdit()
+        return self._input_editor
 
     @property
     def output_editor(self) -> QTextEdit:
-        return QTextEdit()
+        return self._output_editor
 
     def execute(self) -> None: ...
 
