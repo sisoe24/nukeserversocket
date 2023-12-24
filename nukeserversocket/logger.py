@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from logging.handlers import TimedRotatingFileHandler
 
-from .utils import ROOT, cache
+from .utils import ROOT
 
 PACKAGE_LOG = ROOT / 'logs' / 'nukeserversocket.log'
 PACKAGE_LOG.parent.mkdir(parents=True, exist_ok=True)
@@ -25,9 +25,6 @@ def _file_handler() -> TimedRotatingFileHandler:
     return handler
 
 
-@cache('logger')
-def get_logger() -> logging.Logger:
-    logger = logging.getLogger('nukeserversocket')
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(_file_handler())
-    return logger
+LOGGER = logging.getLogger('nukeserversocket')
+LOGGER.setLevel(logging.DEBUG)
+LOGGER.addHandler(_file_handler())
