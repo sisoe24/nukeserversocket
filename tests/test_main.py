@@ -1,8 +1,5 @@
 from __future__ import annotations
 
-import time
-import pathlib
-
 import pytest
 from PySide2.QtCore import Signal, QObject
 from pytestqt.qtbot import QtBot
@@ -19,10 +16,11 @@ Model = MainModel
 
 # TODO: Test the timeout
 
+# pytestmark = pytest.mark.quick
+
 
 class MockEditorController(EditorController):
     def __init__(self):
-        # super().__init__()
         self._input_editor = QPlainTextEdit()
         self._output_editor = QTextEdit()
 
@@ -35,7 +33,7 @@ class MockEditorController(EditorController):
         return self._output_editor
 
     def execute(self):
-        print('executed')
+        pass
 
 
 class MockServer(QObject):
@@ -45,23 +43,20 @@ class MockServer(QObject):
         super().__init__(parent)
 
     def try_connect(self, port: int) -> bool:
-        print(f'connecting: {port}')
         return True
 
     def isListening(self) -> bool:
-        print('listening')
         return False
 
-    def close(self):
-        print('closed')
+    def close(self): ...
 
     def errorString(self) -> str:
         return 'error'
 
 
 @pytest.fixture()
-def model(tmp_settings: pathlib.Path):
-    return Model(_NssSettings(tmp_settings))
+def model(settings: _NssSettings):
+    return Model(settings)
 
 
 @pytest.fixture()
@@ -86,7 +81,7 @@ def controller(model: Model, view: View, server: MockServer) -> Controller:
     return Controller(view, model, server)
 
 
-def test_main_controller_on_connect(qtbot: QtBot, controller: Controller, model: Model, view: View):
+def test_main_controller_on_connect(controller: Controller, view: View):
 
     controller._on_connect(True)
 
@@ -96,7 +91,7 @@ def test_main_controller_on_connect(qtbot: QtBot, controller: Controller, model:
     assert controller._timer.isActive() is True
 
 
-def test_main_controller_on_disconnect(qtbot: QtBot, controller: Controller, view: View):
+def test_main_controller_on_disconnect(controller: Controller, view: View):
 
     controller._on_connect(False)
 
@@ -106,7 +101,7 @@ def test_main_controller_on_disconnect(qtbot: QtBot, controller: Controller, vie
     assert controller._timer.isActive() is False
 
 
-def test_main_controller_on_data_received(qtbot: QtBot, controller: Controller):
+def test_main_controller_on_data_received(controller: Controller):
 
     assert controller._timer.isActive() is False
 
