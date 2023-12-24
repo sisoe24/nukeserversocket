@@ -17,8 +17,9 @@ Controller = MainController
 View = MainView
 Model = MainModel
 
+# TODO: Test the timeout
 
-pytestmark = pytest.mark.quick
+# pytestmark = pytest.mark.quick
 
 
 class MockEditorController(EditorController):
@@ -97,7 +98,7 @@ def test_main_controller_on_connect(qtbot: QtBot, controller: Controller, model:
     assert controller._timer.isActive() is True
 
 
-def test_main_controller_on_disconnect(qtbot: QtBot, controller: Controller, model: Model, view: View):
+def test_main_controller_on_disconnect(qtbot: QtBot, controller: Controller, view: View):
 
     controller._on_connect(False)
 
@@ -105,3 +106,12 @@ def test_main_controller_on_disconnect(qtbot: QtBot, controller: Controller, mod
     assert view.connect_btn.text() == 'Connect'
     assert view.port_input.isEnabled() is True
     assert controller._timer.isActive() is False
+
+
+def test_main_controller_on_data_received(qtbot: QtBot, controller: Controller):
+
+    assert controller._timer.isActive() is False
+
+    controller._on_data_received()
+
+    assert controller._timer.isActive() is True
