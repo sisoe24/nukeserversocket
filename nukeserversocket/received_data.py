@@ -35,17 +35,15 @@ class ReceivedData:
         try:
             self.data = json.loads(self.raw)
             self.data.setdefault('file', '')
-            LOGGER.debug('Received data: %s', self.data)
         except Exception as e:
-            msg = f'An exception occurred while decoding the data. {e}'
-            LOGGER.error(msg)
-            raise ValueError(msg) from e
+            LOGGER.error(f'An exception occurred while decoding the data. {e}')
+            self.data = {'text': '', 'file': ''}
 
-        self.text = self.data.get('text')
+        LOGGER.debug('Received data: %s', self.data)
+
+        self.text = self.data.get('text', '')
         if not self.text:
-            msg = 'Data does not contain a text field.'
-            LOGGER.error(msg)
-            raise ValueError(msg)
+            LOGGER.critical('Data does not contain a text field.')
 
         # file is optional as is only used to show the file name in the output
-        self.file = self.data.get('file')
+        self.file = self.data['file']
