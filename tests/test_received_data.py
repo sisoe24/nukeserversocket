@@ -7,6 +7,8 @@ import pytest
 
 from nukeserversocket.received_data import ReceivedData
 
+pytestmark = pytest.mark.quick
+
 
 @dataclass
 class ReceivedTestData:
@@ -35,6 +37,13 @@ class ReceivedTestData:
         'Hello World',
         ''
     ),
+    ReceivedTestData(
+        '{"text": "",',
+        {'text': '', 'file': ''},
+        '',
+        ''
+    )
+
 ])
 def test_received_data(data: ReceivedTestData):
     received = ReceivedData(data.raw)
@@ -43,20 +52,3 @@ def test_received_data(data: ReceivedTestData):
     assert received.data == data.data
     assert received.text == data.text
     assert received.file == data.file
-
-
-def test_received_data_no_text():
-    with pytest.raises(ValueError) as e:
-        ReceivedData('{"file": "test.py"}')
-    assert str(e.value) == 'Data does not contain a text field.'
-
-
-@pytest.mark.parametrize('invalid_data', [
-    '{"text": "Hello World", "file", ""}',
-    'hello world',
-    {'text': 'Hello World', 'file': 'test.py'}
-])
-def test_received_invalid_data(invalid_data: str):
-    with pytest.raises(ValueError) as e:
-        ReceivedData(invalid_data)
-    assert str(e.value).startswith('An exception occurred while decoding the data.')
