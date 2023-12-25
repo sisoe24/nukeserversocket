@@ -1,4 +1,4 @@
-# 1. NukeServerSocket README WIP
+# 1. NukeServerSocket README
 
 [![Main Build](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)](https://github.com/sisoe24/NukeServerSocket/releases)
 [![Pre Release](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&include_prereleases)](https://github.com/sisoe24/NukeServerSocket/releases)
@@ -21,7 +21,7 @@
 
 A Nuke plugin to run code from external applications.
 
-- [1. NukeServerSocket README WIP](#1-nukeserversocket-readme-wip)
+- [1. NukeServerSocket README](#1-nukeserversocket-readme)
   - [1.0.0 Release](#100-release)
   - [1.1. Features](#11-features)
   - [1.2. Client applications](#12-client-applications)
