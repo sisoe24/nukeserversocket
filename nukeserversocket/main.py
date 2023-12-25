@@ -152,7 +152,12 @@ class MainController:
 class NukeServerSocket(QMainWindow):
 
     def __init__(self, editor: EditorController, parent=None):
-        """Init method for NukeServerSocket."""
+        """Init method for NukeServerSocket.
+
+        NOTE: Most variables are bound to the class only to avoid garbage collection.
+
+        """
+
         super().__init__(parent)
         self.setWindowTitle('NukeServerSocket')
 
@@ -171,10 +176,10 @@ class NukeServerSocket(QMainWindow):
         # the tests.
         LOGGER.console = ConsoleHandler(self.view.console)
 
-        settings_ui = NssSettingsUI(self.settings)
+        self.settings_ui = NssSettingsUI(self.settings)
 
         self.toolbar = ToolBar(self.view)
-        self.toolbar.add_widget(title='Settings', widget=settings_ui.view)
+        self.toolbar.add_widget(title='Settings', widget=self.settings_ui.view)
 
         self.addToolBar(self.toolbar)
         self.setCentralWidget(self.view)
