@@ -43,12 +43,6 @@
             "group": "test",
             "hide": true,
             "problemMatcher": []
-        },
-        {
-            "label": "Pack repo",
-            "type": "shell",
-            "command": "git archive --format zip --output ${workspaceFolder}/dist/NukeServerSocket.zip main",
-            "problemMatcher": []
         }
     ]
 }
