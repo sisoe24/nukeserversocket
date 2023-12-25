@@ -13,15 +13,16 @@ from nukeserversocket.controllers.nuke import Editor, NukeController
 # pytestmark = pytest.mark.quick
 
 
+class NukeEditor(Editor):
+    def __init__(self):
+        self.input_editor = QPlainTextEdit()
+        self.output_editor = QTextEdit()
+        self.run_button = QPushButton()
+
+
 def test_nuke_python(qtbot, settings):
     data = ReceivedData('{"file": "test.py", "text": "print(\\"hello world\\")"}')
-    editor = NukeController(
-        Editor(
-            input_editor=QPlainTextEdit(),
-            output_editor=QTextEdit(),
-            run_button=QPushButton()
-        )
-    )
+    editor = NukeController(NukeEditor())
     editor.settings = settings
     editor.settings.set('mirror_script_editor', True)
 
@@ -38,13 +39,7 @@ def test_nuke_blinkscript(qtbot, settings: _NssSettings, file: str, text: str):
     d = json.dumps({'file': file, 'text': text})
     data = ReceivedData(d)
 
-    editor = NukeController(
-        Editor(
-            input_editor=QPlainTextEdit(),
-            output_editor=QTextEdit(),
-            run_button=QPushButton()
-        )
-    )
+    editor = NukeController(NukeEditor())
     editor.settings = settings
     editor.settings.set('mirror_script_editor', True)
 
@@ -56,4 +51,4 @@ def test_nuke_blinkscript(qtbot, settings: _NssSettings, file: str, text: str):
     knobs['kernelSourceFile'].setValue('{file}')
     knobs['kernelSource'].setText("{text}")
     knobs['recompile'].execute()
-    """)
+    """).strip()
