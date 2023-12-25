@@ -36,7 +36,7 @@
                 "run",
                 "pytest",
                 "-xsl",
-                "--lf",
+                // "--lf",
                 "-vvv",
                 // "-m quick"
             ],
