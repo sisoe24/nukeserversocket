@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, TypeVar, Callable, Optional
+from typing import Any, Dict, TypeVar, Callable
 
 R = TypeVar('R')
 GenericFunc = Callable[..., R]
