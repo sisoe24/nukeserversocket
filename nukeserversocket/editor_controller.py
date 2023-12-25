@@ -115,7 +115,10 @@ class EditorController(ABC):
 
         result = self.get_output()
 
-        if not self.settings.get('mirror_script_editor'):
+        if (
+            not self.settings.get('mirror_script_editor') or
+            data.no_output
+        ):
             LOGGER.debug('Restoring script editor.')
             self.input_editor.setPlainText(initial_input)
             self.output_editor.setPlainText(initial_output)
