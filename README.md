@@ -16,8 +16,8 @@
 [![NukeTools](https://img.shields.io/github/v/release/sisoe24/Nuke-Tools?label=NukeTools)](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools)
 
 
-![x](https://img.shields.io/badge/Python-2.7.18_|_3.*-success)
-![x](https://img.shields.io/badge/Nuke-11_|_12_|_13_|_14_|_15-yellow)
+![x](https://img.shields.io/badge/Python-3.*-success)
+![x](https://img.shields.io/badge/Nuke-_13_|_14_|_15-yellow)
 
 A Nuke plugin to run code from external applications.
 
@@ -27,10 +27,8 @@ A Nuke plugin to run code from external applications.
   - [1.2. Client applications](#12-client-applications)
   - [1.3. Installation](#13-installation)
   - [1.4. Usage](#14-usage)
-    - [1.4.1. Execute code](#141-execute-code)
   - [1.5. Settings](#15-settings)
   - [1.6. Extendibility](#16-extendibility)
-  - [1.7. Test plugin locally](#17-test-plugin-locally)
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
 
@@ -71,41 +69,39 @@ Client applications that use NukeServerSocket:
 
 ## 1.4. Usage
 
-### 1.4.1. Execute code
-
-![Execute Code](images/execute_code.gif)
+![Execute Code](images/run_code.gif)
 
 1. Open the NukeServerSocket panel inside Nuke, and start the server by clicking **Connect**.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
 NOTES:
 
-- If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a random number between `49152` and `65535` and try again. It probably means that you have a connection listening on that port already.
+- If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a random number between `49152` and `65535` and try again.
 
 ## 1.5. Settings
 
 You access the settings from the plugin toolbar.
 
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
-- **Format Text**: The script editor output window will receive a formatted version of the code result.
+- **Format Text**: The script editor output window will receive a formatted version of the code result. The available placeholders are:
+
+  - `%d`: Time
+  - `%t`: The code result
+  - `%f`: The full file path
+  - `%F`: The file name
+  - `%n`: A new line
+
+   **Format Text Example**: `%d - %t%n` will output `12:00:00 - Hello World!` in the script editor output window.
+
 - **Clear Output**: The script editor output window will clear the code after each execution.
 
 - **Server Timeout**: Set the Timeout when clicking the **Connect** button. The default value is `10` minutes.
 
 ## 1.6. Extendibility
 
-At its core, the plugin is just a server socket that waits for an incoming request,
-performs the operations inside Nuke, and returns the result. Nothing ties it to any application per se.
+The plugin essentially works as a server socket that waits for incoming requests. Once a request is received, it performs the required operations within Nuke and sends back the result. This plugin is not tied to any specific application, which means it is easy to implement a new client without having to modify the NukeServerSocket source code. All the client needs to do is send the data to the specified address within NukeServerSocket.
 
-This makes it very easy to implement a new client, without the need to modify the NukeServerSocket source code. The client needs only to send the data at the specified address inside NukeServerSocket.
-
-You can find more information and examples on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client).
-
-## 1.7. Test plugin locally
-
-You can run the plugin locally outside the Nuke application. This method is handy for testing code and implementing new features faster.
-
-You can find more information and examples on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Test-Plugin-locally).
+If you wish to create a new client or contribute to the existing ones, you can find more information on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client)
 
 ## 1.8. Known Issues
 
