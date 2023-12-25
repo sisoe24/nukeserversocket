@@ -167,12 +167,14 @@ class NukeServerSocket(QMainWindow):
         self.model = MainModel(self.settings)
         self.controller = MainController(self.view, self.model, NssServer(editor))
 
-        LOGGER.addHandler(ConsoleHandler(self.view.console))
+        # I don't like this but anywheres else I put it, it creates problems with
+        # the tests.
+        LOGGER.console = ConsoleHandler(self.view.console)
 
-        self._settings_ui = NssSettingsUI(self.settings)
+        settings_ui = NssSettingsUI(self.settings)
 
         self.toolbar = ToolBar(self.view)
-        self.toolbar.add_widget(title='Settings', widget=self._settings_ui.view)
+        self.toolbar.add_widget(title='Settings', widget=settings_ui.view)
 
         self.addToolBar(self.toolbar)
         self.setCentralWidget(self.view)
