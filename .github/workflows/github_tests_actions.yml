@@ -29,8 +29,12 @@ jobs:
     - name: Install Poetry
       run: |
         pip install --upgrade pip
-        pip install tox
+        pip install poetry
 
-    - name: Run tox
+    - name: Install dependencies
       run: |
-        tox
+        poetry install
+
+    - name: Run tests
+      run: |
+        poetry run pytest
