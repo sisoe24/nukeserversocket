@@ -6,6 +6,7 @@ from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QCheckBox, QGroupBox, QHBoxLayout, QPushButton,
                                QVBoxLayout, QPlainTextEdit)
 
+from .utils import cache
 from .logger import get_logger
 
 LOGGER = get_logger()
@@ -14,11 +15,6 @@ LOGGER = get_logger()
 class NssConsole(QGroupBox):
     def __init__(self, parent=None):
         super().__init__(parent, title='Logs')
-
-        self._console_handler = next(
-            filter(lambda h: h.get_name() == 'console', LOGGER.handlers),
-            None
-        )
 
         self._console = QPlainTextEdit()
         self._console.setStyleSheet('font-family: menlo;')
@@ -52,14 +48,7 @@ class NssConsole(QGroupBox):
 
     @Slot(int)
     def _on_enable_debug(self, state: int) -> None:
-
-        if not self._console_handler:
-            LOGGER.warning('Console handler not found.')
-            return
-
-        self._console_handler.setLevel(
-            logging.DEBUG if state == 2 else logging.INFO
-        )
+        LOGGER.console.setLevel(logging.DEBUG if state == 2 else logging.INFO)
 
     def write(self, text: str) -> None:
         self._console.insertPlainText(f'{text}')
