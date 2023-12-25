@@ -45,10 +45,24 @@ def _file_handler() -> TimedRotatingFileHandler:
     return handler
 
 
+class NssLogger(logging.Logger):
+    def __init__(self, name: str = 'nukeserversocket') -> None:
+        super().__init__(name)
+        self.setLevel(logging.DEBUG)
+        self.addHandler(_file_handler())
+
+        self._console = logging.NullHandler()
+
+    @property
+    def console(self) -> logging.Handler:
+        return self._console
+
+    @console.setter
+    def console(self, handler: logging.Handler) -> None:
+        self._console = handler
+        self.addHandler(self._console)
+
+
 @cache('logger')
-def get_logger(name: str = '') -> logging.Logger:
-    logger_name = f'nukeserversocket.{name}' if name else 'nukeserversocket'
-    logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.DEBUG)
-    logger.addHandler(_file_handler())
-    return logger
+def get_logger() -> NssLogger:
+    return NssLogger()
