@@ -16,6 +16,7 @@
 
 * Simplified the settings window.
 * Simplified the logs window.
+* Repository name changed to all lowercase.
 
 ### Fixed
 
