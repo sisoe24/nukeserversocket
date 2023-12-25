@@ -4,20 +4,27 @@ import pathlib
 import argparse
 import subprocess
 
+CWD = pathlib.Path(__file__).parent
+DIST = CWD / 'dist'
+DIST.mkdir(exist_ok=True)
+
+
+def build() -> None:
+    subprocess.run(
+        ['git', 'archive', '-o', f'{DIST}/nukeserversocket.zip', 'HEAD'],
+        cwd=CWD
+    )
+
 
 def bump_version(version: str) -> None:
-    cwd = pathlib.Path(__file__).parent
-    dist = cwd / 'dist'
-    dist.mkdir(exist_ok=True)
-
     version = subprocess.run(
-        ['poetry', 'version', '-s', version], cwd=cwd, capture_output=True
+        ['poetry', 'version', '-s', version], cwd=CWD, capture_output=True
     ).stdout.decode().strip()
 
-    with open(cwd / 'nukeserversocket' / 'version.py', 'w') as f:
+    with open(CWD / 'nukeserversocket' / 'version.py', 'w') as f:
         f.write(f"__version__ = '{version}'")
 
-    subprocess.run(['git', 'archive', '-o', f'{dist}/nukeserversocket.zip', 'HEAD'], cwd=cwd)
+    build()
 
 
 def get_parser():
@@ -26,8 +33,10 @@ def get_parser():
         description='NukeServerSocket - Build Manager',
     )
 
-    parser.add_argument(
-        '-b',
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--build', action='store_true', help='Build the package.')
+
+    group.add_argument(
         '--bump',
         type=str,
         metavar='VERSION',
@@ -46,5 +55,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     if args.bump:
         bump_version(args.bump)
+    elif args.build:
+        build()
     else:
         parser.print_help()
