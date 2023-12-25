@@ -22,7 +22,7 @@
 A Nuke plugin to run code from external applications.
 
 - [1. NukeServerSocket README WIP](#1-nukeserversocket-readme-wip)
-- [1.0.0 Release](#100-release)
+  - [1.0.0 Release](#100-release)
   - [1.1. Features](#11-features)
   - [1.2. Client applications](#12-client-applications)
   - [1.3. Installation](#13-installation)
@@ -32,7 +32,7 @@ A Nuke plugin to run code from external applications.
   - [1.8. Known Issues](#18-known-issues)
   - [1.9. Compatibility](#19-compatibility)
 
-# 1.0.0 Release
+## 1.0.0 Release
 
 This is the first stable release of NukeServerSocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The main goal of this release was to make the plugin more stable and easier to maintain. The plugin is now more extendable and easier to implement in other applications as well.
 
