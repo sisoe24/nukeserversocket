@@ -4,7 +4,6 @@ from __future__ import annotations
 import os
 import json
 import logging
-import contextlib
 from textwrap import dedent
 from dataclasses import dataclass
 
@@ -110,10 +109,9 @@ class NukeEditor(NukeServerSocket):
 
 
 def install_nuke():
-    with contextlib.suppress(ImportError):
-        import nukescripts
+    import nukescripts
 
-        nukescripts.panels.registerWidgetAsPanel(
-            'nukeserversocket.controllers.nuke.NukeEditor', 'NukeServerSocket',
-            'uk.co.thefoundry.NukeServerSocket'
-        )
+    nukescripts.panels.registerWidgetAsPanel(
+        'nukeserversocket.controllers.nuke.NukeEditor', 'NukeServerSocket',
+        'uk.co.thefoundry.NukeServerSocket'
+    )
