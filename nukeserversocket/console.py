@@ -51,7 +51,7 @@ class NssConsole(QGroupBox):
         LOGGER.console.setLevel(logging.DEBUG if state == 2 else logging.INFO)
 
     def write(self, text: str) -> None:
-        self._console.insertPlainText(f'{text}')
+        self._console.insertPlainText(text)
         self._console.verticalScrollBar().setValue(
             self._console.verticalScrollBar().maximum()
         )
