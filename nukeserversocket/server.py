@@ -20,7 +20,7 @@ class NssServer(QTcpServer):
     This class is responsible for receiving data from the client, and sending the output back.
 
     Signals:
-        on_data_written (): Signal emitted when data is written to the client.
+        on_data_received (): Signal emitted when data is received from the client.
 
     """
     on_data_received = Signal()
@@ -51,6 +51,7 @@ class NssServer(QTcpServer):
         self.on_data_received.emit()
 
         LOGGER.info('Writing output to back socket...')
+
         self._socket.write(output.encode('utf-8'))
         LOGGER.debug('Output: %s', output.replace('\n', '\\n'))
 
