@@ -18,11 +18,8 @@ class ReceivedData:
     {
         "text": "Text to run in the script editor",
         "file": "File name to show in the output (optional))"
-        "noReply": "0" or "1" To disable output in the script editor (optional)"
+        "formatText": "0" or "1" To format the text or not. Defaults to "1" (True) (optional)
     }
-
-    Raises:
-        ValueError: If the data is not a valid json string or if it does not contain a `text` field.
 
     """
 
@@ -31,17 +28,19 @@ class ReceivedData:
     data: Dict[str, str] = field(init=False)
     file: str = field(init=False)
     text: str = field(init=False)
-    no_reply: bool = field(init=False)
+    format_text: bool = field(init=False)
 
     def __post_init__(self):
 
         try:
             self.data = json.loads(self.raw)
             self.data.setdefault('file', '')
-            self.data.setdefault('noReply', '0')
+            self.data.setdefault('formatText', '1')
         except Exception as e:
-            LOGGER.error(f'An exception occurred while decoding the data. {e}')
-            self.data = {'text': '', 'file': '', 'noReply': '0'}
+            LOGGER.error(
+                f'Nukeserversocket: An exception occurred while decoding the data. {e}'
+            )
+            self.data = {'text': '', 'file': '', 'formatText': '1'}
 
         LOGGER.debug('Received data: %s', self.data)
 
@@ -50,4 +49,4 @@ class ReceivedData:
             LOGGER.critical('Data does not contain a text field.')
 
         self.file = self.data['file']
-        self.no_reply = bool(int(self.data['noReply']))
+        self.format_text = bool(int(self.data['formatText']))

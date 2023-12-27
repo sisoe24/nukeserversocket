@@ -14,44 +14,44 @@ class ReceivedTestData:
     data: Dict[str, str]
     text: str
     file: str
-    no_reply: bool = False
+    format_text: bool = False
 
 
 @pytest.mark.parametrize('data', [
     ReceivedTestData(
-        '{"text": "Hello World", "file": "test.py", "noReply": "1"}',
-        {'text': 'Hello World', 'file': 'test.py', 'noReply': '1'},
+        '{"text": "Hello World", "file": "test.py", "formatText": "1"}',
+        {'text': 'Hello World', 'file': 'test.py', 'formatText': '1'},
         'Hello World',
         'test.py',
         True
     ),
     ReceivedTestData(
-        '{"text": "Hello World", "file": "test.py", "noReply": "0"}',
-        {'text': 'Hello World', 'file': 'test.py', 'noReply': '0'},
+        '{"text": "Hello World", "file": "test.py", "formatText": "0"}',
+        {'text': 'Hello World', 'file': 'test.py', 'formatText': '0'},
         'Hello World',
         'test.py',
         False
     ),
     ReceivedTestData(
         '{"text": "Hello World", "file": ""}',
-        {'text': 'Hello World', 'file': '', 'noReply': '0'},
+        {'text': 'Hello World', 'file': '', 'formatText': '1'},
         'Hello World',
         '',
-        False
+        True
     ),
     ReceivedTestData(
         '{"text": "Hello World"}',
-        {'text': 'Hello World', 'file': '', 'noReply': '0'},
+        {'text': 'Hello World', 'file': '', 'formatText': '1'},
         'Hello World',
         '',
-        False
+        True
     ),
     ReceivedTestData(
         '{"text": "",',
-        {'text': '', 'file': '', 'noReply': '0'},
+        {'text': '', 'file': '', 'formatText': '1'},
         '',
         '',
-        False
+        True
     )
 
 ])
@@ -62,4 +62,4 @@ def test_received_data(data: ReceivedTestData):
     assert received.data == data.data
     assert received.text == data.text
     assert received.file == data.file
-    assert received.no_reply == data.no_reply
+    assert received.format_text == data.format_text

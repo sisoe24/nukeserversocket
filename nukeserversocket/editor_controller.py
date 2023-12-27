@@ -116,7 +116,7 @@ class EditorController(ABC):
 
         if (
             not self.settings.get('mirror_script_editor') or
-            data.no_reply
+            not data.format_text
         ):
             LOGGER.debug('Restoring script editor.')
             self.input_editor.setPlainText(initial_input)
