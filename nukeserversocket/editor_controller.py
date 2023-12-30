@@ -37,7 +37,8 @@ def format_output(file: str, text: str, string_format: str) -> str:
     }
 
     for key, value in placeholders.items():
-        string_format = string_format.replace(key, value)
+        if key in string_format:
+            string_format = string_format.replace(key, value)
 
     return string_format
 
