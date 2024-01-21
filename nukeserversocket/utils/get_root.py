@@ -13,7 +13,7 @@ def _get_root(max_depth: int = 5):
     """
     path = pathlib.Path(__file__).parent
     for _ in range(max_depth):
-        if path.name.lower() == 'nukeserversocket' and (path / 'pyproject.toml').exists():
+        if path.name.lower() == 'nukeserversocket':
             return path
         path = path.parent
     raise FileNotFoundError('Root package not found within the depth limit.')
