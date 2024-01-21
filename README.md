@@ -1,17 +1,17 @@
-# 1. NukeServerSocket README
+# 1. nukeserversocket README
 
-[![Main Build](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=stable)](https://github.com/sisoe24/NukeServerSocket/releases)
-[![Pre Release](https://img.shields.io/github/v/release/sisoe24/NukeServerSocket?label=pre-release&include_prereleases)](https://github.com/sisoe24/NukeServerSocket/releases)
-![Last commit](https://img.shields.io/github/last-commit/sisoe24/NukeServerSocket)
+[![Main Build](https://img.shields.io/github/v/release/sisoe24/nukeserversocket?label=stable)](https://github.com/sisoe24/nukeserversocket/releases)
+[![Pre Release](https://img.shields.io/github/v/release/sisoe24/nukeserversocket?label=pre-release&include_prereleases)](https://github.com/sisoe24/nukeserversocket/releases)
+![Last commit](https://img.shields.io/github/last-commit/sisoe24/nukeserversocket)
 
-[![issues](https://img.shields.io/github/issues/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/issues)
-[![pull-request](https://img.shields.io/github/issues-pr/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/pulls)
+[![issues](https://img.shields.io/github/issues/sisoe24/nukeserversocket)](https://github.com/sisoe24/nukeserversocket/issues)
+[![pull-request](https://img.shields.io/github/issues-pr/sisoe24/nukeserversocket)](https://github.com/sisoe24/nukeserversocket/pulls)
 
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/NukeServerSocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/NukeServerSocket&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/NukeServerSocket/dashboard?utm_source=github.com&utm_medium=referral&utm_content=sisoe24/NukeServerSocket&utm_campaign=Badge_Coverage)
-[![DeepSource](https://deepsource.io/gh/sisoe24/NukeServerSocket.svg/?label=active+issues&show_trend=true&token=D3BtO5z54YqAh2Fn2pTf9JKB)](https://deepsource.io/gh/sisoe24/NukeServerSocket/?ref=repository-badge)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/nukeserversocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/nukeserversocket&amp;utm_campaign=Badge_Grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/nukeserversocket/dashboard?utm_source=github.com&utm_medium=referral&utm_content=sisoe24/nukeserversocket&utm_campaign=Badge_Coverage)
+<!-- [![DeepSource](https://deepsource.io/gh/sisoe24/nukeserversocket.svg/?label=active+issues&show_trend=true&token=D3BtO5z54YqAh2Fn2pTf9JKB)](https://deepsource.io/gh/sisoe24/nukeserversocket/?ref=repository-badge) -->
 
-[![license](https://img.shields.io/github/license/sisoe24/NukeServerSocket)](https://github.com/sisoe24/NukeServerSocket/blob/main/LICENSE)
+[![license](https://img.shields.io/github/license/sisoe24/nukeserversocket)](https://github.com/sisoe24/nukeserversocket/blob/main/LICENSE)
 
 [![NukeTools](https://img.shields.io/github/v/release/sisoe24/Nuke-Tools?label=NukeTools)](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools)
 
@@ -21,8 +21,9 @@
 
 A Nuke plugin to run code from external applications.
 
-- [1. NukeServerSocket README](#1-nukeserversocket-readme)
+- [1. nukeserversocket README](#1-nukeserversocket-readme)
   - [1.0.0 Release](#100-release)
+    - [Important Update: Repository Name Change](#important-update-repository-name-change)
   - [1.1. Features](#11-features)
   - [1.2. Client applications](#12-client-applications)
   - [1.3. Installation](#13-installation)
@@ -34,11 +35,21 @@ A Nuke plugin to run code from external applications.
 
 ## 1.0.0 Release
 
-This is the first stable release of NukeServerSocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The main goal of this release was to make the plugin more stable and easier to maintain. The plugin is now more extendable and easier to implement in other applications as well.
+This is the first stable release of nukeserversocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The main goal of this release was to make the plugin more stable and easier to maintain. The plugin is now more extendable and easier to implement in other applications as well.
 
 For a full list of changes, see the [CHANGELOG](TODO)
 
-If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<= 0.6.2` from the [releases page](https://github.com/sisoe24/NukeServerSocket/releases)
+If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases)
+
+### Important Update: Repository Name Change
+
+The repository name has changed from `NukeServerSocket` to `nukeserversocket`. Although GitHub url seems to be case insensitive, if you have cloned the repository before, you will need to update the remote url.
+
+```bash
+git remote set-url origin https://github.com/sisoe24/nukeserversocket.git
+```
+
+This also means that you will need to update the import statement in your _menu.py_ file. See [Installation](#13-installation)
 
 ---
 
@@ -49,7 +60,7 @@ If you are using Nuke 12 or Python 2.7, you can still use the previous version o
 
 ## 1.2. Client applications
 
-Client applications that use NukeServerSocket:
+Client applications that use nukeserversocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
@@ -57,7 +68,7 @@ Client applications that use NukeServerSocket:
 
 ## 1.3. Installation
 
-1. Download the repository via the [releases page](https://github.com/sisoe24/NukeServerSocket/releases) or by cloning it from GitHub.
+1. Download the repository via the [releases page](https://github.com/sisoe24/nukeserversocket/releases) or by cloning it from GitHub.
 2. Place the folder inside the _~/.nuke_ directory or into a custom one.
 3. Then, in your _menu.py_, write
      ```python
@@ -71,7 +82,7 @@ Client applications that use NukeServerSocket:
 
 ![Execute Code](images/run_code.gif)
 
-1. Open the NukeServerSocket panel inside Nuke, and start the server by clicking **Connect**.
+1. Open the nukeserversocket panel inside Nuke, and start the server by clicking **Connect**.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
 NOTES:
@@ -99,9 +110,9 @@ You access the settings from the plugin toolbar.
 
 ## 1.6. Extendibility
 
-The plugin essentially works as a server socket that waits for incoming requests. Once a request is received, it performs the required operations within Nuke and sends back the result. This plugin is not tied to any specific application, which means it is easy to implement a new client without having to modify the NukeServerSocket source code. All the client needs to do is send the data to the specified address within NukeServerSocket.
+The plugin essentially works as a server socket that waits for incoming requests. Once a request is received, it performs the required operations within Nuke and sends back the result. This plugin is not tied to any specific application, which means it is easy to implement a new client without having to modify the nukeserversocket source code. All the client needs to do is send the data to the specified address within nukeserversocket.
 
-If you wish to create a new client or contribute to the existing ones, you can find more information on the [wiki page](https://github.com/sisoe24/NukeServerSocket/wiki/Create-custom-client)
+If you wish to create a new client or contribute to the existing ones, you can find more information on the [wiki page](https://github.com/sisoe24/nukeserversocket/wiki/Create-custom-client)
 
 ## 1.8. Known Issues
 
