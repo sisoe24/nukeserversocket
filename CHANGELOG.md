@@ -8,7 +8,7 @@
 * Drop support for Nuke <= 12 and Python 2.7.
 * Removed the "Send Nodes" feature. It will be re-added in a future release if requested.
 * Removed the "Nuke Internal" code execution engine. Now only the "Script Editor" engine is available.
-* Removed the "Test Receiver" button. Now the connection is tested when clicking the "Connect" button.
+* Removed the "Test Receiver" button.
 * Removed the timeout UI counter.
 * Removed the websocket connection type. Now only the TCP connection type is available.
 
