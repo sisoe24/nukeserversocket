@@ -37,13 +37,13 @@ A Nuke plugin to run code from external applications.
 
 This is the first stable release of nukeserversocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The main goal of this release was to make the plugin more stable and easier to maintain. The plugin is now more extendable and easier to implement in other applications as well.
 
-For a full list of changes, see the [CHANGELOG](TODO)
+For a full list of changes, see the [CHANGELOG](https://github.com/sisoe24/nukeserversocket/blob/main/CHANGELOG.md)
 
 If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases)
 
 ### Important Update: Repository Name Change
 
-The repository name has changed from `NukeServerSocket` to `nukeserversocket`. Although GitHub url seems to be case insensitive, if you have cloned the repository before, you will need to update the remote url.
+The repository name has changed from `NukeServerSocket` to `nukeserversocket`. Although GitHub url seems to be case insensitive, if you have cloned the repository before, you might need to update the remote url.
 
 ```bash
 git remote set-url origin https://github.com/sisoe24/nukeserversocket.git
