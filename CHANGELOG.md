@@ -1,6 +1,31 @@
 # Changelog
 
 
+## [1.0.0] - 2023-11-19
+
+### Removed
+
+* Drop support for Nuke <= 12 and Python 2.7.
+* Removed the "Send Nodes" feature. It will be re-added in a future release if requested.
+* Removed the "Nuke Internal" code execution engine. Now only the "Script Editor" engine is available.
+* Removed the "Test Receiver" button.
+* Removed the timeout UI counter.
+* Removed the websocket connection type. Now only the TCP connection type is available.
+
+### Changed
+
+* Simplified the settings window.
+* Simplified the logs window.
+* Repository name changed to all lowercase.
+
+### Fixed
+
+* Vastly improved the code base.
+
+### Added
+
+* New setting to change the format of the output code result.
+
 ## [0.6.2] - 2023-11-19
 
 ### Fixed

@@ -2,55 +2,47 @@
     // See https://go.microsoft.com/fwlink/?LinkId=733558
     // for the documentation about the tasks.json format
     "version": "2.0.0",
+    "options": {
+        "env": {
+            "DEV_OS": "1"
+        }
+    },
     "tasks": [
         {
             "label": "RunApp",
             "type": "shell",
-            "dependsOn": [
-                "Clean .pyc"
-            ],
+            "options": {
+                "env": {
+                    "PYTHONDONTWRITEBYTECODE": "1"
+                }
+            },
             "osx": {
                 "command": ".venv/bin/python",
-                "options": {
-                    "env": {
-                        "PYTHONDONTWRITEBYTECODE": "1"
-                    }
-                }
             },
             "windows": {
                 "command": ".venv\\Scripts\\python.exe",
-                "options": {
-                    "env": {
-                        "PYTHONDONTWRITEBYTECODE": "1"
-                    }
-                }
             },
             "args": [
                 "-m",
-                "nukeserversocket.local.run_local",
+                "nukeserversocket.controllers.local_app"
             ],
-        },
-        {
-            "label": "Pack repo",
-            "type": "shell",
-            "command": "git archive --format zip --output ${workspaceFolder}/dist/NukeServerSocket.zip main",
             "problemMatcher": []
         },
         {
-            "label": "Clean .pyc",
+            "label": "Run Tests",
             "type": "shell",
-            "command": "find ${workspaceFolder} -type f \\( -name '._*' -o -name '*.pyc' \\) -exec rm {} \\;",
+            "command": "poetry",
+            "args": [
+                "run",
+                "pytest",
+                "-xsl",
+                // "--lf",
+                "-vvv",
+                // "-m quick"
+            ],
+            "group": "test",
+            "hide": true,
             "problemMatcher": []
-        },
-        {
-            "label": "Open coverage report",
-            "type": "shell",
-            "command": "open coverage/index.html",
-        },
-        {
-            "label": "Create coverage report",
-            "type": "shell",
-            "command": "${config:python.defaultInterpreterPath} -m pytest --cov=src --cov-report html --cov-report term:skip-covered",
         }
     ]
 }
