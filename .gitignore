@@ -2,6 +2,7 @@ other/
 dist/
 bin/
 logs/
+archive/
 
 *tmp
 
