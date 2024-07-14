@@ -31,11 +31,13 @@ A Nuke plugin to run code from external applications.
 
 ## 1.0.0 Release
 
-This is the first stable release of nukeserversocket. It is a complete rewrite of the previous version cleaning up the code and improving the overall performance. The main goal of this release was to make the plugin more stable and easier to maintain. The plugin is now more extendable and easier to implement in other applications as well.
+This is the initial stable version of nukeserversocket. It's a total rewrite of the earlier version with the primary goal to enhance stability and simplify maintenance. Now, the plugin is more flexible and straightforward to use in different applications.
 
 For a full list of changes, see the [CHANGELOG](https://github.com/sisoe24/nukeserversocket/blob/main/CHANGELOG.md)
 
 If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases)
+
+Feedback and contributions are welcome!
 
 ### Important Update: Repository Name Change
 
@@ -72,7 +74,7 @@ Client applications that use nukeserversocket:
      nukeserversocket.install_nuke()
      ```
 
-> If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), use the command `Nuke Tools: Add NukeServerSocket`.
+> If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), use the command `Nuke: Add Packages` then select nukeServerSocket.
 
 ## 1.4. Usage
 
