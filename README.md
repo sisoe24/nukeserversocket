@@ -42,12 +42,12 @@ For a full list of changes, see the [CHANGELOG](https://github.com/sisoe24/nukes
 > ```
 
 >[!NOTE]
->If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases)
+>If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases/tag/v0.6.2)
 ---
 
 ## 1.2. Features
 
-- Receive Python or BlinkScript code from any client in your local network. (More on [Extendibility](#16-extendibility))
+- Receive Python or BlinkScript code from any client in your local network.
 - Connect more than one client to the same Nuke instance.
 
 ## 1.3. Client applications
@@ -56,7 +56,7 @@ Client applications that use nukeserversocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
-- [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension. Note: I am not actively maintaining this extension anymore.
+- [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension (deprecated at the moment).
 
 ### 1.3.1. Create a custom client
 
@@ -87,7 +87,7 @@ You can create a custom client in any programming language that supports socket 
 
 ## 1.6. Settings
 
-You access the settings from the plugin toolbar.
+You can access the settings from the plugin toolbar.
 
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
 - **Format Text**: The script editor output window will receive a formatted version of the code result. The available placeholders are:
