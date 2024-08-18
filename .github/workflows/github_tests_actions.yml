@@ -1,13 +1,12 @@
 name: NukeServerSocket
 on:
   pull_request:
+      branches:
+       - 'main'
   push:
     branches:
-      - 'develop'
+      - 'main'
       - 'release/**'
-
-permissions:
-  contents: read
 
 jobs:
   test:
@@ -20,10 +19,10 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
+    - uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
 
