@@ -48,8 +48,8 @@ jobs:
         pip list
         echo "Python path:"
         python -c "import sys; print(sys.path)"
-        echo "Can we import nukeserversocket?"
-        python -c "import nukeserversocket; print('Success!')"
+        echo "Can we import nukeserversocket.settings?"
+        python -c "import nukeserversocket.settings; print('Success!')"
   
     - name: Run tests
       run: |
