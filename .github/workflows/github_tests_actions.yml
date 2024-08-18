@@ -1,4 +1,4 @@
-name: NukeServerSocket
+rname: NukeServerSocket
 on:
   push:
     branches:
@@ -52,7 +52,7 @@ jobs:
   
     - name: Run tests
       run: |
-        pytest -v
+        poetry run pytest -v
         
     - name: Debug on failure
       if: failure()
