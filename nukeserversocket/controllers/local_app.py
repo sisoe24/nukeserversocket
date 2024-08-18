@@ -6,6 +6,7 @@ Only used for testing purposes.
 from __future__ import annotations
 
 import sys
+import traceback
 
 from PySide2.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
                                QPushButton, QSizePolicy, QApplication,
@@ -38,8 +39,13 @@ class LocalController(EditorController):
 
     def execute(self) -> None:
         with stdoutIO() as s:
-            exec(self.input_editor.toPlainText())
-            result = s.getvalue()
+            try:
+                exec(self.input_editor.toPlainText())
+            except Exception:
+                result = traceback.format_exc()
+            else:
+                result = s.getvalue()
+
             self.output_editor.setPlainText(result)
 
 
