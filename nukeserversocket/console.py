@@ -1,12 +1,12 @@
 from __future__ import annotations
 
+import sys
 import logging
 
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QCheckBox, QGroupBox, QHBoxLayout, QPushButton,
                                QVBoxLayout, QPlainTextEdit)
 
-from .utils import cache
 from .logger import get_logger
 
 LOGGER = get_logger()
@@ -25,7 +25,15 @@ class NssConsole(QGroupBox):
         super().__init__(parent, title='Logs')
 
         self._console = QPlainTextEdit()
-        self._console.setStyleSheet('font-family: menlo;')
+
+        if sys.platform == 'darwin':
+            font = 'menlo'
+        elif sys.platform == 'win32':
+            font = 'consolas'
+        else:
+            font = 'monospace'
+
+        self._console.setStyleSheet(f'font-family: {font};')
         self._console.setReadOnly(True)
         self._console.setLineWrapMode(QPlainTextEdit.NoWrap)
 
