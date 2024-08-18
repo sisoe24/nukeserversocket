@@ -52,6 +52,9 @@ jobs:
   
     - name: Run tests
       run: |
+        echo "Which poetry"
+        which poetry
+        poetry run which pytest
         poetry run pytest -v
         
     - name: Debug on failure
