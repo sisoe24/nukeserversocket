@@ -29,5 +29,5 @@ def mock_settings():
 
 
 @pytest.fixture()
-def settings(mock_settings: pathlib.Path):
+def nss_settings(mock_settings: pathlib.Path):
     return _NssSettings(mock_settings)

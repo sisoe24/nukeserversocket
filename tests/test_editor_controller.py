@@ -36,9 +36,9 @@ class MockEditorController(EditorController):
 
 
 @pytest.fixture()
-def editor(qtbot: QtBot, settings: _NssSettings) -> MockEditorController:
+def editor(qtbot: QtBot, nss_settings: _NssSettings) -> MockEditorController:
     editor = MockEditorController()
-    editor.settings = settings
+    editor.settings = nss_settings
     qtbot.addWidget(editor.input_editor)
     yield editor
     editor.history.clear()

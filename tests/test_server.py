@@ -44,9 +44,9 @@ class MockEditorController(EditorController):
 
 
 @pytest.fixture()
-def editor(settings: _NssSettings):
+def editor(nss_settings: _NssSettings):
     editor = MockEditorController()
-    editor.settings = settings
+    editor.settings = nss_settings
 
     yield editor
 
