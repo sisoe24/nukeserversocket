@@ -3,7 +3,7 @@ from __future__ import annotations
 import sys
 import argparse
 import subprocess
-from typing import List
+from typing import Any, List
 from pathlib import Path
 from datetime import datetime
 from textwrap import dedent
@@ -13,8 +13,6 @@ DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
 
 PACKAGE = ROOT.name
-
-Subparser = argparse._SubParsersAction[argparse.ArgumentParser]
 
 
 def bump_version(version: str) -> None:
@@ -62,7 +60,7 @@ def make_release():
     subprocess.run(cmd, cwd=ROOT)
 
 
-def build_parser(subparser: Subparser) -> None:
+def build_parser(subparser: Any) -> None:
 
     def build(args: argparse.Namespace):
 
