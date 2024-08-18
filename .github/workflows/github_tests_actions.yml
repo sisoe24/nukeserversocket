@@ -36,7 +36,7 @@ jobs:
       run: |
         poetry config virtualenvs.in-project true
         poetry install
-        pip install -e .
+        poetry run python -m pip install -e .
       
     - name: Debug Information (Post-install)
       run: |
@@ -44,7 +44,7 @@ jobs:
         echo "Pip version: $(pip --version)"
         echo "Poetry version: $(poetry --version)"
         echo "Installed packages:"
-        pip list
+        poetry run python -m pip list
         echo "Python path:"
         poetry run python -c "import sys; print(sys.path)"
         echo "Can we import nukeserversocket?"
