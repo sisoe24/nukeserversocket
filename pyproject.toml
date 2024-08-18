@@ -6,7 +6,7 @@ authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 
 [tool.poetry.scripts]
 nukeserversocket = "nukeserversocket.controllers.local_app:main"
-build = "release_manager:build"
+build = "scripts/release_manager:main"
 
 [tool.isort]
 skip = ["__init__.py" , "version.py"]
