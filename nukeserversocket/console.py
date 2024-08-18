@@ -60,6 +60,7 @@ class NssConsole(QGroupBox):
 
     def write(self, text: str, level_name: str = 'INFO') -> None:
         color = LOG_COLORS.get(level_name, 'white')
+        text = text.replace(' ', '&nbsp;')
         self._console.appendHtml(f'<font color="{color}">{text}</font>')
         self._console.verticalScrollBar().setValue(
             self._console.verticalScrollBar().maximum()
