@@ -36,7 +36,31 @@ jobs:
       run: |
         poetry install
         pip install -e .
-
+      
+    - name: Debug Information (Post-install)
+      run: |
+        echo "Python version: $(python --version)"
+        echo "Pip version: $(pip --version)"
+        echo "Poetry version: $(poetry --version)"
+        echo "Installed packages:"
+        pip list
+        echo "Python path:"
+        python -c "import sys; print(sys.path)"
+        echo "Can we import nukeserversocket?"
+        python -c "import nukeserversocket; print('Success!')"
+  
     - name: Run tests
       run: |
-        poetry run pytest
+        pytest -v
+        
+    - name: Debug on failure
+      if: failure()
+      run: |
+        echo "Test failure occurred. Debugging information:"
+        echo "Current directory: $(pwd)"
+        echo "Directory contents:"
+        ls -R
+        echo "Python path:"
+        python -c "import sys; print(sys.path)"
+        echo "Content of site-packages:"
+        ls $(python -c "import site; print(site.getsitepackages()[0])")
