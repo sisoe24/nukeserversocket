@@ -52,6 +52,8 @@ jobs:
   
     - name: Run tests
       run: |
+        echo "Current directory: $(pwd)"
+        cd ..
         echo "Which poetry"
         which poetry
         poetry run which pytest
