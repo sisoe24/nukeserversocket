@@ -12,6 +12,11 @@ import pytest
 SETTINGS_FILE = pathlib.Path(__file__).parent / 'tmp' / 'nss.json'
 SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
 
+root = pathlib.Path(__file__).parent.parent / 'nukeserversocket'
+print('➡ root:', root)
+sys.path.append(str(root))
+print('➡ root:', root)
+
 print('Python version:', sys.version)
 print('sys.path in conftest:', sys.path)
 print('Current working directory:', os.getcwd())
