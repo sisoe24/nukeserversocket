@@ -30,11 +30,8 @@ jobs:
     - name: Install Poetry
       run: |
         pip install --upgrade pip
-        pip install PySide2==5.15.2.1
-        pip install pytest==7.4.3
-        pip install pytest-qt==4.2.0
-        pip install pytest-repeat==0.9.3
-        pip install pytest-randomly==3.12.0
+        pip install tox
+
       
     - name: Debug Information
       run: |
@@ -55,7 +52,7 @@ jobs:
         echo "Which pytest"
         which pytest
         export PYTHONPATH=$PYTHONPATH:$(pwd)
-        pytest -v
+        tox
     
     - name: Debug on failure
       if: failure()
