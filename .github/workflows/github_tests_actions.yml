@@ -16,7 +16,7 @@ jobs:
       matrix:
         os: [macos-12, windows-latest]
         python-version: ["3.7", "3.9", "3.10"]
-      fail-fast: false
+      fail-fast: true
 
     steps:
     - name: Checkout repository
@@ -52,8 +52,8 @@ jobs:
   
     - name: Run tests
       run: |
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
         echo "Current directory: $(pwd)"
-        ls
         echo "Which poetry"
         which poetry
         echo "Which pytest"
