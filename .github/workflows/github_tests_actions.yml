@@ -41,7 +41,7 @@ jobs:
     - name: Debug Information (Post-install)
       run: |
         echo "Python version: $(python --version)"
-        echo "Pip version: $(pip --version)"
+        echo "Pip version: $(poetry run python -m pip --version)"
         echo "Poetry version: $(poetry --version)"
         echo "Installed packages:"
         poetry run python -m pip list
@@ -53,9 +53,10 @@ jobs:
     - name: Run tests
       run: |
         echo "Current directory: $(pwd)"
-        cd ..
+        ls
         echo "Which poetry"
         which poetry
+        echo "Which pytest"
         poetry run which pytest
         poetry run pytest -v
         
