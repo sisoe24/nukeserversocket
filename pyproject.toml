@@ -9,7 +9,7 @@ nukeserversocket = "nukeserversocket.controllers.local_app:main"
 build = "release_manager:build"
 
 [tool.isort]
-skip = ["__init__.py"]
+skip = ["__init__.py" , "version.py"]
 length_sort = true
 add_imports = "from __future__ import annotations"
 
