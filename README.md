@@ -55,12 +55,29 @@ For a full list of changes, see the [CHANGELOG](https://github.com/sisoe24/nukes
 Client applications that use nukeserversocket:
 
 - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
+- [nuketools.nvim](https://github.com/sisoe24/nuketools.nvim) - Neovim plugin.
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
 - [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension (deprecated at the moment).
 
 ### 1.3.1. Create a custom client
 
 You can create a custom client in any programming language that supports socket communication. The client sends the code to the server, which then executes it in Nuke and sends back the result. For more information, see the [wiki page](https://github.com/sisoe24/nukeserversocket/wiki/Client-Applications-for-NukeServerSocket)
+
+```py
+# ... your socket code
+data = {
+    "text": "print([n.name() for n in nuke.allNodes()])",
+    "file" : "path/to/file.py",
+    "formatText": "0"
+}
+s.sendall(bytearray(json.dumps(data), 'utf-8'))
+data = s.recv(1024)
+s.close()
+
+nodes = json.loads(data.decode('utf-8').replace("'", '"'))
+for node in nodes:
+    print(node)
+```
 
 ## 1.4. Installation
 
