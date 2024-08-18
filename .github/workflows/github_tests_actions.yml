@@ -14,8 +14,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, windows-latest]
+        os: [macos-12, windows-latest]
         python-version: ["3.7", "3.9", "3.10"]
+      fail-fast: false
 
     steps:
     - name: Checkout repository
