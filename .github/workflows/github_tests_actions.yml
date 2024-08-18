@@ -1,14 +1,10 @@
 name: NukeServerSocket
 on:
+  pull_request:
   push:
     branches:
-      - main
-  pull_request:
-    branches:
-      - main
-  pull_request_target:
-    branches:
-      - main
+      - 'develop'
+      - 'release/**'
 jobs:
   test:
     runs-on: ${{ matrix.os }}
