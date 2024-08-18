@@ -30,36 +30,33 @@ jobs:
     - name: Install Poetry
       run: |
         pip install --upgrade pip
-        pip install poetry
-
-    - name: Install dependencies
-      run: |
-        poetry config virtualenvs.in-project true
-        poetry install 
-        poetry run python -m pip install -e .
+        pip install PySide2==5.15.2.1
+        pip install pytest==7.4.3
+        pip install pytest-qt==4.2.0
+        pip install pytest-repeat==0.9.3
+        pip install pytest-randomly==3.12.0
       
-    - name: Debug Information (Post-install)
+    - name: Debug Information
       run: |
         echo "Python version: $(python --version)"
-        echo "Pip version: $(poetry run python -m pip --version)"
-        echo "Poetry version: $(poetry --version)"
+        echo "Pip version: $(pip --version)"
         echo "Installed packages:"
-        poetry run python -m pip list
+        pip list
         echo "Python path:"
-        poetry run python -c "import sys; print(sys.path)"
+        python -c "import sys; print(sys.path)"
         echo "Can we import nukeserversocket?"
-        poetry run python -c "import nukeserversocket; print('Success!')"
+        python -c "import nukeserversocket; print('Success!')"
   
     - name: Run tests
       run: |
-        export PYTHONPATH=$PYTHONPATH:$(pwd)
         echo "Current directory: $(pwd)"
-        echo "Which poetry"
-        which poetry
+        echo "Directory contents:"
+        ls -R
         echo "Which pytest"
-        poetry run which pytest
-        poetry run pytest -v
-        
+        which pytest
+        export PYTHONPATH=$PYTHONPATH:$(pwd)
+        pytest -v
+    
     - name: Debug on failure
       if: failure()
       run: |
@@ -68,6 +65,8 @@ jobs:
         echo "Directory contents:"
         ls -R
         echo "Python path:"
-        poetry run python -c "import sys; print(sys.path)"
+        python -c "import sys; print(sys.path)"
         echo "Content of site-packages:"
-        ls $(poetry run python -c "import site; print(site.getsitepackages()[0])")
+        ls $(python -c "import site; print(site.getsitepackages()[0])")
+        echo "Trying to import nukeserversocket.settings:"
+        python -c "import nukeserversocket.settings; print('Settings import successful')"
