@@ -9,9 +9,9 @@ import pytest
 
 from nukeserversocket import settings
 
-p = os.path.dirname(os.path.dirname(__file__))
-sys.path.append(os.path.join(p, 'nukeserversocket'))
-print('sys path', sys.path)
+# p = os.path.dirname(os.path.dirname(__file__))
+# sys.path.append(os.path.join(p, 'nukeserversocket'))
+# print('sys path', sys.path)
 
 
 SETTINGS_FILE = pathlib.Path(__file__).parent / 'tmp' / 'nss.json'
