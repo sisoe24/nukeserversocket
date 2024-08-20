@@ -6,7 +6,7 @@ import pathlib
 
 import pytest
 
-from nukeserversocket.settings import _NssSettings
+from nukeserversocket import settings
 
 SETTINGS_FILE = pathlib.Path(__file__).parent / 'tmp' / 'nss.json'
 SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
@@ -23,11 +23,6 @@ def mock_settings():
     SETTINGS_FILE.write_text('{}')
 
     os.environ['NSS_SETTINGS'] = str(SETTINGS_FILE)
-    yield SETTINGS_FILE
+    yield settings._NssSettings(SETTINGS_FILE)
 
     SETTINGS_FILE.write_text('{}')
-
-
-@pytest.fixture()
-def get_settings(mock_settings: pathlib.Path):
-    return _NssSettings(mock_settings)
