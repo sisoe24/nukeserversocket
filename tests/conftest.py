@@ -1,18 +1,12 @@
 from __future__ import annotations
 
 import os
-import sys
 import logging
 import pathlib
 
 import pytest
 
 from nukeserversocket import settings
-
-# p = os.path.dirname(os.path.dirname(__file__))
-# sys.path.append(os.path.join(p, 'nukeserversocket'))
-# print('sys path', sys.path)
-
 
 SETTINGS_FILE = pathlib.Path(__file__).parent / 'tmp' / 'nss.json'
 SETTINGS_FILE.parent.mkdir(parents=True, exist_ok=True)
