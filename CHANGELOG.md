@@ -8,6 +8,7 @@
 
 ### Fixed
 
+* [[#30](https://github.com/sisoe24/nukeserversocket/issues/30)]
 * [#31](https://github.com/sisoe24/nukeserversocket/issues/31)
 * [#32](https://github.com/sisoe24/nukeserversocket/issues/32)
 * Logs font now use proper monospace font
