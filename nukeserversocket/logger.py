@@ -27,7 +27,7 @@ class ConsoleHandler(logging.Handler):
         self._console = console
 
     def emit(self, record: logging.LogRecord) -> None:
-        self._console.write(self.format(record) + '\n')
+        self._console.write(self.format(record) + '\n', record.levelname)
 
 
 def _file_handler() -> TimedRotatingFileHandler:

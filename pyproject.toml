@@ -1,15 +1,15 @@
 [tool.poetry]
 name = "nukeserversocket"
-version = "1.0.0"
+version = "1.1.0"
 description = "A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more."
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 
 [tool.poetry.scripts]
 nukeserversocket = "nukeserversocket.controllers.local_app:main"
-build = "release_manager:build"
+build = "scripts.release_manager:main"
 
 [tool.isort]
-skip = ["__init__.py"]
+skip = ["__init__.py" , "version.py"]
 length_sort = true
 add_imports = "from __future__ import annotations"
 
@@ -38,9 +38,9 @@ addopts = [
 
 [tool.poetry.dependencies]
 python = ">=3.7.7,<3.11"
+pyside2 = "5.15.2.1"
 
 [tool.poetry.group.dev.dependencies]
-pyside2 = "5.15.2.1"
 pytest = "^7.4.3"
 tox = "4.8.0"
 pytest-qt = "^4.2.0"

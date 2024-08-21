@@ -37,9 +37,7 @@ class ReceivedData:
             self.data.setdefault('file', '')
             self.data.setdefault('formatText', '1')
         except Exception as e:
-            LOGGER.error(
-                f'Nukeserversocket: An exception occurred while decoding the data. {e}'
-            )
+            LOGGER.error(f'An exception occurred while decoding the data. {e}')
             self.data = {'text': '', 'file': '', 'formatText': '1'}
 
         LOGGER.debug('Received data: %s', self.data)
@@ -49,4 +47,12 @@ class ReceivedData:
             LOGGER.critical('Data does not contain a text field.')
 
         self.file = self.data['file']
-        self.format_text = bool(int(self.data['formatText']))
+
+        try:
+            self.format_text = bool(int(self.data['formatText']))
+        except ValueError:
+            LOGGER.error(
+                'formatText must be either "0" or "1". Got "%s". Fallback to "1".',
+                self.data['formatText']
+            )
+            self.format_text = True

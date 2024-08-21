@@ -1,15 +1,23 @@
 from __future__ import annotations
 
+import sys
 import logging
 
 from PySide2.QtCore import Slot
 from PySide2.QtWidgets import (QCheckBox, QGroupBox, QHBoxLayout, QPushButton,
                                QVBoxLayout, QPlainTextEdit)
 
-from .utils import cache
 from .logger import get_logger
 
 LOGGER = get_logger()
+
+LOG_COLORS = {
+    'DEBUG': 'aqua',
+    'INFO': 'white',
+    'WARNING': 'orange',
+    'ERROR': 'red',
+    'CRITICAL': 'magenta',
+}
 
 
 class NssConsole(QGroupBox):
@@ -17,7 +25,15 @@ class NssConsole(QGroupBox):
         super().__init__(parent, title='Logs')
 
         self._console = QPlainTextEdit()
-        self._console.setStyleSheet('font-family: menlo;')
+
+        if sys.platform == 'darwin':
+            font = 'menlo'
+        elif sys.platform == 'win32':
+            font = 'consolas'
+        else:
+            font = 'monospace'
+
+        self._console.setStyleSheet(f'font-family: {font};')
         self._console.setReadOnly(True)
         self._console.setLineWrapMode(QPlainTextEdit.NoWrap)
 
@@ -50,8 +66,10 @@ class NssConsole(QGroupBox):
     def _on_enable_debug(self, state: int) -> None:
         LOGGER.console.setLevel(logging.DEBUG if state == 2 else logging.INFO)
 
-    def write(self, text: str) -> None:
-        self._console.insertPlainText(text)
+    def write(self, text: str, level_name: str = 'INFO') -> None:
+        color = LOG_COLORS.get(level_name, 'white')
+        text = text.replace(' ', '&nbsp;')
+        self._console.appendHtml(f'<font color="{color}">{text}</font>')
         self._console.verticalScrollBar().setValue(
             self._console.verticalScrollBar().maximum()
         )

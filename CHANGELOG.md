@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.1.0] - 2024-08-18
+
+### Added
+
+* Added color to logs
+
+### Fixed
+
+* [[#30](https://github.com/sisoe24/nukeserversocket/issues/30)]
+* [#31](https://github.com/sisoe24/nukeserversocket/issues/31)
+* [#32](https://github.com/sisoe24/nukeserversocket/issues/32)
+* Logs font now use proper monospace font
 
 ## [1.0.0] - 2023-11-19
 

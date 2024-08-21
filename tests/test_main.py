@@ -55,8 +55,8 @@ class MockServer(QObject):
 
 
 @pytest.fixture()
-def model(settings: _NssSettings):
-    return Model(settings)
+def model(mock_settings: _NssSettings):
+    return Model(mock_settings)
 
 
 @pytest.fixture()

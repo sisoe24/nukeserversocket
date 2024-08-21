@@ -20,10 +20,10 @@ class NukeEditor(Editor):
         self.run_button = QPushButton()
 
 
-def test_nuke_python(qtbot, settings):
+def test_nuke_python(qtbot, mock_settings):
     data = ReceivedData('{"file": "test.py", "text": "print(\\"hello world\\")"}')
     editor = NukeController(NukeEditor())
-    editor.settings = settings
+    editor.settings = mock_settings
     editor.settings.set('mirror_script_editor', True)
 
     editor.run(data)
@@ -35,12 +35,12 @@ def test_nuke_python(qtbot, settings):
     ('test.cpp', 'blinkscript'),
     ('test.blink', 'blinkscript'),
 ))
-def test_nuke_blinkscript(qtbot, settings: _NssSettings, file: str, text: str):
+def test_nuke_blinkscript(qtbot, mock_settings: _NssSettings, file: str, text: str):
     d = json.dumps({'file': file, 'text': text})
     data = ReceivedData(d)
 
     editor = NukeController(NukeEditor())
-    editor.settings = settings
+    editor.settings = mock_settings
     editor.settings.set('mirror_script_editor', True)
 
     editor.run(data)
