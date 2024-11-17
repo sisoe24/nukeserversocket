@@ -32,7 +32,7 @@ class MockEditorController(EditorController):
     def output_editor(self):
         return self._output_editor
 
-    def execute(self):
+    def execute_code(self):
         pass
 
 

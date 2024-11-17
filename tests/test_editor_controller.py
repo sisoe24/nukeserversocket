@@ -31,7 +31,7 @@ class MockEditorController(EditorController):
     def output_editor(self):
         return self._output_editor
 
-    def execute(self):
+    def execute_code(self):
         self._output_editor.setPlainText('hello world\n')
 
 
@@ -54,7 +54,7 @@ def data() -> ReceivedData:
 
 
 def test_execute_no_mirror(editor: MockEditorController, data: ReceivedData):
-    result = editor.run(data)
+    result = editor.execute(data)
     assert result == 'hello world\n'
     assert editor.output_editor.toPlainText() == 'initial output'
     assert editor.input_editor.toPlainText() == 'initial input'
@@ -66,7 +66,7 @@ def test_execute_mirror(editor: MockEditorController, data: ReceivedData):
     with patch('nukeserversocket.editor_controller.datetime') as mock_datetime:
         mock_datetime.now.return_value = datetime(2000, 1, 1, 0, 0, 0)
 
-        result = editor.run(data)
+        result = editor.execute(data)
 
         output = '[00:00:00 NukeTools] test.py\nhello world\n'
         assert result == output
@@ -78,7 +78,7 @@ def test_execute_mirror_no_output_format(editor: MockEditorController, data: Rec
     editor.settings.set('mirror_script_editor', True)
     editor.settings.set('format_output', '')
 
-    result = editor.run(data)
+    result = editor.execute(data)
     assert result == 'hello world\n'
     assert editor.output_editor.toPlainText() == 'hello world\n'
     assert editor.input_editor.toPlainText() == 'print("hello world")'
@@ -89,8 +89,8 @@ def test_execute_no_clear_output(editor: MockEditorController, data: ReceivedDat
     editor.settings.set('format_output', '')
     editor.settings.set('clear_output', False)
 
-    editor.run(data)
-    editor.run(data)
+    editor.execute(data)
+    editor.execute(data)
 
     assert editor.output_editor.toPlainText() == 'hello world\n\nhello world\n\n'
     assert editor.history == ['hello world\n', 'hello world\n']
@@ -101,8 +101,8 @@ def test_execute_clear_output(editor: MockEditorController, data: ReceivedData):
     editor.settings.set('format_output', '')
     editor.settings.set('clear_output', True)
 
-    editor.run(data)
-    editor.run(data)
+    editor.execute(data)
+    editor.execute(data)
 
     assert editor.output_editor.toPlainText() == 'hello world\n'
     assert editor.history == []

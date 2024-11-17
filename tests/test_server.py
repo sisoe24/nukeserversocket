@@ -15,8 +15,6 @@ from nukeserversocket.editor_controller import EditorController
 
 PORT = 55559
 
-pytestmark = pytest.mark.quick
-
 
 class MockEditorController(EditorController):
     def __init__(self):
@@ -36,7 +34,7 @@ class MockEditorController(EditorController):
     def output_editor(self):
         return self._output_editor
 
-    def execute(self) -> None:
+    def execute_code(self) -> None:
         with stdoutIO() as s:
             exec(self.input_editor.toPlainText())
             result = s.getvalue()
