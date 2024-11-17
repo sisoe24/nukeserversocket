@@ -114,6 +114,6 @@ def install_nuke():
     import nukescripts
 
     nukescripts.panels.registerWidgetAsPanel(
-        'nukeserversocket.controllers.nuke.main.NukeEditor', 'NukeServerSocket',
+        'nukeserversocket.controllers.nuke.NukeEditor', 'NukeServerSocket',
         'uk.co.thefoundry.NukeServerSocket'
     )
