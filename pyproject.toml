@@ -5,7 +5,7 @@ description = "A Nuke plugin that will allow code execution from the local netwo
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 
 [tool.poetry.scripts]
-nukeserversocket = "nukeserversocket.controllers.local_app:main"
+nukeserversocket = "nukeserversocket.controllers.local:main"
 build = "scripts.release_manager:main"
 
 [tool.isort]
