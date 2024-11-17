@@ -8,7 +8,7 @@ from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 from nukeserversocket.main import MainView, MainModel, MainController
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
-from nukeserversocket.editor_controller import EditorController
+from nukeserversocket.controllers import EditorController
 
 Controller = MainController
 View = MainView

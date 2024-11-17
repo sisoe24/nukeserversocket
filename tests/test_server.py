@@ -11,7 +11,7 @@ from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 from nukeserversocket.utils import stdoutIO
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
-from nukeserversocket.editor_controller import EditorController
+from nukeserversocket.controllers import EditorController
 
 PORT = 55559
 

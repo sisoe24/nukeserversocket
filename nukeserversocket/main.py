@@ -18,7 +18,7 @@ from .settings_ui import NssSettingsUI
 
 if TYPE_CHECKING:
     from .settings import _NssSettings
-    from .editor_controller import BaseController
+    from .controllers import BaseController
 
 LOGGER = get_logger()
 

@@ -14,7 +14,7 @@ from PySide2.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
 
 from ..main import NukeServerSocket
 from ..utils import stdoutIO
-from ..editor_controller import EditorController
+from ..controllers import EditorController
 
 
 class LocalController(EditorController):

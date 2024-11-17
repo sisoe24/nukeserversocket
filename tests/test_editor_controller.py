@@ -9,8 +9,8 @@ from pytestqt.qtbot import QtBot
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
+from nukeserversocket.controllers import EditorController, format_output
 from nukeserversocket.received_data import ReceivedData
-from nukeserversocket.editor_controller import EditorController, format_output
 
 
 class MockEditorController(EditorController):

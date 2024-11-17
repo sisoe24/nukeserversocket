@@ -11,8 +11,8 @@ from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
 
 from ..main import NukeServerSocket
 from ..utils import cache
+from ..controllers import EditorController
 from ..received_data import ReceivedData
-from ..editor_controller import EditorController
 
 LOGGER = logging.getLogger('nukeserversocket')
 
