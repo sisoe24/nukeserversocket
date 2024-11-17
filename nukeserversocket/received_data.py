@@ -44,7 +44,7 @@ class ReceivedData:
 
         self.text = self.data.get('text', '')
         if not self.text:
-            LOGGER.critical('Data does not contain a text field.')
+            LOGGER.critical('Data has invalid text.')
 
         self.file = self.data['file']
 
