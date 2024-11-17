@@ -6,7 +6,7 @@ This module is a wrapper around the settings module, and provides a UI for it.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 from textwrap import dedent
 
 from PySide2.QtCore import Slot
@@ -29,7 +29,7 @@ class NssSettingsModel:
 
 
 class NssSettingsView(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setMinimumSize(400, 200)
 

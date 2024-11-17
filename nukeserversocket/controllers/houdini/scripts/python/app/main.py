@@ -1,6 +1,10 @@
 """Nuke-specific plugin for the NukeServerSocket."""
 from __future__ import annotations
 
+from typing import Optional
+
+from PySide2.QtWidgets import QWidget
+
 from nukeserversocket.main import NukeServerSocket
 from nukeserversocket.utils import stdoutIO
 from nukeserversocket.received_data import ReceivedData
@@ -15,5 +19,5 @@ class HoudiniController(BaseController):
 
 
 class HoudiniEditor(NukeServerSocket):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(HoudiniController(), parent)

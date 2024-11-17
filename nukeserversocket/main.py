@@ -50,7 +50,7 @@ class MainModel:
 
 
 class MainView(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         """Init method for MainWindowWidget."""
         super().__init__(parent)
 

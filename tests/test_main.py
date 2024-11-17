@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from typing import Optional
+
 import pytest
 from PySide2.QtCore import Signal, QObject
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
+from PySide2.QtWidgets import QWidget, QTextEdit, QPlainTextEdit
 
 from nukeserversocket.main import MainView, MainModel, MainController
 from nukeserversocket.server import NssServer
@@ -39,7 +41,7 @@ class MockEditorController(EditorController):
 class MockServer(QObject):
     on_data_received = Signal()
 
-    def __init__(self, editor: MockEditorController, parent=None):
+    def __init__(self, editor: MockEditorController, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
     def try_connect(self, port: int) -> bool:

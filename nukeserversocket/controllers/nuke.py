@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import json
 import logging
+from typing import Optional
 from textwrap import dedent
 
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
@@ -98,7 +99,7 @@ class NukeController(EditorController):
 
 
 class NukeEditor(NukeServerSocket):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(NukeController(NukeScriptEditor()), parent)
 
 

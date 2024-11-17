@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Union, Optional
 
 from PySide2.QtCore import Slot, Signal
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from PySide2.QtWidgets import QWidget
 
 from .logger import get_logger
 from .received_data import ReceivedData
@@ -25,7 +26,7 @@ class NssServer(QTcpServer):
     """
     on_data_received = Signal()
 
-    def __init__(self, editor: BaseController, parent=None):
+    def __init__(self, editor: BaseController, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
         self._editor = editor
