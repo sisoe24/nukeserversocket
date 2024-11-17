@@ -10,7 +10,13 @@ from typing import Any, Generator
 def stdoutIO(stdout: Any = None) -> Generator[Any, Any, None]:
     """Get output from sys.stdout after executing code from `exec`.
 
-    https://stackoverflow.com/a/3906390/9392852
+    ```
+    with stdoutIO() as s:
+        exec(text, globals())
+        return s.getvalue()
+    ```
+
+    ref: https://stackoverflow.com/a/3906390/9392852
 
     """
     old = sys.stdout
