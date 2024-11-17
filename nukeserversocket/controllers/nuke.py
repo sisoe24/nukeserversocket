@@ -46,7 +46,7 @@ class NukeScriptEditor:
 
     @cache('nuke')
     def get_run_button(self) -> QPushButton:
-        return next(
+        btn = next(
             (
                 button
                 for button in self.get_script_editor().findChildren(QPushButton)
@@ -54,6 +54,13 @@ class NukeScriptEditor:
             ),
             None,
         )
+        if not btn:
+            # likely will never going to happen
+            raise RuntimeError(
+                'NukeServerSocket error: Could not find Nuke Script Editor execute button'
+            )
+
+        return btn
 
 
 class NukeController(EditorController):
