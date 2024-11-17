@@ -1,5 +1,17 @@
 # Changelog
 
+## [1.2.0] - 2024-11-17
+
+### Added
+
+- Houdini support through new `HoudiniController` and `HoudiniEditor` in `controllers.houdini` module.
+
+### Changed
+
+- Refactor the core controller components to allow multiple controllers types (houdini does not uses a script editor for example).
+- Moved and rename some files for better organizzation.
+- Updated logging and documentation
+
 ## [1.1.0] - 2024-08-18
 
 ### Added
