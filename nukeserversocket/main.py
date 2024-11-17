@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import socket
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union, Optional
 
 from PySide2.QtCore import Qt, Slot, QTimer
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
@@ -18,7 +18,7 @@ from .settings_ui import NssSettingsUI
 
 if TYPE_CHECKING:
     from .settings import _NssSettings
-    from .editor_controller import EditorController
+    from .editor_controller import BaseController
 
 LOGGER = get_logger()
 
@@ -150,18 +150,12 @@ class MainController:
 
 
 class NukeServerSocket(QMainWindow):
-
-    def __init__(self, editor: EditorController, parent=None):
-        """Init method for NukeServerSocket.
-
-        NOTE: Most variables are bound to the class only to avoid garbage collection.
-
-        """
-
+    def __init__(self, editor: BaseController, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setWindowTitle('NukeServerSocket')
-
         print(f'\nLoading NukeServerSocket: {__version__}')
+
+        # NOTE: Most variables are bound to the class only to avoid garbage collection.
 
         self.settings = get_settings()
 

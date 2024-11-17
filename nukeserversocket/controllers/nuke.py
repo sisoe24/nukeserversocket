@@ -5,7 +5,6 @@ import os
 import json
 import logging
 from textwrap import dedent
-from dataclasses import dataclass
 
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
@@ -18,12 +17,7 @@ from ..editor_controller import EditorController
 LOGGER = logging.getLogger('nukeserversocket')
 
 
-@dataclass(init=False)
-class Editor:
-
-    input_editor: QPlainTextEdit
-    output_editor: QTextEdit
-    run_button: QPushButton
+class NukeScriptEditor:
 
     def __init__(self):
         self.input_editor = self.get_input_editor()
@@ -62,10 +56,10 @@ class Editor:
 
 
 class NukeController(EditorController):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: NukeScriptEditor):
         self.editor = editor
 
-    def execute(self):
+    def execute_code(self):
         self.editor.run_button.click()
 
     @property
@@ -105,7 +99,7 @@ class NukeController(EditorController):
 
 class NukeEditor(NukeServerSocket):
     def __init__(self, parent=None):
-        super().__init__(NukeController(Editor()), parent)
+        super().__init__(NukeController(NukeScriptEditor()), parent)
 
 
 def install_nuke():

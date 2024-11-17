@@ -37,7 +37,7 @@ class LocalController(EditorController):
     def output_editor(self) -> QTextEdit:
         return self._output_editor
 
-    def execute(self) -> None:
+    def execute_code(self) -> None:
         with stdoutIO() as s:
             try:
                 exec(self.input_editor.toPlainText())
