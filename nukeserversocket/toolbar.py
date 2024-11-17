@@ -21,7 +21,6 @@ def about() -> Dict[str, str]:
         'python': python_version(),
         'pyside': PySide2_version,
         'machine': sysconfig.get_platform(),
-        'user': os.getenv('USER', os.getenv('USERNAME', 'unknown')),
     }
 
 
