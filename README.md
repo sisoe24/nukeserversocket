@@ -10,47 +10,36 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/nukeserversocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/nukeserversocket&amp;utm_campaign=Badge_Grade)
 [![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/nukeserversocket/dashboard?utm_source=github.com&utm_medium=referral&utm_content=sisoe24/nukeserversocket&utm_campaign=Badge_Coverage)
 
+![x](https://img.shields.io/badge/Nuke-✅-success)
+![x](https://img.shields.io/badge/Houdini-✅-success)
+![x](https://img.shields.io/badge/Python-3.*-success)
 
 [![NukeTools](https://img.shields.io/github/v/release/sisoe24/Nuke-Tools?label=NukeTools)](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools)
-![x](https://img.shields.io/badge/Python-3.*-success)
-![x](https://img.shields.io/badge/Nuke-_13_|_14_|_15-yellow)
-
-A Nuke plugin to run code from external applications.
 
 - [1. nukeserversocket README](#1-nukeserversocket-readme)
-  - [1.1. 1.0.0 Release](#11-100-release)
-  - [1.2. Features](#12-features)
-  - [1.3. Client applications](#13-client-applications)
-    - [1.3.1. Create a custom client](#131-create-a-custom-client)
-  - [1.4. Installation](#14-installation)
-  - [1.5. Usage](#15-usage)
-  - [1.6. Settings](#16-settings)
-  - [1.7. Known Issues](#17-known-issues)
-  - [1.8. Compatibility](#18-compatibility)
-  - [1.9. Contributing](#19-contributing)
-
-## 1.1. 1.0.0 Release
-
-This is the initial stable version of nukeserversocket. It's a total rewrite of the earlier version with the primary goal to enhance stability and simplify maintenance. Now, the plugin is more flexible and straightforward to use in different applications.
-
-For a full list of changes, see the [CHANGELOG](https://github.com/sisoe24/nukeserversocket/blob/main/CHANGELOG.md)
+  - [1.1. Client applications](#11-client-applications)
+    - [1.1.1. Create a custom client](#111-create-a-custom-client)
+  - [1.2. Installation](#12-installation)
+    - [1.2.1. Nuke](#121-nuke)
+      - [1.2.1.1. Using NukeTools (Recommended)](#1211-using-nuketools-recommended)
+      - [1.2.1.2. Manual Installation](#1212-manual-installation)
+    - [1.2.2. Houdini Installation](#122-houdini-installation)
+      - [1.2.2.1. HOUDINI\_PACKAGE\_DIR](#1221-houdini_package_dir)
+      - [1.2.2.2. Using Houdini Preferences](#1222-using-houdini-preferences)
+    - [1.2.3. Houdini Notes](#123-houdini-notes)
+  - [1.3. Usage](#13-usage)
+  - [1.4. Settings](#14-settings)
+  - [1.5. Known Issues](#15-known-issues)
+  - [1.6. Compatibility](#16-compatibility)
+  - [1.7. Python2.7](#17-python27)
+  - [1.8. Contributing](#18-contributing)
 
 >[!IMPORTANT]
-> The repository name has changed from `NukeServerSocket` to `nukeserversocket`. Although GitHub url seems to be case insensitive, if you have cloned the repository before, you might need to update the remote url.
-> ```bash
-> git remote set-url origin https://github.com/sisoe24/nukeserversocket.git
-> ```
+> You can now execute code for Houdini! See installation notes
 
->[!NOTE]
->If you are using Nuke 12 or Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases/tag/v0.6.2)
----
+A PySide2 plugin for executing Python/BlinkScript remotely in Nuke from any network client, supporting multiple connections. Compatible with both Nuke and Houdini.
 
-## 1.2. Features
-
-- Receive Python or BlinkScript code from any client in your local network.
-- Connect more than one client to the same Nuke instance.
-
-## 1.3. Client applications
+## 1.1. Client applications
 
 Client applications that use nukeserversocket:
 
@@ -59,7 +48,7 @@ Client applications that use nukeserversocket:
 - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
 - [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension (deprecated at the moment).
 
-### 1.3.1. Create a custom client
+### 1.1.1. Create a custom client
 
 You can create a custom client in any programming language that supports socket communication. The client sends the code to the server, which then executes it in Nuke and sends back the result. For more information, see the [wiki page](https://github.com/sisoe24/nukeserversocket/wiki/Client-Applications-for-NukeServerSocket)
 
@@ -79,20 +68,70 @@ for node in nodes:
     print(node)
 ```
 
-## 1.4. Installation
+## 1.2. Installation
 
-1. Download the repository via the [releases page](https://github.com/sisoe24/nukeserversocket/releases) or by cloning it from GitHub.
-2. Place the folder inside the _~/.nuke_ directory or into a custom one.
-3. Then, in your _menu.py_, write
-     ```python
-     from nukeserversocket import nukeserversocket
-     nukeserversocket.install_nuke()
-     ```
+### 1.2.1. Nuke
+
+#### 1.2.1.1. Using NukeTools (Recommended)
+
+If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), simply run the command `Nuke: Add Packages` to install.
+
+#### 1.2.1.2. Manual Installation
+
+1. Download from [releases page](https://github.com/sisoe24/nukeserversocket/releases) or clone from GitHub
+2. Place in *~/.nuke* or your preferred directory
+3. Add to your *menu.py*:
+```python
+from nukeserversocket import nukeserversocket
+nukeserversocket.install_nuke()
+```
+
+### 1.2.2. Houdini Installation
+
+> **Note:** These instructions assume NukeServerSocket was installed via NukeTools in `$HOME/.nuke/NukeTools`. If installed manually, adjust paths accordingly. Also, you dont need to have Nuke installed to make this work.
+
+#### 1.2.2.1. HOUDINI_PACKAGE_DIR
+
+Add to your shell configuration:
+
+**Mac/Linux** (.bashrc or .zshrc):
+```bash
+export HOUDINI_PACKAGE_DIR=$HOME/.nuke/NukeTools/nukeserversocket
+```
+
+**Windows:**
+- Add `HOUDINI_PACKAGE_DIR` to Environment Variables (start menu)
+- Set value to `%USERPROFILE%\.nuke\NukeTools\nukeserversocket`
 
 >[!NOTE]
-> If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), use the command `Nuke: Add Packages` then select nukeServerSocket.
+>For CMD/PowerShell users, refer to Microsoft's documentation on environment variables for alternative setup methods.
 
-## 1.5. Usage
+#### 1.2.2.2. Using Houdini Preferences
+
+1. Navigate to your Houdini packages directory:
+   - Windows: `C:/Users/YourName/Documents/houdiniXX.X/packages`
+   - Mac: `~/Library/Preferences/houdini/XX.X/packages`
+   - Linux: `~/houdiniXX.X/packages`
+
+2. Create `nukeserversocket.json`:
+```json
+{
+    "hpath": [
+        "$HOME/.nuke/NukeTools/nukeserversocket/nukeserversocket/controllers/houdini"
+    ],
+    "env": [
+        {
+            "PYTHONPATH": "$HOME/.nuke/NukeTools/nukeserversocket"
+        }
+    ]
+}
+```
+
+### 1.2.3. Houdini Notes
+
+The Houdini execution method differs from Nuke's. Nuke relies on its internal script editor, while Houdini uses Python's `exec`. The Nuke controller also used to rely on `exec`, but I removed that functionality because it didn't work in all scenarios. If you have better suggestions, let me know!
+
+## 1.3. Usage
 
 ![Execute Code](images/run_code.gif)
 
@@ -102,7 +141,10 @@ for node in nodes:
 >[!NOTE]
 > If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a random number between `49152` and `65535` and try again.
 
-## 1.6. Settings
+## 1.4. Settings
+
+>[!NOTE]
+> Only the server timeout setting applies to Houdini.
 
 You can access the settings from the plugin toolbar.
 
@@ -120,27 +162,20 @@ You can access the settings from the plugin toolbar.
 - **Clear Output**: The script editor output window will clear the code after each execution.
 - **Server Timeout**: Set the Timeout when clicking the **Connect** button. The default value is `10` minutes.
 
-## 1.7. Known Issues
+## 1.5. Known Issues
 
 - Changing workspace with an active open connection makes Nuke load a new plugin instance with the default UI state. So it would look as if the previous connection has been closed, whereas in reality is still open and listening. To force close all of the listening connections, you can:
   - Restart the Nuke instance.
   - Wait for the connection timeout.
 
-## 1.8. Compatibility
+## 1.6. Compatibility
 
-Nuke version: 13, 14, 15
+Should work everywhere PySide2 and Python 3 work.
 
-While it should work the same on all platforms, I have tested the plugin only on:
+## 1.7. Python2.7
 
-- Linux:
-  - CentOS 8
-- macOS:
-  - Mojave 10.14.06
-  - Catalina 10.15.07
-  - Monterey 12.6.3
-- Windows 10
+If you are using Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases/tag/v0.6.2)
 
-
-## 1.9. Contributing
+## 1.8. Contributing
 
 If you have any suggestions, bug reports, or questions, feel free to open an issue or a pull request. I am always open to new ideas and improvements. Occasionally, I pick something from the [Projects](https://github.com/users/sisoe24/projects/4) tab, so feel free to check it out.
