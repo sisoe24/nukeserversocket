@@ -1,0 +1,10 @@
+{
+    "hpath": [
+        "$HOUDINI_PACKAGE_PATH/nukeserversocket/controllers/houdini"
+    ],
+    "env": [
+        {
+            "PYTHONPATH": "$HOUDINI_PACKAGE_PATH"
+        }
+    ]
+}
