@@ -9,8 +9,8 @@ from pytestqt.qtbot import QtBot
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
-from nukeserversocket.controllers import EditorController, format_output
 from nukeserversocket.received_data import ReceivedData
+from nukeserversocket.controllers.base import EditorController, format_output
 
 
 class MockEditorController(EditorController):
@@ -63,7 +63,7 @@ def test_execute_no_mirror(editor: MockEditorController, data: ReceivedData):
 def test_execute_mirror(editor: MockEditorController, data: ReceivedData):
     editor.settings.set('mirror_script_editor', True)
 
-    with patch('nukeserversocket.editor_controller.datetime') as mock_datetime:
+    with patch('nukeserversocket.controllers.base.datetime') as mock_datetime:
         mock_datetime.now.return_value = datetime(2000, 1, 1, 0, 0, 0)
 
         result = editor.execute(data)
@@ -117,7 +117,7 @@ def test_execute_clear_output(editor: MockEditorController, data: ReceivedData):
     ('path/test.py', 'hello world', '%d %f %F %t %n', '00:00:00 path/test.py test.py hello world \n'),
 ])
 def test_formatting_placeholders(file: str, text: str, format: str, expected: str):
-    with patch('nukeserversocket.editor_controller.datetime') as mock_datetime:
+    with patch('nukeserversocket.controllers.base.datetime') as mock_datetime:
         mock_datetime.now.return_value = datetime(2000, 1, 1, 0, 0, 0)
         output = format_output(file, text, format)
         assert output == expected

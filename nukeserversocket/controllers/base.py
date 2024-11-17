@@ -7,9 +7,9 @@ from datetime import datetime
 
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
-from .logger import get_logger
-from .settings import _NssSettings
-from .received_data import ReceivedData
+from ..logger import get_logger
+from ..settings import _NssSettings
+from ..received_data import ReceivedData
 
 LOGGER = get_logger()
 

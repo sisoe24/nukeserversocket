@@ -9,9 +9,9 @@ from textwrap import dedent
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
+from .base import EditorController
 from ..main import NukeServerSocket
 from ..utils import cache
-from ..controllers import EditorController
 from ..received_data import ReceivedData
 
 LOGGER = logging.getLogger('nukeserversocket')
@@ -106,6 +106,6 @@ def install_nuke():
     import nukescripts
 
     nukescripts.panels.registerWidgetAsPanel(
-        'nukeserversocket.controllers.nuke.NukeEditor', 'NukeServerSocket',
+        'nukeserversocket.controllers.nuke.main.NukeEditor', 'NukeServerSocket',
         'uk.co.thefoundry.NukeServerSocket'
     )

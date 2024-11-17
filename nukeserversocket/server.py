@@ -9,7 +9,7 @@ from .logger import get_logger
 from .received_data import ReceivedData
 
 if TYPE_CHECKING:
-    from .controllers import BaseController
+    from .controllers.base import BaseController
 
 LOGGER = get_logger()
 

@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 import socket
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, Optional
 
 from PySide2.QtCore import Qt, Slot, QTimer
 from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
@@ -18,7 +18,7 @@ from .settings_ui import NssSettingsUI
 
 if TYPE_CHECKING:
     from .settings import _NssSettings
-    from .controllers import BaseController
+    from .controllers.base import BaseController
 
 LOGGER = get_logger()
 

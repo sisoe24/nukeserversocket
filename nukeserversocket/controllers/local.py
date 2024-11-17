@@ -12,9 +12,9 @@ from PySide2.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
                                QPushButton, QSizePolicy, QApplication,
                                QPlainTextEdit)
 
+from .base import EditorController
 from ..main import NukeServerSocket
 from ..utils import stdoutIO
-from ..controllers import EditorController
 
 
 class LocalController(EditorController):
