@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-from typing import Any
 from textwrap import dedent
 
 import pytest
@@ -9,7 +8,6 @@ from pytestqt.qtbot import QtBot
 from PySide2.QtWidgets import QTextEdit, QPushButton, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
-from nukeserversocket.utils.stdout import stdoutIO
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.nuke import NukeController, NukeScriptEditor
 
@@ -22,7 +20,7 @@ class MockNukeEditor(NukeScriptEditor):
         self.run_button.clicked.connect(self._eval_input)
 
     def _eval_input(self):
-        # we are eval any code since we dont really care
+        # we dont eval any code since we dont really care
         r = self.input_editor.toPlainText()
         self.output_editor.setPlainText(f"# Result: {r}")
 
