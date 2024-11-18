@@ -1,6 +1,7 @@
 """Nuke-specific plugin for the NukeServerSocket."""
 from __future__ import annotations
 
+import traceback
 from typing import Optional
 
 from PySide2.QtWidgets import QWidget
@@ -14,7 +15,10 @@ from nukeserversocket.controllers.base import BaseController
 class HoudiniController(BaseController):
     def execute(self, data: ReceivedData) -> str:
         with stdoutIO() as s:
-            exec(data.text, globals())
+            try:
+                exec(data.text, globals())
+            except Exception:
+                return traceback.format_exc()
             return s.getvalue()
 
 
