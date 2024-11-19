@@ -8,7 +8,7 @@ import pytest
 from pytestqt.qtbot import QtBot
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
-from nukeserversocket.utils import stdoutIO
+from nukeserversocket.utils import exec_code
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
@@ -35,10 +35,9 @@ class MockEditorController(EditorController):
         return self._output_editor
 
     def execute_code(self) -> None:
-        with stdoutIO() as s:
-            exec(self.input_editor.toPlainText())
-            result = s.getvalue()
-            self.output_editor.setPlainText(result)
+        self.output_editor.setPlainText(
+            exec_code(self.input_editor.toPlainText())
+        )
 
 
 @pytest.fixture()

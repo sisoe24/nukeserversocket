@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import sys
 import json
-import traceback
 
 from PySide2.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
                                QPushButton, QSizePolicy, QVBoxLayout,
@@ -15,7 +14,7 @@ from PySide2.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
 
 from .base import EditorController
 from ..main import NukeServerSocket
-from ..utils import stdoutIO
+from ..utils import exec_code
 from ..received_data import ReceivedData
 
 
@@ -25,7 +24,7 @@ class LocalController(EditorController):
         self._input_editor = QPlainTextEdit()
         self._input_editor.setPlaceholderText('Enter your code here...')
         self._input_editor.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
-        self._input_editor.setPlainText('print("hello world".upper())')
+        self._input_editor.setPlainText('print(hello world".upper())')
 
         self._output_editor = QTextEdit()
         self._output_editor.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
@@ -41,15 +40,9 @@ class LocalController(EditorController):
         return self._output_editor
 
     def execute_code(self) -> None:
-        with stdoutIO() as s:
-            try:
-                exec(self.input_editor.toPlainText())
-            except Exception:
-                result = traceback.format_exc()
-            else:
-                result = s.getvalue()
-
-            self.output_editor.setPlainText(result)
+        self.output_editor.setPlainText(
+            exec_code(self.input_editor.toPlainText(), '<mock_editor>')
+        )
 
 
 class LocalEditor(NukeServerSocket):
