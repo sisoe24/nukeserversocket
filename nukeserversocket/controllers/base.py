@@ -92,7 +92,7 @@ class EditorController(BaseController):
             output = result
 
         if self.settings.get('clear_output'):
-            LOGGER.debug('Clearing output.')
+            LOGGER.debug('Clean up output.')
             self.history.clear()
             self.output_editor.setPlainText(output)
         else:
@@ -113,7 +113,7 @@ class EditorController(BaseController):
 
     def execute(self, data: ReceivedData) -> str:
 
-        LOGGER.debug('Running script: %s', data.file)
+        LOGGER.debug('Executing data')
 
         initial_input = self.input_editor.toPlainText()
         initial_output = self.output_editor.toPlainText()
