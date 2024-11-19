@@ -22,7 +22,8 @@
                 "run",
                 "pytest",
                 "-xsl",
-                "--count", "2"
+                "--count",
+                "2",
                 // "-m quick"
             ],
             "group": "test",
