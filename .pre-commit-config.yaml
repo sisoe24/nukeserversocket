@@ -2,14 +2,14 @@
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
-      rev: v4.5.0
+      rev: v5.0.0
       hooks:
           - id: trailing-whitespace
           - id: double-quote-string-fixer
           - id: end-of-file-fixer
           - id: check-ast
     - repo: https://github.com/hhatto/autopep8
-      rev: v2.0.4
+      rev: v2.3.1
       hooks:
           - id: autopep8
             args: [--global-config=pyproject.toml, --in-place]

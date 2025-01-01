@@ -4,26 +4,21 @@ from __future__ import annotations
 import os
 import json
 import logging
+from typing import Optional
 from textwrap import dedent
-from dataclasses import dataclass
 
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
+from .base import EditorController
 from ..main import NukeServerSocket
 from ..utils import cache
 from ..received_data import ReceivedData
-from ..editor_controller import EditorController
 
 LOGGER = logging.getLogger('nukeserversocket')
 
 
-@dataclass(init=False)
-class Editor:
-
-    input_editor: QPlainTextEdit
-    output_editor: QTextEdit
-    run_button: QPushButton
+class NukeScriptEditor:
 
     def __init__(self):
         self.input_editor = self.get_input_editor()
@@ -51,7 +46,7 @@ class Editor:
 
     @cache('nuke')
     def get_run_button(self) -> QPushButton:
-        return next(
+        btn = next(
             (
                 button
                 for button in self.get_script_editor().findChildren(QPushButton)
@@ -59,13 +54,20 @@ class Editor:
             ),
             None,
         )
+        if not btn:
+            # likely will never going to happen
+            raise RuntimeError(
+                'NukeServerSocket error: Could not find Nuke Script Editor execute button'
+            )
+
+        return btn
 
 
 class NukeController(EditorController):
-    def __init__(self, editor: Editor):
+    def __init__(self, editor: NukeScriptEditor):
         self.editor = editor
 
-    def execute(self):
+    def execute_code(self):
         self.editor.run_button.click()
 
     @property
@@ -104,8 +106,8 @@ class NukeController(EditorController):
 
 
 class NukeEditor(NukeServerSocket):
-    def __init__(self, parent=None):
-        super().__init__(NukeController(Editor()), parent)
+    def __init__(self, parent: Optional[QWidget] = None):
+        super().__init__(NukeController(NukeScriptEditor()), parent)
 
 
 def install_nuke():

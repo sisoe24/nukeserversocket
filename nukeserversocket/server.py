@@ -1,15 +1,16 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Union, Optional
 
 from PySide2.QtCore import Slot, Signal
 from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from PySide2.QtWidgets import QWidget
 
 from .logger import get_logger
 from .received_data import ReceivedData
 
 if TYPE_CHECKING:
-    from .editor_controller import EditorController
+    from .controllers.base import BaseController
 
 LOGGER = get_logger()
 
@@ -25,7 +26,7 @@ class NssServer(QTcpServer):
     """
     on_data_received = Signal()
 
-    def __init__(self, editor: EditorController, parent=None):
+    def __init__(self, editor: BaseController, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
         self._editor = editor
@@ -46,7 +47,7 @@ class NssServer(QTcpServer):
         # parse the incoming data
         data = ReceivedData(self._socket.readAll().data())
 
-        output = self._editor.run(data)
+        output = self._editor.execute(data)
 
         self.on_data_received.emit()
 

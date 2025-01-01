@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 import sysconfig
 import webbrowser
-from typing import Dict
+from typing import Dict, Optional
 from platform import python_version
 
 from PySide2 import __version__ as PySide2_version
@@ -21,12 +21,11 @@ def about() -> Dict[str, str]:
         'python': python_version(),
         'pyside': PySide2_version,
         'machine': sysconfig.get_platform(),
-        'user': os.getenv('USER', os.getenv('USERNAME', 'unknown')),
     }
 
 
 class HelpWidget(QDialog):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.setWindowTitle('NukeServerSocket Help')
 
@@ -70,7 +69,7 @@ def _show_window(widget: QWidget) -> None:
 class ToolBar(QToolBar):
     """Custom QToolBar class."""
 
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         """Init method for the ToolBar class."""
         super().__init__(parent)
         self.setMovable(False)

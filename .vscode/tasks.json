@@ -11,21 +11,7 @@
         {
             "label": "RunApp",
             "type": "shell",
-            "options": {
-                "env": {
-                    "PYTHONDONTWRITEBYTECODE": "1"
-                }
-            },
-            "osx": {
-                "command": ".venv/bin/python",
-            },
-            "windows": {
-                "command": ".venv\\Scripts\\python.exe",
-            },
-            "args": [
-                "-m",
-                "nukeserversocket.controllers.local_app"
-            ],
+            "command": "poetry run nukeserversocket",
             "problemMatcher": []
         },
         {
@@ -36,8 +22,8 @@
                 "run",
                 "pytest",
                 "-xsl",
-                // "--lf",
-                "-vvv",
+                "--count",
+                "2",
                 // "-m quick"
             ],
             "group": "test",

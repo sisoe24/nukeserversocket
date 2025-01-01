@@ -27,7 +27,7 @@ CHANGELOG.md               export-ignore
 .githooks                  export-ignore
 .vscode                    export-ignore
 images                     export-ignore
-scripts                    export-ignore
+tools                      export-ignore
 tests                      export-ignore
 
 # Source files

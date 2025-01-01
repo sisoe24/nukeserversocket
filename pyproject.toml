@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "nukeserversocket"
-version = "1.1.0"
+version = "1.2.0"
 description = "A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more."
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 
 [tool.poetry.scripts]
-nukeserversocket = "nukeserversocket.controllers.local_app:main"
+nukeserversocket = "nukeserversocket.controllers.local:main"
 build = "scripts.release_manager:main"
 
 [tool.isort]

@@ -1,4 +1,3 @@
-"""Module will initialize the logging system and import Nuke."""
 from __future__ import annotations
 
 from .main import NukeServerSocket

@@ -7,9 +7,9 @@ from datetime import datetime
 
 from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
-from .logger import get_logger
-from .settings import _NssSettings
-from .received_data import ReceivedData
+from ..logger import get_logger
+from ..settings import _NssSettings
+from ..received_data import ReceivedData
 
 LOGGER = get_logger()
 
@@ -43,9 +43,7 @@ def format_output(file: str, text: str, string_format: str) -> str:
     return string_format
 
 
-class EditorController(ABC):
-    history: List[str] = []
-
+class BaseController(ABC):
     def __init__(self):
         self._settings = None
 
@@ -59,6 +57,19 @@ class EditorController(ABC):
     def settings(self, settings: _NssSettings) -> None:
         self._settings = settings
 
+    @abstractmethod
+    def execute(self, data: ReceivedData) -> str: ...
+
+
+class EditorController(BaseController):
+    history: List[str] = []
+
+    def __init__(self):
+        super().__init__()
+
+    @abstractmethod
+    def execute_code(self) -> None: ...
+
     @property
     @abstractmethod
     def input_editor(self) -> QPlainTextEdit: ...
@@ -66,9 +77,6 @@ class EditorController(ABC):
     @property
     @abstractmethod
     def output_editor(self) -> QTextEdit: ...
-
-    @abstractmethod
-    def execute(self) -> None: ...
 
     @classmethod
     def _add_to_history(cls, text: str) -> None:
@@ -84,7 +92,7 @@ class EditorController(ABC):
             output = result
 
         if self.settings.get('clear_output'):
-            LOGGER.debug('Clearing output.')
+            LOGGER.debug('Clean up output.')
             self.history.clear()
             self.output_editor.setPlainText(output)
         else:
@@ -103,15 +111,15 @@ class EditorController(ABC):
     def set_input(self, data: ReceivedData) -> None:
         self.input_editor.setPlainText(data.text)
 
-    def run(self, data: ReceivedData) -> str:
+    def execute(self, data: ReceivedData) -> str:
 
-        LOGGER.debug('Running script: %s', data.file)
+        LOGGER.debug('Executing data')
 
         initial_input = self.input_editor.toPlainText()
         initial_output = self.output_editor.toPlainText()
 
         self.set_input(data)
-        self.execute()
+        self.execute_code()
 
         result = self.get_output()
 

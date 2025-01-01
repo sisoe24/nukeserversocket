@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import sys
 import logging
+from typing import Optional
 
 from PySide2.QtCore import Slot
-from PySide2.QtWidgets import (QCheckBox, QGroupBox, QHBoxLayout, QPushButton,
-                               QVBoxLayout, QPlainTextEdit)
+from PySide2.QtWidgets import (QWidget, QCheckBox, QGroupBox, QHBoxLayout,
+                               QPushButton, QVBoxLayout, QPlainTextEdit)
 
 from .logger import get_logger
 
@@ -21,7 +22,7 @@ LOG_COLORS = {
 
 
 class NssConsole(QGroupBox):
-    def __init__(self, parent=None):
+    def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(parent, title='Logs')
 
         self._console = QPlainTextEdit()
