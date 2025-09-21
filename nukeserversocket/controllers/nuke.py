@@ -1,6 +1,6 @@
 """Nuke-specific plugin for the NukeServerSocket."""
-from __future__ import annotations
 
+from __future__ import annotations
 import os
 import json
 import logging
@@ -10,8 +10,8 @@ from textwrap import dedent
 from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
-from .base import EditorController
-from ..main import NukeServerSocket
+from .base import EditorController, BaseController
+from ..main import NukeServerSocket, ServerHost
 from ..utils import cache
 from ..received_data import ReceivedData
 
@@ -108,6 +108,21 @@ class NukeController(EditorController):
 class NukeEditor(NukeServerSocket):
     def __init__(self, parent: Optional[QWidget] = None):
         super().__init__(NukeController(NukeScriptEditor()), parent)
+
+
+class SimpleNukeController(BaseController):
+    """Simple Nuke controller that executes code directly without UI."""
+    def execute(self, data: ReceivedData) -> str:
+        from ..utils.exec_code import exec_code
+        return exec_code(data.text, data.file)
+
+
+def start_headless_nuke_server():
+    """Start a headless NukeServerSocket server."""
+    editor = SimpleNukeController()
+    server = ServerHost(editor)
+    if server.start_server():
+        return server
 
 
 def install_nuke():

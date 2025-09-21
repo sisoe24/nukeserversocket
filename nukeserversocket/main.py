@@ -49,6 +49,7 @@ class MainModel:
         return self._settings.get('server_timeout')
 
 
+
 class MainView(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
         """Init method for MainWindowWidget."""
@@ -148,6 +149,46 @@ class MainController:
         self._timer.stop()
         LOGGER.info('Closing connection...')
 
+
+class ServerHost:
+    """ headless server host that doesn't require any Qt widgets or UI elements. 
+    There is some code duplication between this and NSS/MainController, so maybe 
+    we should consider creating an abstract base server class to share common 
+    server management logic."""
+    def __init__(self, editor: BaseController):
+        self.settings = get_settings()
+        self.editor = editor
+        self.editor.settings = self.settings
+
+        self._model = MainModel(self.settings)
+        self._server = NssServer(editor)
+        self._server.on_data_received.connect(self._on_data_received)
+
+        self._timer = QTimer()
+        self._timer.timeout.connect(self._on_timeout)
+        self._timer.setSingleShot(True)
+
+    def start_server(self):
+        port = self._model.get_port()
+        if self._server.try_connect(port):
+            LOGGER.info(f"Server started on {self._model.get_ip()}:{port}")
+            self._timer.start(self._model.get_server_timeout())
+            return True
+        else:
+            LOGGER.error('Failed to start server. %s.', self._server.errorString())
+            return False
+
+    def stop_server(self):
+        self._server.close()
+        self._timer.stop()
+        LOGGER.info('Closing connection...')
+
+    def _on_timeout(self):
+        LOGGER.debug('Server Timeout.')
+        self.stop_server()
+
+    def _on_data_received(self):
+        self._timer.start(self._model.get_server_timeout())
 
 class NukeServerSocket(QMainWindow):
     def __init__(self, editor: BaseController, parent: Optional[QWidget] = None):
