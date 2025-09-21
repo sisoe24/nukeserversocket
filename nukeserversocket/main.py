@@ -126,7 +126,6 @@ class MainController:
 
     @Slot(bool)
     def _on_connect(self, should_connect: bool):
-        nuke.tprint("on connect start")
         port = self._view.port_input.value()
         if should_connect and not self._server.isListening():
             if self._server.try_connect(port):
