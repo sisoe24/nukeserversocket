@@ -4,8 +4,8 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
-from PySide2.QtCore import Qt, Slot, QTimer
-from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
+from PySide6.QtCore import Qt, Slot, QTimer
+from PySide6.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
                                QMainWindow, QPushButton, QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
