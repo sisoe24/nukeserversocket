@@ -5,7 +5,7 @@ from textwrap import dedent
 
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPushButton, QPlainTextEdit
+from PySide6.QtWidgets import QTextEdit, QPushButton, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.received_data import ReceivedData

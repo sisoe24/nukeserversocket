@@ -9,8 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 from textwrap import dedent
 
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import (QWidget, QSpinBox, QCheckBox, QLineEdit,
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import (QWidget, QSpinBox, QCheckBox, QLineEdit,
                                QFormLayout)
 
 if TYPE_CHECKING:
