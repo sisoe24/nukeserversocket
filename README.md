@@ -68,6 +68,31 @@ for node in nodes:
     print(node)
 ```
 
+### 1.1.2. MCP server (LLM clients)
+
+The repository ships a small [MCP](https://modelcontextprotocol.io) server (`nss_mcp/server.py`) that lets MCP clients (Claude Desktop, Claude Code, etc.) execute Python inside a running Nuke session. It is a hand-rolled, dependency-free bridge: the client speaks JSON-RPC 2.0 over stdio, the server forwards the code to nukeserversocket over TCP.
+
+It exposes a single tool, `nuke_execute_code`. Nuke must be running with the nukeserversocket panel connected (default port `54321`; override with `--port`/`--host` or `NSS_MCP_PORT`/`NSS_MCP_HOST`).
+
+Claude Code:
+
+```sh
+claude mcp add nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
+```
+
+Claude Desktop (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "nuke": {
+      "command": "python",
+      "args": ["/path/to/nukeserversocket/nss_mcp/server.py"]
+    }
+  }
+}
+```
+
 ## 1.2. Installation
 
 ### 1.2.1. Nuke
