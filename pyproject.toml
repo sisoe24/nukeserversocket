@@ -11,6 +11,15 @@ build = "scripts.release_manager:main"
 [tool.isort]
 skip = ["__init__.py" , "version.py"]
 length_sort = true
+known_qt = "nukeserversocket._qt"
+sections = [
+    "FUTURE",
+    "STDLIB",
+    "QT",
+    "THIRDPARTY",
+    "FIRSTPARTY",
+    "LOCALFOLDER",
+]
 add_imports = "from __future__ import annotations"
 
 [tool.autopep8]

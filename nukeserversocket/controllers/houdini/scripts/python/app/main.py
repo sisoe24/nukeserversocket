@@ -3,9 +3,10 @@ from __future__ import annotations
 
 from typing import Optional
 
+from nukeserversocket._qt.QtWidgets import QWidget
+
 from nukeserversocket.main import NukeServerSocket
 from nukeserversocket.utils import exec_code
-from nukeserversocket._qt.QtWidgets import QWidget
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.base import BaseController
 

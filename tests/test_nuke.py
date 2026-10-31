@@ -3,12 +3,13 @@ from __future__ import annotations
 import json
 from textwrap import dedent
 
+from nukeserversocket._qt.QtWidgets import (QTextEdit, QPushButton,
+                                            QPlainTextEdit)
+
 import pytest
 from pytestqt.qtbot import QtBot
 
 from nukeserversocket.settings import _NssSettings
-from nukeserversocket._qt.QtWidgets import (QTextEdit, QPushButton,
-                                            QPlainTextEdit)
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.nuke import NukeController, NukeScriptEditor
 

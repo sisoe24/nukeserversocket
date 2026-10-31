@@ -8,12 +8,14 @@ from __future__ import annotations
 import sys
 import json
 
+from nukeserversocket._qt.QtWidgets import (QLabel, QWidget, QTextEdit,
+                                            QHBoxLayout, QPushButton,
+                                            QSizePolicy, QVBoxLayout,
+                                            QApplication, QPlainTextEdit)
+
 from .base import EditorController
 from ..main import NukeServerSocket
 from ..utils import exec_code
-from .._qt.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
-                             QPushButton, QSizePolicy, QVBoxLayout,
-                             QApplication, QPlainTextEdit)
 from ..received_data import ReceivedData
 
 

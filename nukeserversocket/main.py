@@ -4,16 +4,18 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
+from nukeserversocket._qt.QtCore import Qt, Slot, QTimer
+from nukeserversocket._qt.QtWidgets import (QLabel, QWidget, QSpinBox,
+                                            QFormLayout, QMainWindow,
+                                            QPushButton, QVBoxLayout)
+
 from .logger import ConsoleHandler, get_logger
 from .server import NssServer
 from .console import NssConsole
 from .toolbar import ToolBar
 from .version import __version__
 from .settings import get_settings
-from ._qt.QtCore import Qt, Slot, QTimer
 from .settings_ui import NssSettingsUI
-from ._qt.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
-                            QMainWindow, QPushButton, QVBoxLayout)
 
 if TYPE_CHECKING:
     from .settings import _NssSettings

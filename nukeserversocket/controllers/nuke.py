@@ -7,11 +7,13 @@ import logging
 from typing import Optional
 from textwrap import dedent
 
+from nukeserversocket._qt.QtWidgets import (QWidget, QSplitter, QTextEdit,
+                                            QPushButton, QApplication,
+                                            QPlainTextEdit)
+
 from .base import EditorController
 from ..main import NukeServerSocket
 from ..utils import cache
-from .._qt.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
-                             QApplication, QPlainTextEdit)
 from ..received_data import ReceivedData
 
 LOGGER = logging.getLogger('nukeserversocket')

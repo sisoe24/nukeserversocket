@@ -5,9 +5,10 @@ from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime
 
+from nukeserversocket._qt.QtWidgets import QTextEdit, QPlainTextEdit
+
 from ..logger import get_logger
 from ..settings import _NssSettings
-from .._qt.QtWidgets import QTextEdit, QPlainTextEdit
 from ..received_data import ReceivedData
 
 LOGGER = get_logger()

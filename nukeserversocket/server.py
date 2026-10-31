@@ -2,10 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union, Optional
 
+from nukeserversocket._qt.QtCore import Slot, Signal
+from nukeserversocket._qt.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from nukeserversocket._qt.QtWidgets import QWidget
+
 from .logger import get_logger
-from ._qt.QtCore import Slot, Signal
-from ._qt.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
-from ._qt.QtWidgets import QWidget
 from .received_data import ReceivedData
 
 if TYPE_CHECKING:

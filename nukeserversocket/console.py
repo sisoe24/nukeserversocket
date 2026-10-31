@@ -4,10 +4,12 @@ import sys
 import logging
 from typing import Optional
 
+from nukeserversocket._qt.QtCore import Slot
+from nukeserversocket._qt.QtWidgets import (QWidget, QCheckBox, QGroupBox,
+                                            QHBoxLayout, QPushButton,
+                                            QVBoxLayout, QPlainTextEdit)
+
 from .logger import get_logger
-from ._qt.QtCore import Slot
-from ._qt.QtWidgets import (QWidget, QCheckBox, QGroupBox, QHBoxLayout,
-                            QPushButton, QVBoxLayout, QPlainTextEdit)
 
 LOGGER = get_logger()
 
