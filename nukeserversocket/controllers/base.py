@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime
 
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
+from PySide6.QtWidgets import QTextEdit, QPlainTextEdit
 
 from ..logger import get_logger
 from ..settings import _NssSettings

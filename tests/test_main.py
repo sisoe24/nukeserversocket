@@ -3,9 +3,9 @@ from __future__ import annotations
 from typing import Optional
 
 import pytest
-from PySide2.QtCore import Signal, QObject
+from PySide6.QtCore import Signal, QObject
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QWidget, QTextEdit, QPlainTextEdit
+from PySide6.QtWidgets import QWidget, QTextEdit, QPlainTextEdit
 
 from nukeserversocket.main import MainView, MainModel, MainController
 from nukeserversocket.server import NssServer

@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
+from PySide6.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.received_data import ReceivedData

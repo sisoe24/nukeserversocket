@@ -3,6 +3,7 @@ dist/
 bin/
 logs/
 archive/
+.idea/
 
 *tmp
 

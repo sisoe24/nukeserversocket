@@ -7,7 +7,7 @@ import logging
 from typing import Optional
 from textwrap import dedent
 
-from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
+from PySide6.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
                                QApplication, QPlainTextEdit)
 
 from .base import EditorController

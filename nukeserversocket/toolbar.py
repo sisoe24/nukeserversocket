@@ -6,10 +6,11 @@ import webbrowser
 from typing import Dict, Optional
 from platform import python_version
 
-from PySide2 import __version__ as PySide2_version
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import (QLabel, QAction, QDialog, QWidget, QToolBar,
+from PySide6 import __version__ as PySide2_version
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import (QLabel, QDialog, QWidget, QToolBar,
                                QFormLayout, QPushButton)
+from PySide6.QtGui import (QAction)
 
 from .version import __version__
 

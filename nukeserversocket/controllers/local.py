@@ -8,7 +8,7 @@ from __future__ import annotations
 import sys
 import json
 
-from PySide2.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
+from PySide6.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
                                QPushButton, QSizePolicy, QVBoxLayout,
                                QApplication, QPlainTextEdit)
 

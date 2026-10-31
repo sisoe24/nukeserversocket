@@ -6,7 +6,7 @@ import socket
 
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
+from PySide6.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.utils import exec_code
 from nukeserversocket.server import NssServer

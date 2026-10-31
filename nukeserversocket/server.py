@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union, Optional
 
-from PySide2.QtCore import Slot, Signal
-from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
-from PySide2.QtWidgets import QWidget
+from PySide6.QtCore import Slot, Signal
+from PySide6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from PySide6.QtWidgets import QWidget
 
 from .logger import get_logger
 from .received_data import ReceivedData
@@ -65,7 +65,7 @@ class NssServer(QTcpServer):
 
             LOGGER.debug('Pending connection.')
             self._socket = self.nextPendingConnection()
-            self._socket.error.connect(lambda err: LOGGER.error('Socket error: %s', err))
+            self._socket.errorOccurred.connect(lambda err: LOGGER.error('Socket error: %s', err))
 
             LOGGER.debug('Socket connected.')
             self._socket.readyRead.connect(self._on_socket_ready)

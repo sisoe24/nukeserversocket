@@ -27,7 +27,7 @@ omit = ["nukeserversocket/tests/*", "nukeserversocket/__init__.py"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-qt_api = "pyside2"
+qt_api = "pyside6"
 markers = ["quick: mark test"]
 addopts = [
     "--cov=nukeserversocket",
@@ -37,8 +37,8 @@ addopts = [
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7.7,<3.11"
-pyside2 = "5.15.2.1"
+python = ">=3.9,<3.14"
+pyside6 = "6.9.2"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
