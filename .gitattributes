@@ -4,7 +4,6 @@
 
 .pylintrc                  export-ignore
 .python-version            export-ignore
-.deepsource.toml           export-ignore
 .pre-commit-config.yaml    export-ignore
 
 poetry.toml                export-ignore
