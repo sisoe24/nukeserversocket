@@ -2,11 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union, Optional
 
-from PySide6.QtCore import Slot, Signal
-from PySide6.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
-from PySide6.QtWidgets import QWidget
-
 from .logger import get_logger
+from ._qt.QtCore import Slot, Signal
+from ._qt.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
+from ._qt.QtWidgets import QWidget
 from .received_data import ReceivedData
 
 if TYPE_CHECKING:

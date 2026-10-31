@@ -27,7 +27,6 @@ omit = ["nukeserversocket/tests/*", "nukeserversocket/__init__.py"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-qt_api = "pyside6"
 markers = ["quick: mark test"]
 addopts = [
     "--cov=nukeserversocket",
@@ -38,12 +37,15 @@ addopts = [
 
 [tool.poetry.dependencies]
 python = ">=3.9,<3.14"
-pyside6 = "6.9.2"
+# Nuke 15 and older ship PySide2 (Python 3.10), Nuke 16+ ship PySide6 (Python 3.11)
+pyside2 = { version = "5.15.2.1", python = "<3.11" }
+pyside6 = { version = "6.9.2", python = ">=3.11" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
 tox = "4.8.0"
-pytest-qt = "^4.2.0"
+# 4.5 dropped PySide2 support
+pytest-qt = ">=4.2.0,<4.5"
 pytest-cov = "^4.1.0"
 pytest-repeat = "^0.9.3"
 pytest-randomly = "3.12.0"

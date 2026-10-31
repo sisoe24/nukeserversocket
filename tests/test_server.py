@@ -6,11 +6,11 @@ import socket
 
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide6.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.utils import exec_code
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
+from nukeserversocket._qt.QtWidgets import QTextEdit, QPlainTextEdit
 from nukeserversocket.controllers.base import EditorController
 
 PORT = 55559

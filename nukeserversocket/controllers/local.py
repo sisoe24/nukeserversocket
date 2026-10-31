@@ -8,13 +8,12 @@ from __future__ import annotations
 import sys
 import json
 
-from PySide6.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
-                               QPushButton, QSizePolicy, QVBoxLayout,
-                               QApplication, QPlainTextEdit)
-
 from .base import EditorController
 from ..main import NukeServerSocket
 from ..utils import exec_code
+from .._qt.QtWidgets import (QLabel, QWidget, QTextEdit, QHBoxLayout,
+                             QPushButton, QSizePolicy, QVBoxLayout,
+                             QApplication, QPlainTextEdit)
 from ..received_data import ReceivedData
 
 
@@ -23,11 +22,13 @@ class LocalController(EditorController):
         super().__init__()
         self._input_editor = QPlainTextEdit()
         self._input_editor.setPlaceholderText('Enter your code here...')
-        self._input_editor.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        self._input_editor.setSizePolicy(
+            QSizePolicy.Minimum, QSizePolicy.Maximum)
         self._input_editor.setPlainText('print(hello world".upper())')
 
         self._output_editor = QTextEdit()
-        self._output_editor.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Maximum)
+        self._output_editor.setSizePolicy(
+            QSizePolicy.Minimum, QSizePolicy.Maximum)
         self._output_editor.setPlaceholderText('Output will be shown here...')
         self._output_editor.setReadOnly(True)
 

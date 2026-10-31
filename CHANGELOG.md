@@ -1,5 +1,16 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- PySide6 support for Nuke 16 and newer. Based on [#38](https://github.com/sisoe24/nukeserversocket/pull/38) by @kanbatsu.
+
+### Changed
+
+- Qt classes are imported from the new `nukeserversocket._qt` package (e.g. `from ._qt.QtWidgets import QWidget`), which uses PySide6 and falls back to PySide2, so Nuke 15 and older keep working.
+- Tests run on Python 3.10 (PySide2) and Python 3.11 (PySide6).
+
 ## [1.2.0] - 2024-11-17
 
 ### Added

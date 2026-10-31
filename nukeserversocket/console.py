@@ -4,11 +4,10 @@ import sys
 import logging
 from typing import Optional
 
-from PySide6.QtCore import Slot
-from PySide6.QtWidgets import (QWidget, QCheckBox, QGroupBox, QHBoxLayout,
-                               QPushButton, QVBoxLayout, QPlainTextEdit)
-
 from .logger import get_logger
+from ._qt.QtCore import Slot
+from ._qt.QtWidgets import (QWidget, QCheckBox, QGroupBox, QHBoxLayout,
+                            QPushButton, QVBoxLayout, QPlainTextEdit)
 
 LOGGER = get_logger()
 

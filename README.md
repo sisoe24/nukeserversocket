@@ -37,7 +37,7 @@
 >[!IMPORTANT]
 > You can now execute code for Houdini! See installation notes
 
-A PySide2 plugin for executing Python/BlinkScript remotely in Nuke from any network client, supporting multiple connections. Compatible with both Nuke and Houdini.
+A PySide plugin for executing Python/BlinkScript remotely in Nuke from any network client, supporting multiple connections. Compatible with both Nuke and Houdini.
 
 ## 1.1. Client applications
 
@@ -170,7 +170,7 @@ You can access the settings from the plugin toolbar.
 
 ## 1.6. Compatibility
 
-Should work everywhere PySide2 and Python 3 work.
+Works with PySide6 (Nuke 16 and newer) and PySide2 (Nuke 15 and older), on Python 3.
 
 ## 1.7. Python2.7
 

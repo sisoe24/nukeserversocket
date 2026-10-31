@@ -6,13 +6,12 @@ import webbrowser
 from typing import Dict, Optional
 from platform import python_version
 
-from PySide6 import __version__ as PySide2_version
-from PySide6.QtCore import Slot
-from PySide6.QtWidgets import (QLabel, QDialog, QWidget, QToolBar,
-                               QFormLayout, QPushButton)
-from PySide6.QtGui import (QAction)
-
+from ._qt import __version__ as pyside_version
 from .version import __version__
+from ._qt.QtGui import QAction
+from ._qt.QtCore import Slot
+from ._qt.QtWidgets import (QLabel, QDialog, QWidget, QToolBar, QFormLayout,
+                            QPushButton)
 
 
 def about() -> Dict[str, str]:
@@ -20,7 +19,7 @@ def about() -> Dict[str, str]:
     return {
         'version': __version__,
         'python': python_version(),
-        'pyside': PySide2_version,
+        'pyside': pyside_version,
         'machine': sysconfig.get_platform(),
     }
 

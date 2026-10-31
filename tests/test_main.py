@@ -3,13 +3,13 @@ from __future__ import annotations
 from typing import Optional
 
 import pytest
-from PySide6.QtCore import Signal, QObject
 from pytestqt.qtbot import QtBot
-from PySide6.QtWidgets import QWidget, QTextEdit, QPlainTextEdit
 
 from nukeserversocket.main import MainView, MainModel, MainController
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
+from nukeserversocket._qt.QtCore import Signal, QObject
+from nukeserversocket._qt.QtWidgets import QWidget, QTextEdit, QPlainTextEdit
 from nukeserversocket.controllers.base import EditorController
 
 Controller = MainController
