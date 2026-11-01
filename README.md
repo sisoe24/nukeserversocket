@@ -135,7 +135,8 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 ![Execute Code](images/run_code.gif)
 
 1. Open the nukeserversocket panel inside Nuke, and start the server by clicking **Connect**.
-   The server starts on its own when the panel opens (**Auto Start**, on by default). To start it when Nuke opens, dock the panel and save it in your workspace (*Workspace > Save Workspace*). Nuke recreates the panel at startup and the server connects on its own.
+   To start the server when the panel opens, turn on **Auto Start** in the settings (off by default). To start it when Nuke opens, also dock the panel and save it in your workspace (*Workspace > Save Workspace*). Nuke recreates the panel at startup and the server connects on its own.
+   The server accepts code from any machine on your network, so only leave it running on a network you trust.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
 >[!NOTE]
@@ -144,12 +145,12 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 ## 1.4. Settings
 
 >[!NOTE]
-> Only the server timeout setting applies to Houdini.
+> Only the Server Timeout and Auto Start settings apply to Houdini.
 
 You can access the settings from the plugin toolbar.
 
 - **Server Timeout**: Closes the server after this many minutes without receiving code. Default 60. Set it to 0 to never close.
-- **Auto Start**: Starts the server as soon as the panel opens. On by default.
+- **Auto Start**: Starts the server as soon as the panel opens. Off by default.
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
 - **Format Text**: The script editor output window will receive a formatted version of the code result. The available placeholders are:
 
@@ -162,7 +163,6 @@ You can access the settings from the plugin toolbar.
    **Format Text Example**: `%d - %t%n` will output `12:00:00 - Hello World!` in the script editor output window.
 
 - **Clear Output**: The script editor output window will clear the code after each execution.
-- **Server Timeout**: Set the Timeout when clicking the **Connect** button. The default value is `10` minutes.
 
 ## 1.5. Known Issues
 
