@@ -64,9 +64,6 @@ class BaseController(ABC):
 class EditorController(BaseController):
     history: List[str] = []
 
-    def __init__(self):
-        super().__init__()
-
     @abstractmethod
     def execute_code(self) -> None: ...
 

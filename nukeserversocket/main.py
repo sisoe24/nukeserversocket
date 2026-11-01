@@ -127,11 +127,11 @@ class MainController:
         LOGGER.debug('Server Timeout.')
         self._close_connection()
 
-    @Slot(str)
+    @Slot()
     def _on_data_received(self):
         self._start_timer()
 
-    @Slot(int)
+    @Slot()
     def _on_port_change(self):
         self._model.set_port(self._view.port_input.value())
 

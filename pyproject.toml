@@ -27,19 +27,14 @@ max_line_length = 100
 [tool.coverage.paths]
 source = ["nukeserversocket"]
 
-[tool.coverage.html]
-directory = "coverage"
-
 [tool.coverage.run]
-omit = ["nukeserversocket/tests/*", "nukeserversocket/__init__.py"]
+omit = ["nukeserversocket/__init__.py"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
 markers = ["quick: mark test"]
 addopts = [
     "--cov=nukeserversocket",
-    "--cov-report=html",
-    "--cov-report=xml",
     "-W ignore::DeprecationWarning",
 ]
 

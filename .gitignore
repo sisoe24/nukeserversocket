@@ -1,8 +1,5 @@
 other/
-dist/
-bin/
 logs/
-archive/
 .idea/
 
 *tmp
@@ -14,16 +11,8 @@ poetry.lock
 *.log
 *.env
 
-**/config/
-*.egg-info
-.pytest_cache
 
 
-# tests
-.coverage
-coverage
-.coveralls.yml
-.tox
 
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python

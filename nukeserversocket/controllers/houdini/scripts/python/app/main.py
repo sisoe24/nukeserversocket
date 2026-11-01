@@ -1,4 +1,4 @@
-"""Nuke-specific plugin for the NukeServerSocket."""
+"""Houdini panel for NukeServerSocket."""
 from __future__ import annotations
 
 from typing import Optional

@@ -2,10 +2,8 @@
 .gitignore                 export-ignore
 .gitattributes             export-ignore
 
-.pylintrc                  export-ignore
 .pre-commit-config.yaml    export-ignore
 
-poetry.toml                export-ignore
 
 *.lock                     export-ignore
 
@@ -22,7 +20,6 @@ CHANGELOG.md               export-ignore
 
 # Directories
 .github                    export-ignore
-.githooks                  export-ignore
 .vscode                    export-ignore
 images                     export-ignore
 tools                      export-ignore

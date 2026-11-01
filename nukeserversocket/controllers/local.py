@@ -25,7 +25,7 @@ class LocalController(EditorController):
         self._input_editor.setPlaceholderText('Enter your code here...')
         self._input_editor.setSizePolicy(
             QSizePolicy.Minimum, QSizePolicy.Maximum)
-        self._input_editor.setPlainText('print(hello world".upper())')
+        self._input_editor.setPlainText('print("hello world".upper())')
 
         self._output_editor = QTextEdit()
         self._output_editor.setSizePolicy(
