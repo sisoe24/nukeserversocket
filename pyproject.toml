@@ -8,11 +8,19 @@ packages = [{ include = "nukeserversocket" }, { include = "nss_mcp" }]
 [tool.poetry.scripts]
 nukeserversocket = "nukeserversocket.controllers.local:main"
 nss-mcp = "nss_mcp.server:main"
-build = "scripts.release_manager:main"
 
 [tool.isort]
 skip = ["__init__.py" , "version.py"]
 length_sort = true
+known_qt = "nukeserversocket._qt"
+sections = [
+    "FUTURE",
+    "STDLIB",
+    "QT",
+    "THIRDPARTY",
+    "FIRSTPARTY",
+    "LOCALFOLDER",
+]
 add_imports = "from __future__ import annotations"
 
 [tool.autopep8]
@@ -21,31 +29,28 @@ max_line_length = 100
 [tool.coverage.paths]
 source = ["nukeserversocket"]
 
-[tool.coverage.html]
-directory = "coverage"
-
 [tool.coverage.run]
-omit = ["nukeserversocket/tests/*", "nukeserversocket/__init__.py"]
+omit = ["nukeserversocket/__init__.py"]
 
 [tool.pytest.ini_options]
 testpaths = "tests"
-qt_api = "pyside2"
 markers = ["quick: mark test"]
 addopts = [
     "--cov=nukeserversocket",
-    "--cov-report=html",
-    "--cov-report=xml",
     "-W ignore::DeprecationWarning",
 ]
 
 [tool.poetry.dependencies]
-python = ">=3.7.7,<3.11"
-pyside2 = "5.15.2.1"
+python = ">=3.9,<3.14"
+# Nuke 15 and older ship PySide2 (Python 3.10), Nuke 16+ ship PySide6 (Python 3.11)
+pyside2 = { version = "5.15.2.1", python = "<3.11" }
+pyside6 = { version = "6.9.2", python = ">=3.11" }
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
 tox = "4.8.0"
-pytest-qt = "^4.2.0"
+# 4.5 dropped PySide2 support
+pytest-qt = ">=4.2.0,<4.5"
 pytest-cov = "^4.1.0"
 pytest-repeat = "^0.9.3"
 pytest-randomly = "3.12.0"

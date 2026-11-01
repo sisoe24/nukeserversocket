@@ -4,9 +4,10 @@ from __future__ import annotations
 import json
 import socket
 
+from nukeserversocket._qt import QTextEdit, QTcpSocket, QPlainTextEdit
+
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.utils import exec_code
 from nukeserversocket.server import NssServer
@@ -101,3 +102,36 @@ def test_server_on_new_connection_mirror_editor(qtbot: QtBot, server: NssServer)
 
     assert server._editor.output_editor.toPlainText().strip() == 'HELLO WORLD'
     assert server._editor.input_editor.toPlainText() == "print('hello world'.upper())"
+
+
+def test_server_replies_to_each_client(qtbot: QtBot, server: NssServer):
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+
+    first = socket.create_connection(('127.0.0.1', PORT))
+    second = socket.create_connection(('127.0.0.1', PORT))
+    # without a timeout a lost reply hangs the test run
+    first.settimeout(1)
+    second.settimeout(1)
+    qtbot.wait(100)
+
+    second.sendall(json.dumps({'text': "print('second')"}).encode('utf-8'))
+    qtbot.wait(100)
+    first.sendall(json.dumps({'text': "print('first')"}).encode('utf-8'))
+    qtbot.wait(100)
+
+    assert first.recv(1024).decode('utf-8').strip() == 'first'
+    assert second.recv(1024).decode('utf-8').strip() == 'second'
+
+    first.close()
+    second.close()
+
+
+def test_server_frees_closed_sockets(qtbot: QtBot, server: NssServer):
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+
+    with qtbot.waitSignal(server.on_data_received):
+        send_data(PORT)
+
+    qtbot.waitUntil(lambda: not server.findChildren(QTcpSocket), timeout=1000)

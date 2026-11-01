@@ -4,9 +4,10 @@ import json
 from datetime import datetime
 from unittest.mock import patch
 
+from nukeserversocket._qt import QTextEdit, QPlainTextEdit
+
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.received_data import ReceivedData

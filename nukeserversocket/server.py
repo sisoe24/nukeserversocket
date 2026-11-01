@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union, Optional
 
-from PySide2.QtCore import Slot, Signal
-from PySide2.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
-from PySide2.QtWidgets import QWidget
+from nukeserversocket._qt import (Signal, QWidget, QTcpServer, QTcpSocket,
+                                  QHostAddress)
 
 from .logger import get_logger
 from .received_data import ReceivedData
@@ -30,33 +29,32 @@ class NssServer(QTcpServer):
         super().__init__(parent)
 
         self._editor = editor
-        self._socket: Optional[QTcpSocket] = None
 
         self.newConnection.connect(self._on_new_connection)
         self.acceptError.connect(lambda err: LOGGER.error('Server error: %s', self.errorString()))
 
-    @Slot()
-    def _on_socket_ready(self):
+    def _on_socket_ready(self, socket: QTcpSocket):
         LOGGER.info('Received data from client.')
         LOGGER.debug('Socket ready.')
 
-        if not self._socket:
-            LOGGER.error('Socket is not set.')
-            raise RuntimeError('Socket is not set.')
-
         # parse the incoming data
-        data = ReceivedData(self._socket.readAll().data())
+        data = ReceivedData(socket.readAll().data())
 
-        output = self._editor.execute(data)
+        try:
+            output = self._editor.execute(data)
+        except RuntimeError as err:
+            # e.g. the Nuke Script Editor is not open; reply so the client does not hang
+            LOGGER.error('Execution failed: %s', err)
+            output = str(err)
 
         self.on_data_received.emit()
 
         LOGGER.info('Writing output to back socket...')
 
-        self._socket.write(output.encode('utf-8'))
+        socket.write(output.encode('utf-8'))
         LOGGER.debug('Output: %s', output.replace('\n', '\\n'))
 
-        self._socket.close()
+        socket.close()
         LOGGER.debug('Socket closed.')
 
     def _on_new_connection(self) -> None:
@@ -64,11 +62,13 @@ class NssServer(QTcpServer):
         while self.hasPendingConnections():
 
             LOGGER.debug('Pending connection.')
-            self._socket = self.nextPendingConnection()
-            self._socket.error.connect(lambda err: LOGGER.error('Socket error: %s', err))
+            socket = self.nextPendingConnection()
+            socket.errorOccurred.connect(lambda err: LOGGER.error('Socket error: %s', err))
+            socket.disconnected.connect(socket.deleteLater)
 
             LOGGER.debug('Socket connected.')
-            self._socket.readyRead.connect(self._on_socket_ready)
+            # bind each socket to its own handler, so replies go to the right client
+            socket.readyRead.connect(lambda socket=socket: self._on_socket_ready(socket))
 
     def try_connect(self, port: int) -> bool:
         LOGGER.debug('Trying to connect to port %s...', port)

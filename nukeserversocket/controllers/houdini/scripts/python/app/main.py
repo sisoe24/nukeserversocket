@@ -1,9 +1,9 @@
-"""Nuke-specific plugin for the NukeServerSocket."""
+"""Houdini panel for NukeServerSocket."""
 from __future__ import annotations
 
 from typing import Optional
 
-from PySide2.QtWidgets import QWidget
+from nukeserversocket._qt import QWidget
 
 from nukeserversocket.main import NukeServerSocket
 from nukeserversocket.utils import exec_code

@@ -4,9 +4,9 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
-from PySide2.QtCore import Qt, Slot, QTimer
-from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
-                               QMainWindow, QPushButton, QVBoxLayout)
+from nukeserversocket._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox,
+                                  QFormLayout, QMainWindow, QPushButton,
+                                  QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
 from .server import NssServer
@@ -47,6 +47,9 @@ class MainModel:
 
     def get_server_timeout(self):
         return self._settings.get('server_timeout')
+
+    def get_auto_start(self):
+        return self._settings.get('auto_start')
 
 
 class MainView(QWidget):
@@ -110,16 +113,25 @@ class MainController:
         self._timer.timeout.connect(self._on_timeout)
         self._timer.setSingleShot(True)
 
+        if self._model.get_auto_start():
+            # Defer until the event loop runs so the host app finishes building its UI.
+            QTimer.singleShot(0, self._view.connect_btn.click)
+
+    def _start_timer(self):
+        timeout = self._model.get_server_timeout()
+        if timeout > 0:
+            self._timer.start(timeout)
+
     @Slot()
     def _on_timeout(self):
         LOGGER.debug('Server Timeout.')
         self._close_connection()
 
-    @Slot(str)
+    @Slot()
     def _on_data_received(self):
-        self._timer.start(self._model.get_server_timeout())
+        self._start_timer()
 
-    @Slot(int)
+    @Slot()
     def _on_port_change(self):
         self._model.set_port(self._view.port_input.value())
 
@@ -130,7 +142,7 @@ class MainController:
             if self._server.try_connect(port):
                 LOGGER.info('Listening on %s...', port)
 
-                self._timer.start(self._model.get_server_timeout())
+                self._start_timer()
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
 

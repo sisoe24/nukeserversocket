@@ -7,12 +7,11 @@ import logging
 from typing import Optional
 from textwrap import dedent
 
-from PySide2.QtWidgets import (QWidget, QSplitter, QTextEdit, QPushButton,
-                               QApplication, QPlainTextEdit)
+from nukeserversocket._qt import (QWidget, QSplitter, QTextEdit, QPushButton,
+                                  QApplication, QPlainTextEdit)
 
 from .base import EditorController
 from ..main import NukeServerSocket
-from ..utils import cache
 from ..received_data import ReceivedData
 
 LOGGER = logging.getLogger('nukeserversocket')
@@ -25,26 +24,21 @@ class NukeScriptEditor:
         self.output_editor = self.get_output_editor()
         self.run_button = self.get_run_button()
 
-    @cache('nuke')
     def get_script_editor(self) -> QWidget:
         for widget in QApplication.allWidgets():
             if 'scripteditor.1' in widget.objectName():
                 return widget
         raise RuntimeError('Could not find script editor')
 
-    @cache('nuke')
     def get_splitter(self) -> QSplitter:
         return self.get_script_editor().findChild(QSplitter)
 
-    @cache('nuke')
     def get_input_editor(self) -> QPlainTextEdit:
         return self.get_splitter().findChild(QPlainTextEdit)
 
-    @cache('nuke')
     def get_output_editor(self) -> QTextEdit:
         return self.get_splitter().findChild(QTextEdit)
 
-    @cache('nuke')
     def get_run_button(self) -> QPushButton:
         btn = next(
             (
@@ -64,8 +58,24 @@ class NukeScriptEditor:
 
 
 class NukeController(EditorController):
-    def __init__(self, editor: NukeScriptEditor):
-        self.editor = editor
+    def __init__(self, editor: Optional[NukeScriptEditor] = None):
+        self._editor = editor
+
+    @property
+    def editor(self) -> NukeScriptEditor:
+        # Look up lazily: a panel restored at startup can exist before the Script Editor does.
+        if self._editor is None:
+            self._editor = NukeScriptEditor()
+        return self._editor
+
+    def execute(self, data: ReceivedData) -> str:
+        try:
+            return super().execute(data)
+        except RuntimeError:
+            # Nuke can rebuild the Script Editor (e.g. on a workspace switch),
+            # which deletes the widgets we hold: look them up again once.
+            self._editor = None
+            return super().execute(data)
 
     def execute_code(self):
         self.editor.run_button.click()
@@ -81,7 +91,8 @@ class NukeController(EditorController):
     def get_output(self) -> str:
         """Override the base method to remove the '# Result:' prefix."""
         output = self.editor.output_editor.toPlainText()
-        return output[output.find('# Result:')+10:]
+        index = output.find('# Result:')
+        return output[index + 10:] if index != -1 else output
 
     def _blink_wrapper(self, data: ReceivedData) -> str:
         return dedent("""
@@ -107,7 +118,7 @@ class NukeController(EditorController):
 
 class NukeEditor(NukeServerSocket):
     def __init__(self, parent: Optional[QWidget] = None):
-        super().__init__(NukeController(NukeScriptEditor()), parent)
+        super().__init__(NukeController(), parent)
 
 
 def install_nuke():

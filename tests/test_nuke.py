@@ -3,11 +3,13 @@ from __future__ import annotations
 import json
 from textwrap import dedent
 
+from nukeserversocket._qt import QTextEdit, QPushButton, QPlainTextEdit
+
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPushButton, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
+from nukeserversocket.controllers import nuke as nuke_controller
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.nuke import NukeController, NukeScriptEditor
 
@@ -59,3 +61,37 @@ def test_nuke_blinkscript(qtbot: QtBot, mock_settings: _NssSettings, file: str, 
     knobs['kernelSource'].setText("{text}")
     knobs['recompile'].execute()
     """).strip()
+
+
+@pytest.mark.parametrize('output, expected', (
+    ('# Result: hello world', 'hello world'),
+    ('hello world', 'hello world'),
+))
+def test_nuke_get_output(qtbot: QtBot, output: str, expected: str):
+    editor = NukeController(MockNukeEditor())
+    editor.output_editor.setPlainText(output)
+
+    assert editor.get_output() == expected
+
+
+class StaleNukeEditor:
+    """Stands in for a Script Editor whose widgets Nuke has deleted."""
+
+    @property
+    def input_editor(self):
+        raise RuntimeError('Internal C++ object already deleted.')
+
+
+def test_nuke_execute_looks_up_rebuilt_script_editor(
+    qtbot: QtBot, mock_settings: _NssSettings, monkeypatch: pytest.MonkeyPatch
+):
+    monkeypatch.setattr(nuke_controller, 'NukeScriptEditor', MockNukeEditor)
+
+    editor = NukeController(StaleNukeEditor())
+    editor.settings = mock_settings
+    editor.settings.set('mirror_script_editor', True)
+
+    out = editor.execute(ReceivedData(json.dumps({'text': 'print("hello")'})))
+
+    assert isinstance(editor.editor, MockNukeEditor)
+    assert 'hello' in out

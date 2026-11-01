@@ -4,9 +4,9 @@ import sys
 import logging
 from typing import Optional
 
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import (QWidget, QCheckBox, QGroupBox, QHBoxLayout,
-                               QPushButton, QVBoxLayout, QPlainTextEdit)
+from nukeserversocket._qt import (Slot, QWidget, QCheckBox, QGroupBox,
+                                  QHBoxLayout, QPushButton, QVBoxLayout,
+                                  QPlainTextEdit)
 
 from .logger import get_logger
 

@@ -6,10 +6,9 @@ import webbrowser
 from typing import Dict, Optional
 from platform import python_version
 
-from PySide2 import __version__ as PySide2_version
-from PySide2.QtCore import Slot
-from PySide2.QtWidgets import (QLabel, QAction, QDialog, QWidget, QToolBar,
-                               QFormLayout, QPushButton)
+from nukeserversocket._qt import (Slot, QLabel, QAction, QDialog, QWidget,
+                                  QToolBar, QFormLayout, QPushButton)
+from nukeserversocket._qt import __version__ as pyside_version
 
 from .version import __version__
 
@@ -19,7 +18,7 @@ def about() -> Dict[str, str]:
     return {
         'version': __version__,
         'python': python_version(),
-        'pyside': PySide2_version,
+        'pyside': pyside_version,
         'machine': sysconfig.get_platform(),
     }
 

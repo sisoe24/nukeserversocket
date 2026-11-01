@@ -1,5 +1,31 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- PySide6 support for Nuke 16 and newer. Based on [#38](https://github.com/sisoe24/nukeserversocket/pull/38) by @kanbatsu.
+- **Auto Start** setting, off by default: the server starts as soon as the panel opens. Save the panel in your Nuke workspace to start the server when Nuke opens.
+- Set **Server Timeout** to 0 to never close the server.
+
+### Changed
+
+- Qt classes are imported from the new `nukeserversocket._qt` module (e.g. `from nukeserversocket._qt import QWidget`), which uses PySide6 and falls back to PySide2, so Nuke 15 and older keep working.
+- Tests run on Python 3.10 (PySide2) and Python 3.11 (PySide6).
+- The default server timeout is 60 minutes instead of 1. Settings files that already store a timeout keep their value.
+- The Nuke panel looks for the Script Editor the first time code arrives, not when the panel opens, so a panel restored at startup no longer fails.
+
+### Fixed
+
+- The plugin no longer crashes when the `~/.nuke` folder does not exist (e.g. Houdini-only machines).
+- `sys.stdout` is restored when executed code calls `sys.exit()`.
+- With several clients connected, each client gets its own reply.
+- The plugin loads from a read-only install folder; it skips the log file instead of failing.
+- Nuke output is no longer truncated when it has no `# Result:` prefix.
+- The Nuke panel looks up the Script Editor again when Nuke rebuilds it, instead of failing until the panel is reopened.
+- The server frees each client socket after replying.
+- When the Script Editor cannot be found, the client gets the error message instead of hanging.
+
 ## [1.2.0] - 2024-11-17
 
 ### Added

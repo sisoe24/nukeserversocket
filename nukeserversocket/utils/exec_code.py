@@ -24,8 +24,10 @@ def stdoutIO(stdout: Any = None) -> Generator[Any, Any, None]:
     if stdout is None:
         stdout = io.StringIO()
     sys.stdout = stdout
-    yield stdout
-    sys.stdout = old
+    try:
+        yield stdout
+    finally:
+        sys.stdout = old
 
 
 def exec_code(input_text: str, filename: str = '<user_code>') -> str:

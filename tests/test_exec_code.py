@@ -1,6 +1,9 @@
 from __future__ import annotations
 
 import io
+import sys
+
+import pytest
 
 from nukeserversocket.utils import stdoutIO, exec_code
 
@@ -47,3 +50,10 @@ def test_exec_code_custom_filename_in_exception():
     result = exec_code("raise IndexError('Index error')", filename='custom_script.py')
     assert 'IndexError: Index error' in result
     assert 'File "custom_script.py"' in result
+
+
+def test_stdoutIO_restores_stdout_on_system_exit():
+    old = sys.stdout
+    with pytest.raises(SystemExit):
+        exec_code('import sys; sys.exit(0)')
+    assert sys.stdout is old
