@@ -61,3 +61,14 @@ def test_nuke_blinkscript(qtbot: QtBot, mock_settings: _NssSettings, file: str, 
     knobs['kernelSource'].setText("{text}")
     knobs['recompile'].execute()
     """).strip()
+
+
+@pytest.mark.parametrize('output, expected', (
+    ('# Result: hello world', 'hello world'),
+    ('hello world', 'hello world'),
+))
+def test_nuke_get_output(qtbot: QtBot, output: str, expected: str):
+    editor = NukeController(MockNukeEditor())
+    editor.output_editor.setPlainText(output)
+
+    assert editor.get_output() == expected

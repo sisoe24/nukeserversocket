@@ -11,7 +11,6 @@ if TYPE_CHECKING:
     from .console import NssConsole
 
 PACKAGE_LOG = Path(__file__).parent.parent / 'logs' / 'nukeserversocket.log'
-PACKAGE_LOG.parent.mkdir(parents=True, exist_ok=True)
 
 
 class ConsoleHandler(logging.Handler):
@@ -31,6 +30,7 @@ class ConsoleHandler(logging.Handler):
 
 
 def _file_handler() -> TimedRotatingFileHandler:
+    PACKAGE_LOG.parent.mkdir(parents=True, exist_ok=True)
 
     handler = TimedRotatingFileHandler(
         filename=PACKAGE_LOG,
@@ -50,7 +50,12 @@ class NssLogger(logging.Logger):
     def __init__(self, name: str = 'nukeserversocket') -> None:
         super().__init__(name)
         self.setLevel(logging.DEBUG)
-        self.addHandler(_file_handler())
+
+        try:
+            self.addHandler(_file_handler())
+        except OSError:
+            # read-only install (e.g. a studio network share): log to the console only
+            pass
 
         self._console = logging.NullHandler()
 

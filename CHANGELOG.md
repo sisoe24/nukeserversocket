@@ -11,6 +11,14 @@
 - Qt classes are imported from the new `nukeserversocket._qt` package (e.g. `from ._qt.QtWidgets import QWidget`), which uses PySide6 and falls back to PySide2, so Nuke 15 and older keep working.
 - Tests run on Python 3.10 (PySide2) and Python 3.11 (PySide6).
 
+### Fixed
+
+- The plugin no longer crashes when the `~/.nuke` folder does not exist (e.g. Houdini-only machines).
+- `sys.stdout` is restored when executed code calls `sys.exit()`.
+- With several clients connected, each client gets its own reply.
+- The plugin loads from a read-only install folder; it skips the log file instead of failing.
+- Nuke output is no longer truncated when it has no `# Result:` prefix.
+
 ## [1.2.0] - 2024-11-17
 
 ### Added

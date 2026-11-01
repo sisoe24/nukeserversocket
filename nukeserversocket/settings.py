@@ -59,6 +59,7 @@ def _nss_settings_path() -> pathlib.Path:
     file = pathlib.Path().home() / '.nuke' / 'nukeserversocket.json'
 
     if not os.path.exists(file):
+        file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text('{}')
 
     return file

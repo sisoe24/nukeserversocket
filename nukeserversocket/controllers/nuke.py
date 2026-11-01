@@ -82,7 +82,8 @@ class NukeController(EditorController):
     def get_output(self) -> str:
         """Override the base method to remove the '# Result:' prefix."""
         output = self.editor.output_editor.toPlainText()
-        return output[output.find('# Result:')+10:]
+        index = output.find('# Result:')
+        return output[index + 10:] if index != -1 else output
 
     def _blink_wrapper(self, data: ReceivedData) -> str:
         return dedent("""
