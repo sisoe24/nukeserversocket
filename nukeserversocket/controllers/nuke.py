@@ -58,8 +58,15 @@ class NukeScriptEditor:
 
 
 class NukeController(EditorController):
-    def __init__(self, editor: NukeScriptEditor):
-        self.editor = editor
+    def __init__(self, editor: Optional[NukeScriptEditor] = None):
+        self._editor = editor
+
+    @property
+    def editor(self) -> NukeScriptEditor:
+        # Look up lazily: a panel restored at startup can exist before the Script Editor does.
+        if self._editor is None:
+            self._editor = NukeScriptEditor()
+        return self._editor
 
     def execute_code(self):
         self.editor.run_button.click()
@@ -102,7 +109,7 @@ class NukeController(EditorController):
 
 class NukeEditor(NukeServerSocket):
     def __init__(self, parent: Optional[QWidget] = None):
-        super().__init__(NukeController(NukeScriptEditor()), parent)
+        super().__init__(NukeController(), parent)
 
 
 def install_nuke():

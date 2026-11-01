@@ -48,6 +48,9 @@ class MainModel:
     def get_server_timeout(self):
         return self._settings.get('server_timeout')
 
+    def get_auto_start(self):
+        return self._settings.get('auto_start')
+
 
 class MainView(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
@@ -110,6 +113,15 @@ class MainController:
         self._timer.timeout.connect(self._on_timeout)
         self._timer.setSingleShot(True)
 
+        if self._model.get_auto_start():
+            # Defer until the event loop runs so the host app finishes building its UI.
+            QTimer.singleShot(0, self._view.connect_btn.click)
+
+    def _start_timer(self):
+        timeout = self._model.get_server_timeout()
+        if timeout > 0:
+            self._timer.start(timeout)
+
     @Slot()
     def _on_timeout(self):
         LOGGER.debug('Server Timeout.')
@@ -117,7 +129,7 @@ class MainController:
 
     @Slot(str)
     def _on_data_received(self):
-        self._timer.start(self._model.get_server_timeout())
+        self._start_timer()
 
     @Slot(int)
     def _on_port_change(self):
@@ -130,7 +142,7 @@ class MainController:
             if self._server.try_connect(port):
                 LOGGER.info('Listening on %s...', port)
 
-                self._timer.start(self._model.get_server_timeout())
+                self._start_timer()
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
 

@@ -59,6 +59,8 @@ class MockServer(QObject):
 
 @pytest.fixture()
 def model(mock_settings: _NssSettings):
+    # auto start would connect behind the tests' back
+    mock_settings.set('auto_start', False)
     return Model(mock_settings)
 
 
@@ -111,3 +113,19 @@ def test_main_controller_on_data_received(controller: Controller):
     controller._on_data_received()
 
     assert controller._timer.isActive() is True
+
+
+def test_main_controller_timeout_disabled(controller: Controller, model: Model):
+    model._settings.set('server_timeout', 0)
+
+    controller._on_connect(True)
+
+    assert controller._timer.isActive() is False
+
+
+def test_main_controller_auto_start(qtbot: QtBot, model: Model, view: View, server: MockServer):
+    model._settings.set('auto_start', True)
+
+    controller = Controller(view, model, server)  # keep a reference so its slots stay connected
+
+    qtbot.waitUntil(lambda: controller._timer.isActive())

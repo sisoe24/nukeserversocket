@@ -11,7 +11,8 @@ from typing import Any, Dict
 class _NssSettings:
     defaults = {
         'port': 54321,
-        'server_timeout': 60000,
+        'server_timeout': 3600000,
+        'auto_start': True,
         'mirror_script_editor': False,
         'clear_output': True,
         'format_output': '[%d NukeTools] %F%n%t',

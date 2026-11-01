@@ -136,6 +136,7 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 ![Execute Code](images/run_code.gif)
 
 1. Open the nukeserversocket panel inside Nuke, and start the server by clicking **Connect**.
+   The server starts on its own when the panel opens (**Auto Start**, on by default). To start it when Nuke opens, dock the panel and save it in your workspace (*Workspace > Save Workspace*). Nuke recreates the panel at startup and the server connects on its own.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
 >[!NOTE]
@@ -148,6 +149,8 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 
 You can access the settings from the plugin toolbar.
 
+- **Server Timeout**: Closes the server after this many minutes without receiving code. Default 60. Set it to 0 to never close.
+- **Auto Start**: Starts the server as soon as the panel opens. On by default.
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
 - **Format Text**: The script editor output window will receive a formatted version of the code result. The available placeholders are:
 

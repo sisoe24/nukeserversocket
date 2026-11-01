@@ -40,7 +40,12 @@ class NssServer(QTcpServer):
         # parse the incoming data
         data = ReceivedData(socket.readAll().data())
 
-        output = self._editor.execute(data)
+        try:
+            output = self._editor.execute(data)
+        except RuntimeError as err:
+            # e.g. the Nuke Script Editor is not open; reply so the client does not hang
+            LOGGER.error('Execution failed: %s', err)
+            output = str(err)
 
         self.on_data_received.emit()
 
