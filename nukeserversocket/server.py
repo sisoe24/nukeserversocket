@@ -40,12 +40,16 @@ class NssServer(QTcpServer):
         # parse the incoming data
         data = ReceivedData(socket.readAll().data())
 
-        try:
-            output = self._editor.execute(data)
-        except RuntimeError as err:
-            # e.g. the Nuke Script Editor is not open; reply so the client does not hang
-            LOGGER.error('Execution failed: %s', err)
-            output = str(err)
+        if not data.text:
+            # invalid JSON or empty text: running it would only echo the editor's old output
+            output = 'NukeServerSocket error: no code received. Expected JSON with a non-empty "text" field.'
+        else:
+            try:
+                output = self._editor.execute(data)
+            except RuntimeError as err:
+                # e.g. the Nuke Script Editor is not open; reply so the client does not hang
+                LOGGER.error('Execution failed: %s', err)
+                output = str(err)
 
         self.on_data_received.emit()
 

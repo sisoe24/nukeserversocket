@@ -24,6 +24,7 @@
 - Nuke output is no longer truncated when it has no `# Result:` prefix.
 - The Nuke panel looks up the Script Editor again when Nuke rebuilds it, instead of failing until the panel is reopened.
 - The server frees each client socket after replying.
+- Invalid JSON or empty code gets an error reply instead of the Script Editor's old output.
 - When the Script Editor cannot be found, the client gets the error message instead of hanging.
 
 ## [1.2.0] - 2024-11-17

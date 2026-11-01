@@ -135,3 +135,20 @@ def test_server_frees_closed_sockets(qtbot: QtBot, server: NssServer):
         send_data(PORT)
 
     qtbot.waitUntil(lambda: not server.findChildren(QTcpSocket), timeout=1000)
+
+
+@pytest.mark.parametrize('payload', (b'not json', b'{"text": ""}'))
+def test_server_rejects_missing_code(qtbot: QtBot, server: NssServer, payload: bytes):
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+
+    client = socket.create_connection(('127.0.0.1', PORT))
+    client.settimeout(1)
+    client.sendall(payload)
+    qtbot.wait(100)
+
+    assert 'no code received' in client.recv(1024).decode('utf-8')
+    assert server._editor.input_editor.toPlainText() == 'initial input'
+    assert server._editor.output_editor.toPlainText() == 'initial output'
+
+    client.close()
