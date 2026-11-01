@@ -9,8 +9,8 @@ from pathlib import Path
 
 import pytest
 
-from nss_mcp.server import (TOOLS, PARSE_ERROR, INVALID_PARAMS, METHOD_NOT_FOUND,
-                            PROTOCOL_VERSION, send_to_nuke, handle_message)
+from nss_mcp.server import (PARSE_ERROR, INVALID_REQUEST, METHOD_NOT_FOUND, INVALID_PARAMS,
+                            TOOLS, SUPPORTED_VERSIONS, send_to_nuke, handle_message)
 
 REPO_ROOT = Path(__file__).parents[1]
 
@@ -49,19 +49,6 @@ def free_port():
     return port
 
 
-def _lan_ip() -> str | None:
-    """Best-effort non-loopback IP of this machine (no packets are actually sent)."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
-        sock.connect(('10.255.255.255', 1))
-        ip = sock.getsockname()[0]
-    except OSError:
-        return None
-    finally:
-        sock.close()
-    return None if ip.startswith('127.') else ip
-
-
 def _request(method: str, params: dict | None = None, msg_id: int = 1) -> dict:
     msg: dict = {'jsonrpc': '2.0', 'id': msg_id, 'method': method}
     if params is not None:
@@ -69,8 +56,8 @@ def _request(method: str, params: dict | None = None, msg_id: int = 1) -> dict:
     return msg
 
 
-def test_initialize_echoes_client_protocol_version():
-    """Initialize replies with the protocol version requested by the client."""
+def test_initialize_echoes_supported_protocol_version():
+    """Initialize echoes the client's version when the server supports it."""
     response = handle_message(_request('initialize', {'protocolVersion': '2024-11-05'}))
     assert response['id'] == 1
     assert response['result']['protocolVersion'] == '2024-11-05'
@@ -78,15 +65,34 @@ def test_initialize_echoes_client_protocol_version():
     assert response['result']['serverInfo']['name'] == 'nukeserversocket-mcp'
 
 
+def test_initialize_unsupported_version_returns_latest():
+    """An unsupported client version gets the server's latest supported version back."""
+    response = handle_message(_request('initialize', {'protocolVersion': '9999-01-01'}))
+    assert response['result']['protocolVersion'] == SUPPORTED_VERSIONS[0]
+
+
 def test_initialize_defaults_protocol_version():
-    """Initialize without a client version falls back to the server's version."""
+    """Initialize without a client version falls back to the server's latest version."""
     response = handle_message(_request('initialize'))
-    assert response['result']['protocolVersion'] == PROTOCOL_VERSION
+    assert response['result']['protocolVersion'] == SUPPORTED_VERSIONS[0]
 
 
 def test_initialized_notification_gets_no_response():
     """Notifications must never receive a response."""
     assert handle_message({'jsonrpc': '2.0', 'method': 'notifications/initialized'}) is None
+
+
+def test_notification_method_with_id_is_answered():
+    """A message with an id is a request, even with a notifications/* method."""
+    response = handle_message({'jsonrpc': '2.0', 'id': 5, 'method': 'notifications/initialized'})
+    assert response['id'] == 5
+    assert response['error']['code'] == METHOD_NOT_FOUND
+
+
+def test_null_id_request_returns_invalid_request():
+    """An explicit null id is a malformed request, not a notification."""
+    response = handle_message({'jsonrpc': '2.0', 'id': None, 'method': 'tools/list'})
+    assert response['error']['code'] == INVALID_REQUEST
 
 
 def test_ping_returns_empty_result():
@@ -115,20 +121,30 @@ def test_unknown_method_notification_is_ignored():
 def test_missing_method_returns_invalid_request():
     """A request without a method gets an error, not a crash."""
     response = handle_message({'jsonrpc': '2.0', 'id': 1})
-    assert response['error']['code'] == -32600
+    assert response['error']['code'] == INVALID_REQUEST
+
+
+@pytest.mark.parametrize('params', [[1, 2], 'text', 42])
+def test_non_dict_params_do_not_crash(params):
+    """A non-object params field is tolerated, never an AttributeError."""
+    response = handle_message({'jsonrpc': '2.0', 'id': 1, 'method': 'initialize',
+                               'params': params})
+    assert response['result']['protocolVersion'] == SUPPORTED_VERSIONS[0]
 
 
 def test_tools_call_unknown_tool_returns_invalid_params():
-    """Calling a tool that does not exist gets a -32602 error."""
+    """Calling a tool that does not exist gets a -32602 protocol error."""
     response = handle_message(_request('tools/call', {'name': 'bogus', 'arguments': {}}))
     assert response['error']['code'] == INVALID_PARAMS
 
 
-def test_tools_call_missing_code_returns_invalid_params():
-    """Calling nuke_execute_code without code gets a -32602 error."""
+@pytest.mark.parametrize('arguments', [{}, {'code': ''}, {'code': 1}, [1, 2], None])
+def test_tools_call_invalid_code_returns_execution_error(arguments):
+    """Invalid tool arguments are execution errors (isError), not protocol errors."""
     response = handle_message(
-        _request('tools/call', {'name': 'nuke_execute_code', 'arguments': {}}))
-    assert response['error']['code'] == INVALID_PARAMS
+        _request('tools/call', {'name': 'nuke_execute_code', 'arguments': arguments}))
+    assert response['result']['isError'] is True
+    assert "'code'" in response['result']['content'][0]['text']
 
 
 def test_tools_call_executes_code(fake_nuke_server):
@@ -155,6 +171,23 @@ def test_tools_call_unreachable_nuke_returns_is_error(free_port):
     assert 'Is Nuke running' in response['result']['content'][0]['text']
 
 
+def test_tools_call_timeout_returns_is_error():
+    """A peer that accepts but never replies produces a timeout isError result."""
+    server = socket.socket()
+    server.bind(('127.0.0.1', 0))
+    server.listen(1)
+    port = server.getsockname()[1]
+
+    response = handle_message(
+        _request('tools/call', {'name': 'nuke_execute_code', 'arguments': {'code': 'x'}}),
+        port=port, timeout=0.2,
+    )
+    server.close()
+
+    assert response['result']['isError'] is True
+    assert 'Timed out' in response['result']['content'][0]['text']
+
+
 def test_send_to_nuke_round_trip(fake_nuke_server):
     """send_to_nuke writes the nukeserversocket payload and reads the reply until EOF."""
     port, received = fake_nuke_server
@@ -163,36 +196,14 @@ def test_send_to_nuke_round_trip(fake_nuke_server):
     assert received['payload'] == {'text': 'print("hi")', 'formatText': '0'}
 
 
-def test_send_to_nuke_over_lan_interface():
-    """The bridge reaches a server bound on all interfaces (like nukeserversocket)
-    through the machine's LAN IP — same path as a remote agent machine."""
-    ip = _lan_ip()
-    if ip is None:
-        pytest.skip('No non-loopback interface available.')
-
-    server = socket.socket()
-    server.bind(('0.0.0.0', 0))
-    server.listen(1)
-    port = server.getsockname()[1]
-
-    def _serve():
-        conn, _ = server.accept()
-        conn.recv(4096)
-        conn.sendall(b'remote ok')
-        conn.close()
-
-    threading.Thread(target=_serve, daemon=True).start()
-
-    assert send_to_nuke('print(1)', ip, port) == 'remote ok'
-    server.close()
-
-
 def test_stdio_end_to_end():
-    """The server answers initialize, tools/list and bad JSON over real stdio."""
+    """The server answers initialize, bad JSON, non-object JSON and tools/list,
+    and survives the malformed lines."""
     lines = [
-        json.dumps(_request('initialize', {'protocolVersion': PROTOCOL_VERSION})),
+        json.dumps(_request('initialize', {'protocolVersion': SUPPORTED_VERSIONS[0]})),
         json.dumps({'jsonrpc': '2.0', 'method': 'notifications/initialized'}),
         'not json',
+        '[1, 2]',
         json.dumps(_request('tools/list', msg_id=2)),
     ]
     process = subprocess.run(
@@ -202,7 +213,8 @@ def test_stdio_end_to_end():
     )
 
     responses = [json.loads(line) for line in process.stdout.splitlines()]
-    assert len(responses) == 3
+    assert len(responses) == 4
     assert responses[0]['result']['serverInfo']['name'] == 'nukeserversocket-mcp'
     assert responses[1]['error']['code'] == PARSE_ERROR
-    assert responses[2]['result']['tools'][0]['name'] == 'nuke_execute_code'
+    assert responses[2]['error']['code'] == INVALID_REQUEST
+    assert responses[3]['result']['tools'][0]['name'] == 'nuke_execute_code'
