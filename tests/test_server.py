@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import socket
 
-from nukeserversocket._qt import QTextEdit, QPlainTextEdit
+from nukeserversocket._qt import QTextEdit, QTcpSocket, QPlainTextEdit
 
 import pytest
 from pytestqt.qtbot import QtBot
@@ -125,3 +125,13 @@ def test_server_replies_to_each_client(qtbot: QtBot, server: NssServer):
 
     first.close()
     second.close()
+
+
+def test_server_frees_closed_sockets(qtbot: QtBot, server: NssServer):
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+
+    with qtbot.waitSignal(server.on_data_received):
+        send_data(PORT)
+
+    qtbot.waitUntil(lambda: not server.findChildren(QTcpSocket), timeout=1000)

@@ -64,6 +64,7 @@ class NssServer(QTcpServer):
             LOGGER.debug('Pending connection.')
             socket = self.nextPendingConnection()
             socket.errorOccurred.connect(lambda err: LOGGER.error('Socket error: %s', err))
+            socket.disconnected.connect(socket.deleteLater)
 
             LOGGER.debug('Socket connected.')
             # bind each socket to its own handler, so replies go to the right client

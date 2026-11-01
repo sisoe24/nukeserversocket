@@ -68,6 +68,15 @@ class NukeController(EditorController):
             self._editor = NukeScriptEditor()
         return self._editor
 
+    def execute(self, data: ReceivedData) -> str:
+        try:
+            return super().execute(data)
+        except RuntimeError:
+            # Nuke can rebuild the Script Editor (e.g. on a workspace switch),
+            # which deletes the widgets we hold: look them up again once.
+            self._editor = None
+            return super().execute(data)
+
     def execute_code(self):
         self.editor.run_button.click()
 
