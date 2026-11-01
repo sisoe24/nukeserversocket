@@ -5,8 +5,6 @@ from typing import TYPE_CHECKING
 from pathlib import Path
 from logging.handlers import TimedRotatingFileHandler
 
-from .utils import cache
-
 if TYPE_CHECKING:
     from .console import NssConsole
 
@@ -69,6 +67,9 @@ class NssLogger(logging.Logger):
         self.addHandler(self._console)
 
 
-@cache('logger')
+# Shared by every module so the console handler and the file handler are attached once.
+_LOGGER = NssLogger()
+
+
 def get_logger() -> NssLogger:
-    return NssLogger()
+    return _LOGGER

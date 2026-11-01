@@ -7,8 +7,6 @@ import pathlib
 from pprint import pformat
 from typing import Any, Dict
 
-from .utils import cache
-
 
 class _NssSettings:
     defaults = {
@@ -65,11 +63,6 @@ def _nss_settings_path() -> pathlib.Path:
     return file
 
 
-@cache('settings')
-def get_settings():
-    """A singleton instance of the settings.
-
-    Always use this function to get the settings.
-
-    """
+def get_settings() -> _NssSettings:
+    """Load the settings from the settings file."""
     return _NssSettings(_nss_settings_path())

@@ -12,7 +12,6 @@ from nukeserversocket._qt import (QWidget, QSplitter, QTextEdit, QPushButton,
 
 from .base import EditorController
 from ..main import NukeServerSocket
-from ..utils import cache
 from ..received_data import ReceivedData
 
 LOGGER = logging.getLogger('nukeserversocket')
@@ -25,26 +24,21 @@ class NukeScriptEditor:
         self.output_editor = self.get_output_editor()
         self.run_button = self.get_run_button()
 
-    @cache('nuke')
     def get_script_editor(self) -> QWidget:
         for widget in QApplication.allWidgets():
             if 'scripteditor.1' in widget.objectName():
                 return widget
         raise RuntimeError('Could not find script editor')
 
-    @cache('nuke')
     def get_splitter(self) -> QSplitter:
         return self.get_script_editor().findChild(QSplitter)
 
-    @cache('nuke')
     def get_input_editor(self) -> QPlainTextEdit:
         return self.get_splitter().findChild(QPlainTextEdit)
 
-    @cache('nuke')
     def get_output_editor(self) -> QTextEdit:
         return self.get_splitter().findChild(QTextEdit)
 
-    @cache('nuke')
     def get_run_button(self) -> QPushButton:
         btn = next(
             (
