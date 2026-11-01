@@ -6,11 +6,9 @@ import webbrowser
 from typing import Dict, Optional
 from platform import python_version
 
+from nukeserversocket._qt import (Slot, QLabel, QAction, QDialog, QWidget,
+                                  QToolBar, QFormLayout, QPushButton)
 from nukeserversocket._qt import __version__ as pyside_version
-from nukeserversocket._qt.QtGui import QAction
-from nukeserversocket._qt.QtCore import Slot
-from nukeserversocket._qt.QtWidgets import (QLabel, QDialog, QWidget, QToolBar,
-                                            QFormLayout, QPushButton)
 
 from .version import __version__
 

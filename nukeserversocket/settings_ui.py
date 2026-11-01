@@ -9,9 +9,8 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 from textwrap import dedent
 
-from nukeserversocket._qt.QtCore import Slot
-from nukeserversocket._qt.QtWidgets import (QWidget, QSpinBox, QCheckBox,
-                                            QLineEdit, QFormLayout)
+from nukeserversocket._qt import (Slot, QWidget, QSpinBox, QCheckBox,
+                                  QLineEdit, QFormLayout)
 
 if TYPE_CHECKING:
     from .settings import _NssSettings

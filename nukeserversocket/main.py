@@ -4,10 +4,9 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
-from nukeserversocket._qt.QtCore import Qt, Slot, QTimer
-from nukeserversocket._qt.QtWidgets import (QLabel, QWidget, QSpinBox,
-                                            QFormLayout, QMainWindow,
-                                            QPushButton, QVBoxLayout)
+from nukeserversocket._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox,
+                                  QFormLayout, QMainWindow, QPushButton,
+                                  QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
 from .server import NssServer

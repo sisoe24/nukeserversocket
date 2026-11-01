@@ -2,8 +2,8 @@ from __future__ import annotations
 
 from typing import Optional
 
-from nukeserversocket._qt.QtCore import Signal, QObject
-from nukeserversocket._qt.QtWidgets import QWidget, QTextEdit, QPlainTextEdit
+from nukeserversocket._qt import (Signal, QObject, QWidget, QTextEdit,
+                                  QPlainTextEdit)
 
 import pytest
 from pytestqt.qtbot import QtBot

@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from nukeserversocket._qt.QtWidgets import QWidget
+from nukeserversocket._qt import QWidget
 
 from nukeserversocket.main import NukeServerSocket
 from nukeserversocket.utils import exec_code

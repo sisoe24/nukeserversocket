@@ -3,8 +3,7 @@ from __future__ import annotations
 import json
 from textwrap import dedent
 
-from nukeserversocket._qt.QtWidgets import (QTextEdit, QPushButton,
-                                            QPlainTextEdit)
+from nukeserversocket._qt import QTextEdit, QPushButton, QPlainTextEdit
 
 import pytest
 from pytestqt.qtbot import QtBot

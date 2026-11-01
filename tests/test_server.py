@@ -4,7 +4,7 @@ from __future__ import annotations
 import json
 import socket
 
-from nukeserversocket._qt.QtWidgets import QTextEdit, QPlainTextEdit
+from nukeserversocket._qt import QTextEdit, QPlainTextEdit
 
 import pytest
 from pytestqt.qtbot import QtBot

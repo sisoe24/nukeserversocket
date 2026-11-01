@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 from unittest.mock import patch
 
-from nukeserversocket._qt.QtWidgets import QTextEdit, QPlainTextEdit
+from nukeserversocket._qt import QTextEdit, QPlainTextEdit
 
 import pytest
 from pytestqt.qtbot import QtBot

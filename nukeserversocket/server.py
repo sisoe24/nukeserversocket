@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Union, Optional
 
-from nukeserversocket._qt.QtCore import Signal
-from nukeserversocket._qt.QtNetwork import QTcpServer, QTcpSocket, QHostAddress
-from nukeserversocket._qt.QtWidgets import QWidget
+from nukeserversocket._qt import (Signal, QWidget, QTcpServer, QTcpSocket,
+                                  QHostAddress)
 
 from .logger import get_logger
 from .received_data import ReceivedData
