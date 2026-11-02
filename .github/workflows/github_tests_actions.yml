@@ -4,27 +4,31 @@ on:
   push:
     branches:
       - main
-      - test-github-actions
   pull_request:
     branches:
       - main
-  pull_request_target:
-    branches:
-      - main
+
+permissions:
+  contents: read
 
 jobs:
   test-mac-windows:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-13, windows-latest]
-        python-version: ["3.7", "3.9", "3.10"]
-      fail-fast: true
+        # 3.10 installs PySide2, 3.11 installs PySide6 (see pyproject.toml)
+        os: [macos-15, windows-latest]
+        python-version: ["3.10", "3.11"]
+        exclude:
+          # PySide2 5.15 has no macOS arm64 wheels
+          - os: macos-15
+            python-version: "3.10"
+      fail-fast: false
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
@@ -38,14 +42,14 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.9", "3.10"]
-      fail-fast: true
+        python-version: ["3.10", "3.11"]
+      fail-fast: false
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v7
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -58,7 +62,9 @@ jobs:
       - name: Install Qt and X11 dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y libqt5gui5
+          sudo apt-get install -y libqt5gui5 libegl1 libxkbcommon-x11-0 libxcb-cursor0 \
+            libxcb-icccm4 libxcb-keysyms1 libxcb-shape0 libxcb-xinerama0 libxcb-randr0 \
+            libxcb-render-util0 libxcb-image0
 
       - name: Install xvfb
         run: sudo apt-get install -y xvfb

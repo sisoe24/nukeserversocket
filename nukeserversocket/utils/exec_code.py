@@ -4,11 +4,11 @@ import io
 import sys
 import traceback
 import contextlib
-from typing import Any, List, Generator
+from typing import List, Generator
 
 
 @contextlib.contextmanager
-def stdoutIO(stdout: Any = None) -> Generator[Any, Any, None]:
+def stdoutIO() -> Generator[io.StringIO, None, None]:
     """Get output from sys.stdout after executing code from `exec`.
 
     ```
@@ -21,11 +21,12 @@ def stdoutIO(stdout: Any = None) -> Generator[Any, Any, None]:
 
     """
     old = sys.stdout
-    if stdout is None:
-        stdout = io.StringIO()
+    stdout = io.StringIO()
     sys.stdout = stdout
-    yield stdout
-    sys.stdout = old
+    try:
+        yield stdout
+    finally:
+        sys.stdout = old
 
 
 def exec_code(input_text: str, filename: str = '<user_code>') -> str:

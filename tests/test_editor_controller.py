@@ -6,11 +6,12 @@ from unittest.mock import patch
 
 import pytest
 from pytestqt.qtbot import QtBot
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
 
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.base import EditorController, format_output
+
+from nukeserversocket._qt import QTextEdit, QPlainTextEdit
 
 
 class MockEditorController(EditorController):

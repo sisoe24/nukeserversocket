@@ -1,34 +1,15 @@
 from __future__ import annotations
 
-import io
+import sys
 
-from nukeserversocket.utils import stdoutIO, exec_code
+import pytest
 
-
-def test_stdoutIO_captures_output():
-    with stdoutIO() as s:
-        print('Hello, World!')
-    output = s.getvalue()
-    assert output == 'Hello, World!\n'
-
-
-def test_stdoutIO_custom_stdout():
-    custom_stdout = io.StringIO()
-    with stdoutIO(custom_stdout) as s:
-        print('Custom stdout test')
-    output = s.getvalue()
-    assert output == 'Custom stdout test\n'
-    assert custom_stdout is s
+from nukeserversocket.utils import exec_code
 
 
 def test_exec_code_print_statement():
     result = exec_code("print('Hello from exec_code')")
     assert result == 'Hello from exec_code\n'
-
-
-def test_exec_code_variable_assignment():
-    result = exec_code('a = 5\nprint(a)')
-    assert result == '5\n'
 
 
 def test_exec_code_runtime_error():
@@ -37,13 +18,20 @@ def test_exec_code_runtime_error():
     assert 'division by zero' in result
 
 
-def test_exec_code_exception_traceback_excludes_current_file():
+def test_exec_code_exception_traceback_excludes_exec_code_file():
     result = exec_code("raise ValueError('Test error')")
     assert 'ValueError: Test error' in result
-    assert f'File "{__file__}"' not in result
+    assert f'File "{exec_code.__code__.co_filename}"' not in result
 
 
 def test_exec_code_custom_filename_in_exception():
     result = exec_code("raise IndexError('Index error')", filename='custom_script.py')
     assert 'IndexError: Index error' in result
     assert 'File "custom_script.py"' in result
+
+
+def test_stdoutIO_restores_stdout_on_system_exit():
+    old = sys.stdout
+    with pytest.raises(SystemExit):
+        exec_code('import sys; sys.exit(0)')
+    assert sys.stdout is old

@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from typing import List
 from datetime import datetime
 
-from PySide2.QtWidgets import QTextEdit, QPlainTextEdit
+from .._qt import QTextEdit, QPlainTextEdit
 
 from ..logger import get_logger
 from ..settings import _NssSettings
@@ -63,9 +63,6 @@ class BaseController(ABC):
 
 class EditorController(BaseController):
     history: List[str] = []
-
-    def __init__(self):
-        super().__init__()
 
     @abstractmethod
     def execute_code(self) -> None: ...

@@ -8,7 +8,6 @@
 [![issues](https://img.shields.io/github/issues/sisoe24/nukeserversocket)](https://github.com/sisoe24/nukeserversocket/issues)
 [![pull-request](https://img.shields.io/github/issues-pr/sisoe24/nukeserversocket)](https://github.com/sisoe24/nukeserversocket/pulls)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/nukeserversocket/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=sisoe24/nukeserversocket&amp;utm_campaign=Badge_Grade)
-[![Codacy Badge](https://app.codacy.com/project/badge/Coverage/5b59bd7f80c646a8b2b16ad4b8cba599)](https://www.codacy.com/gh/sisoe24/nukeserversocket/dashboard?utm_source=github.com&utm_medium=referral&utm_content=sisoe24/nukeserversocket&utm_campaign=Badge_Coverage)
 
 ![x](https://img.shields.io/badge/Nuke-✅-success)
 ![x](https://img.shields.io/badge/Houdini-✅-success)
@@ -37,7 +36,7 @@
 >[!IMPORTANT]
 > You can now execute code for Houdini! See installation notes
 
-A PySide2 plugin for executing Python/BlinkScript remotely in Nuke from any network client, supporting multiple connections. Compatible with both Nuke and Houdini.
+A PySide plugin for executing Python/BlinkScript remotely in Nuke from any network client, supporting multiple connections. Compatible with both Nuke and Houdini.
 
 ## 1.1. Client applications
 
@@ -136,6 +135,8 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 ![Execute Code](images/run_code.gif)
 
 1. Open the nukeserversocket panel inside Nuke, and start the server by clicking **Connect**.
+   To start the server when the panel opens, turn on **Auto Start** in the settings (off by default). To start it when Nuke opens, also dock the panel and save it in your workspace (*Workspace > Save Workspace*). Nuke recreates the panel at startup and the server connects on its own.
+   The server accepts code from any machine on your network, so only leave it running on a network you trust.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
 >[!NOTE]
@@ -144,10 +145,12 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 ## 1.4. Settings
 
 >[!NOTE]
-> Only the server timeout setting applies to Houdini.
+> Only the Server Timeout and Auto Start settings apply to Houdini.
 
 You can access the settings from the plugin toolbar.
 
+- **Server Timeout**: Closes the server after this many minutes without receiving code. Default 60. Set it to 0 to never close.
+- **Auto Start**: Starts the server as soon as the panel opens. Off by default.
 - **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
 - **Format Text**: The script editor output window will receive a formatted version of the code result. The available placeholders are:
 
@@ -160,7 +163,6 @@ You can access the settings from the plugin toolbar.
    **Format Text Example**: `%d - %t%n` will output `12:00:00 - Hello World!` in the script editor output window.
 
 - **Clear Output**: The script editor output window will clear the code after each execution.
-- **Server Timeout**: Set the Timeout when clicking the **Connect** button. The default value is `10` minutes.
 
 ## 1.5. Known Issues
 
@@ -170,7 +172,7 @@ You can access the settings from the plugin toolbar.
 
 ## 1.6. Compatibility
 
-Should work everywhere PySide2 and Python 3 work.
+Works with PySide6 (Nuke 16 and newer) and PySide2 (Nuke 15 and older), on Python 3.
 
 ## 1.7. Python2.7
 

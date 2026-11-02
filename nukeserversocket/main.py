@@ -4,9 +4,9 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
-from PySide2.QtCore import Qt, Slot, QTimer
-from PySide2.QtWidgets import (QLabel, QWidget, QSpinBox, QFormLayout,
-                               QMainWindow, QPushButton, QVBoxLayout)
+from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QFormLayout,
+                  QHBoxLayout, QMainWindow, QPushButton, QSizePolicy,
+                  QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
 from .server import NssServer
@@ -48,6 +48,9 @@ class MainModel:
     def get_server_timeout(self):
         return self._settings.get('server_timeout')
 
+    def get_auto_start(self):
+        return self._settings.get('auto_start')
+
 
 class MainView(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
@@ -56,6 +59,10 @@ class MainView(QWidget):
 
         self.connect_btn = QPushButton('Connect')
         self.connect_btn.setCheckable(True)
+        self.connect_btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        # Reserve width for the longer label, so the form does not shift on toggle.
+        self.connect_btn.setMinimumWidth(
+            self.connect_btn.fontMetrics().horizontalAdvance('Disconnect') + 24)
 
         self.console = NssConsole()
 
@@ -73,9 +80,12 @@ class MainView(QWidget):
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
 
+        top_layout = QHBoxLayout()
+        top_layout.addLayout(form_layout, 1)
+        top_layout.addWidget(self.connect_btn)
+
         layout = QVBoxLayout()
-        layout.addLayout(form_layout)
-        layout.addWidget(self.connect_btn)
+        layout.addLayout(top_layout)
         layout.addWidget(self.console)
 
         self.setLayout(layout)
@@ -110,16 +120,25 @@ class MainController:
         self._timer.timeout.connect(self._on_timeout)
         self._timer.setSingleShot(True)
 
+        if self._model.get_auto_start():
+            # Defer until the event loop runs so the host app finishes building its UI.
+            QTimer.singleShot(0, self._view.connect_btn.click)
+
+    def _start_timer(self):
+        timeout = self._model.get_server_timeout()
+        if timeout > 0:
+            self._timer.start(timeout)
+
     @Slot()
     def _on_timeout(self):
         LOGGER.debug('Server Timeout.')
         self._close_connection()
 
-    @Slot(str)
+    @Slot()
     def _on_data_received(self):
-        self._timer.start(self._model.get_server_timeout())
+        self._start_timer()
 
-    @Slot(int)
+    @Slot()
     def _on_port_change(self):
         self._model.set_port(self._view.port_input.value())
 
@@ -130,7 +149,7 @@ class MainController:
             if self._server.try_connect(port):
                 LOGGER.info('Listening on %s...', port)
 
-                self._timer.start(self._model.get_server_timeout())
+                self._start_timer()
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
 

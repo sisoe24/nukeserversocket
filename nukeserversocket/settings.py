@@ -7,13 +7,12 @@ import pathlib
 from pprint import pformat
 from typing import Any, Dict
 
-from .utils import cache
-
 
 class _NssSettings:
     defaults = {
         'port': 54321,
-        'server_timeout': 60000,
+        'server_timeout': 3600000,
+        'auto_start': False,
         'mirror_script_editor': False,
         'clear_output': True,
         'format_output': '[%d NukeTools] %F%n%t',
@@ -59,16 +58,12 @@ def _nss_settings_path() -> pathlib.Path:
     file = pathlib.Path().home() / '.nuke' / 'nukeserversocket.json'
 
     if not os.path.exists(file):
+        file.parent.mkdir(parents=True, exist_ok=True)
         file.write_text('{}')
 
     return file
 
 
-@cache('settings')
-def get_settings():
-    """A singleton instance of the settings.
-
-    Always use this function to get the settings.
-
-    """
+def get_settings() -> _NssSettings:
+    """Load the settings from the settings file."""
     return _NssSettings(_nss_settings_path())
