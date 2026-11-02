@@ -5,8 +5,8 @@ import socket
 from typing import TYPE_CHECKING, Optional
 
 from nukeserversocket._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox,
-                                  QFormLayout, QMainWindow, QPushButton,
-                                  QVBoxLayout)
+                                  QFormLayout, QHBoxLayout, QMainWindow,
+                                  QPushButton, QSizePolicy, QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
 from .server import NssServer
@@ -59,6 +59,9 @@ class MainView(QWidget):
 
         self.connect_btn = QPushButton('Connect')
         self.connect_btn.setCheckable(True)
+        self.connect_btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        # Reserve width for the longer label, so the form does not shift on toggle.
+        self.connect_btn.setMinimumWidth(self.connect_btn.fontMetrics().horizontalAdvance('Disconnect') + 24)
 
         self.console = NssConsole()
 
@@ -76,9 +79,12 @@ class MainView(QWidget):
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
 
+        top_layout = QHBoxLayout()
+        top_layout.addLayout(form_layout, 1)
+        top_layout.addWidget(self.connect_btn)
+
         layout = QVBoxLayout()
-        layout.addLayout(form_layout)
-        layout.addWidget(self.connect_btn)
+        layout.addLayout(top_layout)
         layout.addWidget(self.console)
 
         self.setLayout(layout)
