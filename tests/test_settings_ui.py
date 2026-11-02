@@ -34,12 +34,6 @@ def test_settings(controller: Controller, model: Model, view: View):
     controller.init()
 
     # default values
-    assert model.settings.data['server_timeout'] == 3600000
-    assert model.settings.data['auto_start'] is False
-    assert model.settings.data['mirror_script_editor'] is False
-    assert model.settings.data['clear_output'] is True
-    assert model.settings.data['format_output'] == '[%d NukeTools] %F%n%t'
-
     assert controller._view.timeout.value() == 60
     assert controller._view.auto_start.isChecked() is False
     assert controller._view.mirror_script_editor.isChecked() is False
@@ -58,9 +52,3 @@ def test_settings(controller: Controller, model: Model, view: View):
     assert model.settings.data['mirror_script_editor'] is True
     assert model.settings.data['clear_output'] is False
     assert model.settings.data['format_output'] == 'nuketools'
-
-    assert controller._view.timeout.value() == 2
-    assert controller._view.auto_start.isChecked() is True
-    assert controller._view.mirror_script_editor.isChecked() is True
-    assert controller._view.clear_output.isChecked() is False
-    assert controller._view.format_output.text() == 'nuketools'

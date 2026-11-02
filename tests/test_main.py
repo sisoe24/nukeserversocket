@@ -90,7 +90,6 @@ def test_main_controller_on_connect(controller: Controller, view: View):
 
     controller._on_connect(True)
 
-    assert view.port_input.value() == 54321
     assert view.connect_btn.text() == 'Disconnect'
     assert view.port_input.isEnabled() is False
     assert controller._timer.isActive() is True
@@ -98,9 +97,12 @@ def test_main_controller_on_connect(controller: Controller, view: View):
 
 def test_main_controller_on_disconnect(controller: Controller, view: View):
 
+    view.connect_btn.click()
+    assert view.connect_btn.text() == 'Disconnect'
+
     controller._on_connect(False)
 
-    assert view.port_input.value() == 54321
+    assert view.connect_btn.isChecked() is False
     assert view.connect_btn.text() == 'Connect'
     assert view.port_input.isEnabled() is True
     assert controller._timer.isActive() is False

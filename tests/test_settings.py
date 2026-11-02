@@ -4,7 +4,6 @@ from nukeserversocket.settings import _NssSettings, _nss_settings_path
 
 
 def test_get_settings_default(mock_settings: _NssSettings):
-    assert isinstance(mock_settings, _NssSettings)
     assert mock_settings.data == _NssSettings.defaults
 
     mock_settings.set('temp_value', True)

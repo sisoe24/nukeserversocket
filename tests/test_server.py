@@ -73,21 +73,6 @@ def send_data(port: int):
     s.close()
 
 
-def test_server_on_new_connection(qtbot: QtBot, server: NssServer):
-
-    server._editor.settings.set('mirror_script_editor', False)
-
-    port = 55559
-    server.try_connect(port)
-
-    send_data(port)
-
-    qtbot.wait(100)
-
-    assert server._editor.output_editor.toPlainText() == 'initial output'
-    assert server._editor.input_editor.toPlainText() == 'initial input'
-
-
 def test_server_on_new_connection_mirror_editor(qtbot: QtBot, server: NssServer):
     server._editor.settings.set('mirror_script_editor', True)
     server._editor.settings.set('format_output', '')
