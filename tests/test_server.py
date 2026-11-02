@@ -12,7 +12,8 @@ from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
 
-from nukeserversocket._qt import QTextEdit, QTcpSocket, QPlainTextEdit
+from nukeserversocket._qt import (QTextEdit, QTcpSocket, QHostAddress,
+                                  QPlainTextEdit)
 
 PORT = 55559
 
@@ -71,6 +72,16 @@ def send_data(port: int):
     }
     s.sendall(bytes(json.dumps(data), encoding='utf-8'))
     s.close()
+
+
+def test_server_listens_on_localhost_by_default(server: NssServer):
+    assert server.try_connect(PORT)
+    assert server.serverAddress() == QHostAddress(QHostAddress.LocalHost)
+
+
+def test_server_listens_on_all_interfaces_with_allow_lan(server: NssServer):
+    assert server.try_connect(PORT, allow_lan=True)
+    assert server.serverAddress() == QHostAddress(QHostAddress.Any)
 
 
 def test_server_on_new_connection_mirror_editor(qtbot: QtBot, server: NssServer):

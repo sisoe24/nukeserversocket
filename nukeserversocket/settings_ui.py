@@ -39,6 +39,12 @@ class NssSettingsView(QWidget):
         self.auto_start = QCheckBox()
         self.auto_start.setToolTip('Start the server when the panel opens')
 
+        self.allow_lan = QCheckBox()
+        self.allow_lan.setToolTip(
+            'Accept code from other machines on the network, with no authentication. '
+            'Applies the next time the server connects.'
+        )
+
         self.format_output = QLineEdit()
         self.format_output.setToolTip(dedent('''
         Format output using the following placeholders:
@@ -58,6 +64,7 @@ class NssSettingsView(QWidget):
         form_layout = QFormLayout()
         form_layout.addRow('Server Timeout (min):', self.timeout)
         form_layout.addRow('Auto start:', self.auto_start)
+        form_layout.addRow('Allow LAN connections:', self.allow_lan)
         form_layout.addRow('Mirror script editor:', self.mirror_script_editor)
         form_layout.addRow('Format output:', self.format_output)
         form_layout.addRow('Clear output:', self.clear_output)
@@ -72,6 +79,7 @@ class NssSettingsController:
 
         self._view.timeout.valueChanged.connect(self._on_timeout_changed)
         self._view.auto_start.stateChanged.connect(self._on_auto_start_changed)
+        self._view.allow_lan.stateChanged.connect(self._on_allow_lan_changed)
         self._view.format_output.textChanged.connect(self._on_format_output_changed)
         self._view.mirror_script_editor.stateChanged.connect(self._on_mirror_script_editor_changed)
         self._view.clear_output.stateChanged.connect(self._on_clear_output_changed)
@@ -96,12 +104,17 @@ class NssSettingsController:
         self._model.set('auto_start', state == 2)
 
     @Slot(int)
+    def _on_allow_lan_changed(self, state: int):
+        self._model.set('allow_lan', state == 2)
+
+    @Slot(int)
     def _on_timeout_changed(self, timeout: int):
         self._model.set('server_timeout', timeout * 60000)
 
     def init(self):
         self._view.timeout.setValue(self._model.get('server_timeout') // 60000)
         self._view.auto_start.setChecked(self._model.get('auto_start'))
+        self._view.allow_lan.setChecked(self._model.get('allow_lan'))
 
         mirror_script_editor_state = self._model.get('mirror_script_editor')
         self._view.mirror_script_editor.setChecked(mirror_script_editor_state)

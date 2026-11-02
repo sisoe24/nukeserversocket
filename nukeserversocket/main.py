@@ -28,7 +28,10 @@ class MainModel:
         self._settings = settings
 
     def get_ip(self):
-        """Get the IP address of the current machine."""
+        """Get the IP address that clients can reach the server on."""
+        if not self.get_allow_lan():
+            return '127.0.0.1'
+
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             s.connect(('10.255.255.255', 1))
@@ -50,6 +53,9 @@ class MainModel:
 
     def get_auto_start(self):
         return self._settings.get('auto_start')
+
+    def get_allow_lan(self):
+        return self._settings.get('allow_lan')
 
 
 class MainView(QWidget):
@@ -146,9 +152,10 @@ class MainController:
     def _on_connect(self, should_connect: bool):
         port = self._view.port_input.value()
         if should_connect and not self._server.isListening():
-            if self._server.try_connect(port):
+            if self._server.try_connect(port, self._model.get_allow_lan()):
                 LOGGER.info('Listening on %s...', port)
 
+                self._view.ip_label.setText(self._model.get_ip())
                 self._start_timer()
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
