@@ -135,7 +135,7 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 ![Execute Code](images/run_code.gif)
 
 1. Open the nukeserversocket panel inside Nuke, and start the server by clicking **Connect**.
-   To start the server when the panel opens, turn on **Auto Start** in the settings (off by default). To start it when Nuke opens, also dock the panel and save it in your workspace (*Workspace > Save Workspace*). Nuke recreates the panel at startup and the server connects on its own.
+   To start the server when the panel opens, turn on **Auto Start** in the settings (off by default). To start it when Nuke opens, save a workspace that has the NukeServerSocket panel (*Workspace > Save Workspace*), then set it as your **startup workspace** in the preferences (*Behaviors > Startup*). Otherwise, the server starts only when you open the panel.
    The server accepts code only from your own machine by default. To send code from another machine, turn on **Allow LAN Connections** in the settings. The server then runs code from any machine on your network with no authentication, so only do this on a network you trust.
 2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
 
