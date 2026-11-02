@@ -75,6 +75,6 @@ class NssServer(QTcpServer):
 
     def try_connect(self, port: int, allow_lan: bool = False) -> bool:
         LOGGER.debug('Trying to connect to port %s...', port)
-        # clients run arbitrary code with no authentication, so stay local unless asked
+        # no authentication
         address = QHostAddress.Any if allow_lan else QHostAddress.LocalHost
         return self.listen(address, port)
