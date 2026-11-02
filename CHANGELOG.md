@@ -16,7 +16,7 @@
 ### Added
 
 - PySide6 support for Nuke 16 and newer. Based on [#38](https://github.com/sisoe24/nukeserversocket/pull/38) by @kanbatsu.
-- **Auto Start** setting, off by default: the server starts as soon as the panel opens. Save the panel in your Nuke workspace to start the server when Nuke opens.
+- **Auto Start** setting, off by default: the server starts as soon as the panel opens. Save the panel in your Nuke workspace to start the server when Nuke opens. Requested in [#36](https://github.com/sisoe24/nukeserversocket/issues/36) by @sambeebe.
 - Set **Server Timeout** to 0 to never close the server.
 
 ### Changed
