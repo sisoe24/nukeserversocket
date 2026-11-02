@@ -4,8 +4,6 @@ from __future__ import annotations
 import json
 import socket
 
-from nukeserversocket._qt import QTextEdit, QTcpSocket, QPlainTextEdit
-
 import pytest
 from pytestqt.qtbot import QtBot
 
@@ -13,6 +11,8 @@ from nukeserversocket.utils import exec_code
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
+
+from nukeserversocket._qt import QTextEdit, QTcpSocket, QPlainTextEdit
 
 PORT = 55559
 

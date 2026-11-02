@@ -11,12 +11,13 @@ nukeserversocket = "nukeserversocket.controllers.local:main"
 skip = ["__init__.py" , "version.py"]
 length_sort = true
 known_qt = "nukeserversocket._qt"
+forced_separate = ["._qt", ".*"]
 sections = [
     "FUTURE",
     "STDLIB",
-    "QT",
     "THIRDPARTY",
     "FIRSTPARTY",
+    "QT",
     "LOCALFOLDER",
 ]
 add_imports = "from __future__ import annotations"

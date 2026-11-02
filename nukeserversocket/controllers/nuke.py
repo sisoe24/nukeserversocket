@@ -7,8 +7,8 @@ import logging
 from typing import Optional
 from textwrap import dedent
 
-from nukeserversocket._qt import (QWidget, QSplitter, QTextEdit, QPushButton,
-                                  QApplication, QPlainTextEdit)
+from .._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
+                   QPlainTextEdit)
 
 from .base import EditorController
 from ..main import NukeServerSocket

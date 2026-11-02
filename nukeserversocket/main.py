@@ -4,9 +4,9 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
-from nukeserversocket._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox,
-                                  QFormLayout, QHBoxLayout, QMainWindow,
-                                  QPushButton, QSizePolicy, QVBoxLayout)
+from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QFormLayout,
+                  QHBoxLayout, QMainWindow, QPushButton, QSizePolicy,
+                  QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
 from .server import NssServer
@@ -61,7 +61,8 @@ class MainView(QWidget):
         self.connect_btn.setCheckable(True)
         self.connect_btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
         # Reserve width for the longer label, so the form does not shift on toggle.
-        self.connect_btn.setMinimumWidth(self.connect_btn.fontMetrics().horizontalAdvance('Disconnect') + 24)
+        self.connect_btn.setMinimumWidth(
+            self.connect_btn.fontMetrics().horizontalAdvance('Disconnect') + 24)
 
         self.console = NssConsole()
 
