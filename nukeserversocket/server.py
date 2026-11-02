@@ -73,6 +73,8 @@ class NssServer(QTcpServer):
             # bind each socket to its own handler, so replies go to the right client
             socket.readyRead.connect(lambda socket=socket: self._on_socket_ready(socket))
 
-    def try_connect(self, port: int) -> bool:
+    def try_connect(self, port: int, allow_lan: bool = False) -> bool:
         LOGGER.debug('Trying to connect to port %s...', port)
-        return self.listen(QHostAddress.Any, port)
+        # clients run arbitrary code with no authentication, so stay local unless asked
+        address = QHostAddress.Any if allow_lan else QHostAddress.LocalHost
+        return self.listen(address, port)

@@ -44,8 +44,10 @@ class MockServer(QObject):
 
     def __init__(self, editor: MockEditorController, parent: Optional[QWidget] = None):
         super().__init__(parent)
+        self.allow_lan = None
 
-    def try_connect(self, port: int) -> bool:
+    def try_connect(self, port: int, allow_lan: bool = False) -> bool:
+        self.allow_lan = allow_lan
         return True
 
     def isListening(self) -> bool:
@@ -123,6 +125,22 @@ def test_main_controller_timeout_disabled(controller: Controller, model: Model):
     controller._on_connect(True)
 
     assert controller._timer.isActive() is False
+
+
+def test_main_controller_stays_local_by_default(controller: Controller, view: View, server: MockServer):
+    controller._on_connect(True)
+
+    assert server.allow_lan is False
+    assert view.ip_label.text() == '127.0.0.1'
+
+
+def test_main_controller_allow_lan(controller: Controller, model: Model, view: View, server: MockServer):
+    model._settings.set('allow_lan', True)
+
+    controller._on_connect(True)
+
+    assert server.allow_lan is True
+    assert view.ip_label.text() == model.get_ip()
 
 
 def test_main_controller_auto_start(qtbot: QtBot, model: Model, view: View, server: MockServer):

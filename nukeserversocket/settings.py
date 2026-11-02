@@ -13,6 +13,7 @@ class _NssSettings:
         'port': 54321,
         'server_timeout': 3600000,
         'auto_start': False,
+        'allow_lan': False,
         'mirror_script_editor': False,
         'clear_output': True,
         'format_output': '[%d NukeTools] %F%n%t',
