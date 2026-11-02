@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.3.0] - 2026-11-02
 
 ### Added
 
@@ -14,6 +14,7 @@
 - Tests run on Python 3.10 (PySide2) and Python 3.11 (PySide6).
 - The default server timeout is 60 minutes instead of 1. Settings files that already store a timeout keep their value.
 - The Nuke panel looks for the Script Editor the first time code arrives, not when the panel opens, so a panel restored at startup no longer fails.
+- The **Connect** button is now to the right of the status form, which leaves more height for the console.
 
 ### Fixed
 
