@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.0] - 2026-11-02
 
 ### Added
 
@@ -10,6 +10,10 @@
 
 - **Breaking:** the server listens only on `127.0.0.1` by default, because it runs code from clients with no authentication. To send code from another machine, turn on **Allow LAN Connections**.
 - Clients must connect to `127.0.0.1` by IPv4. A client that connects to `localhost` by IPv6 only (`::1`) is refused.
+
+### Fixed
+
+- Requests split across TCP reads, such as large scripts, no longer fail. A malformed or incomplete JSON object gets an error reply after 3 seconds with no new data.
 
 ## [1.3.0] - 2026-11-02
 

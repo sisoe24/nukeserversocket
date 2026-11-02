@@ -133,6 +133,56 @@ def test_server_frees_closed_sockets(qtbot: QtBot, server: NssServer):
     qtbot.waitUntil(lambda: not server.findChildren(QTcpSocket), timeout=1000)
 
 
+def test_server_accepts_chunked_payload(qtbot: QtBot, server: NssServer):
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+
+    payload = json.dumps({'text': "print('hello chunked'.upper())"}).encode('utf-8')
+    client = socket.create_connection(('127.0.0.1', PORT))
+    client.settimeout(1)
+
+    for i in range(0, len(payload), 8):
+        client.sendall(payload[i:i + 8])
+        qtbot.wait(20)
+
+    assert client.recv(1024).decode('utf-8').strip() == 'HELLO CHUNKED'
+    client.close()
+
+
+@pytest.mark.parametrize('payload', (
+    b"{'text': 'x'}",
+    b'{"text": "x",}',
+    b'{"text": "x"}{"text": "y"}',
+    b'{"text": "x',
+))
+def test_server_replies_to_malformed_object(qtbot: QtBot, server: NssServer, payload: bytes):
+    server.REQUEST_IDLE_MS = 50
+    server.try_connect(PORT)
+
+    client = socket.create_connection(('127.0.0.1', PORT))
+    client.settimeout(1)
+    client.sendall(payload)
+    qtbot.wait(200)
+
+    assert 'no code received' in client.recv(1024).decode('utf-8')
+    assert not server._buffers
+    client.close()
+
+
+def test_server_drops_buffer_when_client_disconnects(qtbot: QtBot, server: NssServer):
+    server.REQUEST_IDLE_MS = 50
+    server.try_connect(PORT)
+
+    client = socket.create_connection(('127.0.0.1', PORT))
+    client.sendall(b'{"text": "x')
+    qtbot.waitUntil(lambda: bool(server._buffers), timeout=1000)
+    client.close()
+
+    qtbot.waitUntil(lambda: not server._buffers, timeout=1000)
+    qtbot.wait(100)
+    assert server._editor.input_editor.toPlainText() == 'initial input'
+
+
 @pytest.mark.parametrize('payload', (b'not json', b'{"text": ""}'))
 def test_server_rejects_missing_code(qtbot: QtBot, server: NssServer, payload: bytes):
     server._editor.settings.set('mirror_script_editor', False)
