@@ -4,9 +4,9 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
-from nukeserversocket._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox,
-                                  QFormLayout, QMainWindow, QPushButton,
-                                  QVBoxLayout)
+from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QFormLayout,
+                  QHBoxLayout, QMainWindow, QPushButton, QSizePolicy,
+                  QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
 from .server import NssServer
@@ -28,7 +28,10 @@ class MainModel:
         self._settings = settings
 
     def get_ip(self):
-        """Get the IP address of the current machine."""
+        """Get the IP address that clients can reach the server on."""
+        if not self.get_allow_lan():
+            return '127.0.0.1'
+
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         try:
             s.connect(('10.255.255.255', 1))
@@ -51,6 +54,9 @@ class MainModel:
     def get_auto_start(self):
         return self._settings.get('auto_start')
 
+    def get_allow_lan(self):
+        return self._settings.get('allow_lan')
+
 
 class MainView(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
@@ -59,6 +65,10 @@ class MainView(QWidget):
 
         self.connect_btn = QPushButton('Connect')
         self.connect_btn.setCheckable(True)
+        self.connect_btn.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        # Reserve width for the longer label, so the form does not shift on toggle.
+        self.connect_btn.setMinimumWidth(
+            self.connect_btn.fontMetrics().horizontalAdvance('Disconnect') + 24)
 
         self.console = NssConsole()
 
@@ -76,9 +86,12 @@ class MainView(QWidget):
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
 
+        top_layout = QHBoxLayout()
+        top_layout.addLayout(form_layout, 1)
+        top_layout.addWidget(self.connect_btn)
+
         layout = QVBoxLayout()
-        layout.addLayout(form_layout)
-        layout.addWidget(self.connect_btn)
+        layout.addLayout(top_layout)
         layout.addWidget(self.console)
 
         self.setLayout(layout)
@@ -139,9 +152,10 @@ class MainController:
     def _on_connect(self, should_connect: bool):
         port = self._view.port_input.value()
         if should_connect and not self._server.isListening():
-            if self._server.try_connect(port):
+            if self._server.try_connect(port, self._model.get_allow_lan()):
                 LOGGER.info('Listening on %s...', port)
 
+                self._view.ip_label.setText(self._model.get_ip())
                 self._start_timer()
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()

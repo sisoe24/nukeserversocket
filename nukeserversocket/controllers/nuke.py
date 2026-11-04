@@ -7,8 +7,8 @@ import logging
 from typing import Optional
 from textwrap import dedent
 
-from nukeserversocket._qt import (QWidget, QSplitter, QTextEdit, QPushButton,
-                                  QApplication, QPlainTextEdit)
+from .._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
+                   QPlainTextEdit)
 
 from .base import EditorController
 from ..main import NukeServerSocket
@@ -20,8 +20,12 @@ LOGGER = logging.getLogger('nukeserversocket')
 class NukeScriptEditor:
 
     def __init__(self):
-        self.input_editor = self.get_input_editor()
-        self.output_editor = self.get_output_editor()
+        # Keep the parents referenced: PySide invalidates a child found through a
+        # temporary parent wrapper once that wrapper is garbage collected (Nuke 17).
+        self.script_editor = self.get_script_editor()
+        self.splitter = self.script_editor.findChild(QSplitter)
+        self.input_editor = self.splitter.findChild(QPlainTextEdit)
+        self.output_editor = self.splitter.findChild(QTextEdit)
         self.run_button = self.get_run_button()
 
     def get_script_editor(self) -> QWidget:
@@ -30,20 +34,11 @@ class NukeScriptEditor:
                 return widget
         raise RuntimeError('Could not find script editor')
 
-    def get_splitter(self) -> QSplitter:
-        return self.get_script_editor().findChild(QSplitter)
-
-    def get_input_editor(self) -> QPlainTextEdit:
-        return self.get_splitter().findChild(QPlainTextEdit)
-
-    def get_output_editor(self) -> QTextEdit:
-        return self.get_splitter().findChild(QTextEdit)
-
     def get_run_button(self) -> QPushButton:
         btn = next(
             (
                 button
-                for button in self.get_script_editor().findChildren(QPushButton)
+                for button in self.script_editor.findChildren(QPushButton)
                 if button.toolTip().lower().startswith('run the current script')
             ),
             None,

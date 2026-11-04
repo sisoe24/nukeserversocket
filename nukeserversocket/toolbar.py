@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-import os
 import sysconfig
 import webbrowser
 from typing import Dict, Optional
 from platform import python_version
 
-from nukeserversocket._qt import (Slot, QLabel, QAction, QDialog, QWidget,
-                                  QToolBar, QFormLayout, QPushButton)
-from nukeserversocket._qt import __version__ as pyside_version
+from ._qt import (Slot, QLabel, QAction, QDialog, QWidget, QToolBar,
+                  QFormLayout, QPushButton)
+from ._qt import __version__ as pyside_version
 
 from .version import __version__
 

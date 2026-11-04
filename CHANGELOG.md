@@ -1,11 +1,22 @@
 # Changelog
 
-## [Unreleased]
+## [1.4.0] - 2026-11-02
+
+### Added
+
+- **Allow LAN Connections** setting, off by default: accept code from other machines on the network.
+
+### Changed
+
+- **Breaking:** the server listens only on `127.0.0.1` by default, because it runs code from clients with no authentication. To send code from another machine, turn on **Allow LAN Connections**.
+- Clients must connect to `127.0.0.1` by IPv4. A client that connects to `localhost` by IPv6 only (`::1`) is refused.
+
+## [1.3.0] - 2026-11-02
 
 ### Added
 
 - PySide6 support for Nuke 16 and newer. Based on [#38](https://github.com/sisoe24/nukeserversocket/pull/38) by @kanbatsu.
-- **Auto Start** setting, off by default: the server starts as soon as the panel opens. Save the panel in your Nuke workspace to start the server when Nuke opens.
+- **Auto Start** setting, off by default: the server starts as soon as the panel opens. Save the panel in your Nuke workspace to start the server when Nuke opens. Requested in [#36](https://github.com/sisoe24/nukeserversocket/issues/36) by @sambeebe.
 - Set **Server Timeout** to 0 to never close the server.
 
 ### Changed
@@ -14,6 +25,7 @@
 - Tests run on Python 3.10 (PySide2) and Python 3.11 (PySide6).
 - The default server timeout is 60 minutes instead of 1. Settings files that already store a timeout keep their value.
 - The Nuke panel looks for the Script Editor the first time code arrives, not when the panel opens, so a panel restored at startup no longer fails.
+- The **Connect** button is now to the right of the status form, which leaves more height for the console.
 
 ### Fixed
 
@@ -24,6 +36,7 @@
 - Nuke output is no longer truncated when it has no `# Result:` prefix.
 - The Nuke panel looks up the Script Editor again when Nuke rebuilds it, instead of failing until the panel is reopened.
 - The server frees each client socket after replying.
+- Invalid JSON or empty code gets an error reply instead of the Script Editor's old output.
 - When the Script Editor cannot be found, the client gets the error message instead of hanging.
 
 ## [1.2.0] - 2024-11-17

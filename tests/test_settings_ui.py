@@ -34,14 +34,9 @@ def test_settings(controller: Controller, model: Model, view: View):
     controller.init()
 
     # default values
-    assert model.settings.data['server_timeout'] == 3600000
-    assert model.settings.data['auto_start'] is False
-    assert model.settings.data['mirror_script_editor'] is False
-    assert model.settings.data['clear_output'] is True
-    assert model.settings.data['format_output'] == '[%d NukeTools] %F%n%t'
-
     assert controller._view.timeout.value() == 60
     assert controller._view.auto_start.isChecked() is False
+    assert controller._view.allow_lan.isChecked() is False
     assert controller._view.mirror_script_editor.isChecked() is False
     assert controller._view.clear_output.isChecked() is True
     assert controller._view.format_output.text() == '[%d NukeTools] %F%n%t'
@@ -49,18 +44,14 @@ def test_settings(controller: Controller, model: Model, view: View):
     # change values
     view.timeout.setValue(2)
     view.auto_start.setChecked(True)
+    view.allow_lan.setChecked(True)
     view.mirror_script_editor.setChecked(True)
     view.clear_output.setChecked(False)
     view.format_output.setText('nuketools')
 
     assert model.settings.data['server_timeout'] == 120000
     assert model.settings.data['auto_start'] is True
+    assert model.settings.data['allow_lan'] is True
     assert model.settings.data['mirror_script_editor'] is True
     assert model.settings.data['clear_output'] is False
     assert model.settings.data['format_output'] == 'nuketools'
-
-    assert controller._view.timeout.value() == 2
-    assert controller._view.auto_start.isChecked() is True
-    assert controller._view.mirror_script_editor.isChecked() is True
-    assert controller._view.clear_output.isChecked() is False
-    assert controller._view.format_output.text() == 'nuketools'

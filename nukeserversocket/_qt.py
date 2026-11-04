@@ -1,6 +1,6 @@
 """Qt binding compatibility: PySide6 (Nuke 16+) with a PySide2 fallback (Nuke 15 and older).
 
-Import Qt names straight from here, e.g. ``from nukeserversocket._qt import QWidget``.
+Import Qt names straight from here, e.g. ``from ._qt import QWidget``.
 """
 # pyright: reportWildcardImportFromLibrary=false
 # isort: skip_file

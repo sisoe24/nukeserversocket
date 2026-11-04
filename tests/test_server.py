@@ -4,8 +4,6 @@ from __future__ import annotations
 import json
 import socket
 
-from nukeserversocket._qt import QTextEdit, QTcpSocket, QPlainTextEdit
-
 import pytest
 from pytestqt.qtbot import QtBot
 
@@ -13,6 +11,9 @@ from nukeserversocket.utils import exec_code
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
+
+from nukeserversocket._qt import (QTextEdit, QTcpSocket, QHostAddress,
+                                  QPlainTextEdit)
 
 PORT = 55559
 
@@ -73,19 +74,14 @@ def send_data(port: int):
     s.close()
 
 
-def test_server_on_new_connection(qtbot: QtBot, server: NssServer):
+def test_server_listens_on_localhost_by_default(server: NssServer):
+    assert server.try_connect(PORT)
+    assert server.serverAddress() == QHostAddress(QHostAddress.LocalHost)
 
-    server._editor.settings.set('mirror_script_editor', False)
 
-    port = 55559
-    server.try_connect(port)
-
-    send_data(port)
-
-    qtbot.wait(100)
-
-    assert server._editor.output_editor.toPlainText() == 'initial output'
-    assert server._editor.input_editor.toPlainText() == 'initial input'
+def test_server_listens_on_all_interfaces_with_allow_lan(server: NssServer):
+    assert server.try_connect(PORT, allow_lan=True)
+    assert server.serverAddress() == QHostAddress(QHostAddress.Any)
 
 
 def test_server_on_new_connection_mirror_editor(qtbot: QtBot, server: NssServer):
@@ -135,3 +131,20 @@ def test_server_frees_closed_sockets(qtbot: QtBot, server: NssServer):
         send_data(PORT)
 
     qtbot.waitUntil(lambda: not server.findChildren(QTcpSocket), timeout=1000)
+
+
+@pytest.mark.parametrize('payload', (b'not json', b'{"text": ""}'))
+def test_server_rejects_missing_code(qtbot: QtBot, server: NssServer, payload: bytes):
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+
+    client = socket.create_connection(('127.0.0.1', PORT))
+    client.settimeout(1)
+    client.sendall(payload)
+    qtbot.wait(100)
+
+    assert 'no code received' in client.recv(1024).decode('utf-8')
+    assert server._editor.input_editor.toPlainText() == 'initial input'
+    assert server._editor.output_editor.toPlainText() == 'initial output'
+
+    client.close()

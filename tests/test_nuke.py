@@ -3,8 +3,6 @@ from __future__ import annotations
 import json
 from textwrap import dedent
 
-from nukeserversocket._qt import QTextEdit, QPushButton, QPlainTextEdit
-
 import pytest
 from pytestqt.qtbot import QtBot
 
@@ -12,6 +10,8 @@ from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers import nuke as nuke_controller
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.nuke import NukeController, NukeScriptEditor
+
+from nukeserversocket._qt import QTextEdit, QPushButton, QPlainTextEdit
 
 
 class MockNukeEditor(NukeScriptEditor):

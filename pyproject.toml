@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nukeserversocket"
-version = "1.3.0"
+version = "1.4.0"
 description = "A Nuke plugin that will allow code execution from the local network via TCP/WebSocket connections and more."
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 packages = [{ include = "nukeserversocket" }, { include = "nss_mcp" }]
@@ -13,12 +13,13 @@ nss-mcp = "nss_mcp.server:main"
 skip = ["__init__.py" , "version.py"]
 length_sort = true
 known_qt = "nukeserversocket._qt"
+forced_separate = ["._qt", ".*"]
 sections = [
     "FUTURE",
     "STDLIB",
-    "QT",
     "THIRDPARTY",
     "FIRSTPARTY",
+    "QT",
     "LOCALFOLDER",
 ]
 add_imports = "from __future__ import annotations"
