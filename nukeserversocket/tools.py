@@ -8,6 +8,7 @@
             "description": "Publish the open script as a new version of its shot.",
             "function": "studio_tools:publish_shot",
             "timeout": 600,
+            "annotations": {"destructiveHint": false},
             "inputSchema": {"type": "object", "properties": {...}, "required": [...]}
         }
     ]
@@ -19,7 +20,7 @@ Without a tools file, code runs as before and there are no tools.
 Clients use the tools with two requests; the reply is JSON:
 
     {"list_tools": true}
-        -> {"allow_code": bool, "tools": [{"name", "description", "inputSchema", "timeout"}],
+        -> {"allow_code": bool, "tools": [{"name", "description", "inputSchema", "timeout", "annotations"}],
             "skipped": {"name": "reason"}}
     {"call_tool": "publish_shot", "arguments": {"comment": "v2"}}
         -> {"ok": bool, "output": str}
@@ -47,6 +48,9 @@ BUILTIN_TOOL = 'execute_code'
 
 _NAME = re.compile(r'^[A-Za-z0-9_.-]{1,128}$')
 
+# MCP tool annotations: hints clients use, for example to skip approval for read-only tools
+_HINTS = ('readOnlyHint', 'destructiveHint', 'idempotentHint', 'openWorldHint')
+
 
 @dataclass
 class Tool:
@@ -55,6 +59,7 @@ class Tool:
     input_schema: Dict[str, Any]
     function: Callable[..., Any]
     timeout: Optional[float] = None
+    annotations: Optional[Dict[str, Any]] = None
 
 
 @dataclass
@@ -95,6 +100,20 @@ def _import_function(reference: str) -> Callable[..., Any]:
     if not callable(obj):
         raise TypeError(f'{reference} is not callable.')
     return obj
+
+
+def _check_annotations(annotations: Any) -> None:
+    if not isinstance(annotations, dict):
+        raise ValueError('"annotations" must be an object.')
+    for key, value in annotations.items():
+        if key == 'title':
+            if not isinstance(value, str):
+                raise ValueError('"annotations.title" must be a string.')
+        elif key in _HINTS:
+            if not isinstance(value, bool):
+                raise ValueError(f'"annotations.{key}" must be true or false.')
+        else:
+            raise ValueError(f'unknown annotation {key!r}; use title or {", ".join(_HINTS)}.')
 
 
 def _check_schema(schema: Any) -> None:
@@ -161,6 +180,10 @@ def _load_tool(entry: Any, loaded: Dict[str, Tool]) -> Tool:
     schema = entry.get('inputSchema', {'type': 'object', 'properties': {}})
     _check_schema(schema)
 
+    annotations = entry.get('annotations')
+    if annotations is not None:
+        _check_annotations(annotations)
+
     reference = entry.get('function')
     if not isinstance(reference, str):
         raise ValueError('"function" must be a string like "module:function".')
@@ -172,7 +195,7 @@ def _load_tool(entry: Any, loaded: Dict[str, Tool]) -> Tool:
         raise ValueError(f'cannot load {reference!r}: {type(e).__name__}: {e}') from e
 
     _check_signature(function, schema)
-    return Tool(name, description, schema, function, timeout)
+    return Tool(name, description, schema, function, timeout, annotations)
 
 
 def load_tools(path: Optional[str] = None) -> ToolSet:
@@ -313,7 +336,8 @@ def list_tools(toolset: ToolSet) -> Dict[str, Any]:
         'allow_code': toolset.allow_code,
         'tools': [
             {'name': t.name, 'description': t.description,
-             'inputSchema': t.input_schema, 'timeout': t.timeout}
+             'inputSchema': t.input_schema, 'timeout': t.timeout,
+             'annotations': t.annotations}
             for t in toolset.tools.values()
         ],
         'skipped': toolset.skipped,

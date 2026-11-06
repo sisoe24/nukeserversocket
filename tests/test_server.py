@@ -268,6 +268,7 @@ def test_server_lists_tools(qtbot: QtBot, tool_server: NssServer):
             'inputSchema': {'type': 'object', 'properties': {'comment': {'type': 'string'}},
                             'required': ['comment']},
             'timeout': 600,
+            'annotations': None,
         }],
         'skipped': {},
     }

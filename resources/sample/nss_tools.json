@@ -4,12 +4,14 @@
         {
             "name": "script_info",
             "description": "Describe the open Nuke script: its path, frame range, fps and whether it has unsaved changes.",
-            "function": "nss_tools_example:script_info"
+            "function": "nss_tools_example:script_info",
+            "annotations": {"readOnlyHint": true}
         },
         {
             "name": "list_writes",
             "description": "List the Write nodes in the open script, with the file each one renders to.",
-            "function": "nss_tools_example:list_writes"
+            "function": "nss_tools_example:list_writes",
+            "annotations": {"readOnlyHint": true}
         },
         {
             "name": "render_write",

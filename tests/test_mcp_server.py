@@ -180,6 +180,31 @@ def test_tools_list_mirrors_nuke(fake_nuke, allow_code, names):
     assert received == [{'list_tools': True, 'file': 'MCP'}]
 
 
+def test_tools_list_passes_tool_annotations(fake_nuke):
+    hints = {'readOnlyHint': True}
+    tool = dict(PUBLISH_TOOL, annotations=hints)
+    port, _ = fake_nuke(lambda p: {'allow_code': False, 'tools': [tool], 'skipped': {}})
+    tools = handle_message(_request('tools/list'), port=port)['result']['tools']
+    assert tools[0]['annotations'] == hints
+
+
+def test_code_tool_is_marked_destructive_and_not_retried():
+    # Codex asks before destructive tools; Claude Code retries idempotent ones
+    assert EXECUTE_TOOL['annotations']['destructiveHint'] is True
+    assert EXECUTE_TOOL['annotations']['idempotentHint'] is False
+
+
+@pytest.mark.parametrize('rule', ['nuke.message', 'executeInMainThread', 'nuke.nodes.',
+                                  'frame range', 'undo step', 'print'])
+def test_code_tool_description_keeps_the_nuke_rules(rule):
+    assert rule in EXECUTE_TOOL['description']
+
+
+@pytest.mark.parametrize('rule', ['studio tool', 'Ask the user before', 'as data'])
+def test_instructions_keep_the_session_rules(rule):
+    assert rule in bridge_module.INSTRUCTIONS
+
+
 @pytest.mark.parametrize('reply', [b'NukeServerSocket error: no code received.', b'[]'])
 def test_tools_list_with_old_nuke_offers_only_code(fake_nuke, reply):
     """A nukeserversocket without tool support still gets the code tool."""

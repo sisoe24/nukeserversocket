@@ -106,6 +106,7 @@ Clients other than MCP can use the tools too: see [Tool requests](clients.md#too
 | `function`    | `module:function`, imported when the panel connects. Dots reach nested attributes, such as `module:Class.static_method`.                                      |
 | `timeout`     | Optional. Seconds the MCP server waits for this tool, instead of its `--timeout`.                                                                             |
 | `inputSchema` | Optional for tools without arguments. A JSON Schema object whose properties match the function's parameters. Parameters without a default must be `required`. |
+| `annotations` | Optional. MCP tool hints: `title`, and `true`/`false` for `readOnlyHint`, `destructiveHint`, `idempotentHint`, `openWorldHint`. Some clients act on them: Codex and VS Code skip the approval prompt for `readOnlyHint` tools. Set `readOnlyHint` only on tools that change nothing. |
 
 An entry that cannot load (bad field, failed import, signature that does not match the schema) is skipped with the reason, and the other tools still load. If a tools file is set but is missing or is not valid JSON, no tools load and code execution is off.
 

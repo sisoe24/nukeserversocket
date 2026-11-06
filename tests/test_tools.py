@@ -159,6 +159,10 @@ def test_kwargs_function_accepts_extra_properties(tool_file):
     ({'description': ' '}, '"description"'),
     ({'timeout': 0}, '"timeout"'),
     ({'timeout': True}, '"timeout"'),
+    ({'annotations': []}, '"annotations" must be an object'),
+    ({'annotations': {'readOnlyHint': 'yes'}}, 'must be true or false'),
+    ({'annotations': {'title': 1}}, '"annotations.title"'),
+    ({'annotations': {'readonly': True}}, "unknown annotation 'readonly'"),
     ({'inputSchema': {'type': 'array'}}, 'object schema'),
     ({'inputSchema': {'type': 'object', 'properties': [], 'required': []}}, 'properties'),
     ({'inputSchema': {'type': 'object', 'properties': {}, 'required': ['ghost']}}, 'do not exist'),
@@ -349,3 +353,10 @@ def test_call_rejects_non_object_arguments(toolset, arguments):
 def test_call_with_no_arguments_uses_an_empty_object(toolset):
     """None counts as no arguments, so required ones are reported missing."""
     assert 'missing required' in call_tool(toolset, 'chatty')['output']
+
+
+def test_annotations_are_kept_as_written(tool_file):
+    """Clients use annotations, for example to skip approval for read-only tools."""
+    hints = {'title': 'Publish', 'readOnlyHint': False, 'destructiveHint': False}
+    toolset = load_tools(tool_file({'tools': [_tool(annotations=hints)]}))
+    assert toolset.tools['publish_shot'].annotations == hints
