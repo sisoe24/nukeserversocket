@@ -1,4 +1,4 @@
-"""MCP stdio server (spec 2025-11-25) that forwards code to a running nukeserversocket.
+"""MCP stdio server (spec 2025-11-25) for the code and tools of a running nukeserversocket.
 
 Stdlib only and self-contained, so MCP clients can launch it by absolute path.
 """
@@ -9,12 +9,14 @@ import sys
 import json
 import socket
 import logging
+import threading
+import time
 import argparse
 from typing import Any
 
 LOGGER = logging.getLogger('nss_mcp')
 
-__version__ = '0.2.0'
+__version__ = '0.3.0'
 
 # newest first
 SUPPORTED_VERSIONS = ('2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05')
@@ -30,42 +32,46 @@ INVALID_PARAMS = -32602
 INTERNAL_ERROR = -32603
 
 INSTRUCTIONS = (
-    'Executes Python inside a running Nuke session. Nuke must be running with the '
-    'nukeserversocket panel connected; the `nuke` module is available to the code.'
+    'Works inside a running Nuke session. Nuke must be running with the nukeserversocket '
+    'panel connected. The tools are the ones the Nuke setup allows: nuke_execute_code runs '
+    'Python with the `nuke` module, and any other tool is a studio tool.'
 )
 
-TOOLS = [
-    {
-        'name': 'nuke_execute_code',
-        'description': (
-            'Execute Python code inside a running Nuke session and return its output. '
-            'The `nuke` module is available. Use print() to return values.'
-        ),
-        'inputSchema': {
-            'type': 'object',
-            'properties': {
-                'code': {
-                    'type': 'string',
-                    'description': 'Python code to execute in Nuke.',
-                },
+EXECUTE_TOOL = {
+    'name': 'nuke_execute_code',
+    'description': (
+        'Execute Python code inside a running Nuke session and return its output. '
+        'The `nuke` module is available. Use print() to return values.'
+    ),
+    'inputSchema': {
+        'type': 'object',
+        'properties': {
+            'code': {
+                'type': 'string',
+                'description': 'Python code to execute in Nuke.',
             },
-            'required': ['code'],
         },
+        'required': ['code'],
     },
-]
+}
+
+# seconds; asking Nuke for its tools must not stall tools/list
+LIST_TIMEOUT = 5.0
+# seconds between attempts while Nuke has not answered yet
+POLL_INTERVAL = 5.0
+
+_WRITE_LOCK = threading.Lock()
 
 
-def send_to_nuke(code: str, host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> str:
-    """Send code to nukeserversocket over TCP and return its output.
+def _send(payload: dict[str, Any], host: str, port: int, timeout: float) -> str:
+    """Send one request to nukeserversocket over TCP and return its reply.
 
     The server closes the socket after replying, so the reply is read until EOF.
     """
-    # shortcut: the server parses only its first read, so code over about 100 KB or split
+    # shortcut: the server parses only its first read, so a request over about 100 KB or split
     # across TCP segments fails; add server framing when remote Nuke or large code is in use.
-    payload = json.dumps({'text': code, 'file': 'MCP', 'formatText': '0'}).encode('utf-8')
-
     with socket.create_connection((host, port), timeout=timeout) as sock:
-        sock.sendall(payload)
+        sock.sendall(json.dumps(payload).encode('utf-8'))
 
         chunks = []
         while True:
@@ -75,6 +81,11 @@ def send_to_nuke(code: str, host: str, port: int, timeout: float = DEFAULT_TIMEO
             chunks.append(data)
 
     return b''.join(chunks).decode('utf-8', errors='replace')
+
+
+def send_to_nuke(code: str, host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> str:
+    """Send code to nukeserversocket and return its output."""
+    return _send({'text': code, 'file': 'MCP', 'formatText': '0'}, host, port, timeout)
 
 
 def _result(msg_id: Any, result: dict[str, Any]) -> dict[str, Any]:
@@ -106,96 +117,171 @@ def _initialize(params: dict[str, Any]) -> dict[str, Any]:
     version = client_version if client_version in SUPPORTED_VERSIONS else SUPPORTED_VERSIONS[0]
     return {
         'protocolVersion': version,
-        'capabilities': {'tools': {}},
+        'capabilities': {'tools': {'listChanged': True}},
         'serverInfo': {'name': 'nukeserversocket-mcp', 'version': __version__},
         'instructions': INSTRUCTIONS,
     }
 
 
-def _tools_call(
-    msg_id: Any,
-    params: dict[str, Any],
-    host: str,
-    port: int,
-    timeout: float,
-) -> dict[str, Any]:
-    name = params.get('name')
-    if name != 'nuke_execute_code':
-        return _error(msg_id, INVALID_PARAMS, f'Unknown tool: {name!r}')
-
-    arguments = params.get('arguments')
-    code = arguments.get('code') if isinstance(arguments, dict) else None
-    if not isinstance(code, str) or not code:
-        return _tool_error(msg_id, "'code' must be a non-empty string.")
-
-    try:
-        output = send_to_nuke(code, host, port, timeout)
-    except socket.timeout:
-        LOGGER.error('Timed out waiting for nukeserversocket output.')
-        return _tool_error(
-            msg_id, f'Timed out after {timeout:g}s waiting for Nuke. The code may have run or '
-            'may still be running, so check before retrying. Raise --timeout for long runs.'
-        )
-    except (BrokenPipeError, ConnectionResetError) as e:
+def _connection_error(e: OSError, host: str, port: int, timeout: float, timeout_hint: str) -> str:
+    if isinstance(e, socket.timeout):
+        LOGGER.error('Timed out waiting for nukeserversocket.')
+        return (f'Timed out after {timeout:g}s waiting for Nuke. The tool may have run or may '
+                f'still be running, so check before retrying. {timeout_hint}')
+    if isinstance(e, (BrokenPipeError, ConnectionResetError)):
         LOGGER.error('Connection to nukeserversocket dropped: %s', e)
-        return _tool_error(
-            msg_id, f'Connection to nukeserversocket dropped ({e}). '
-            'Code over about 100 KB can cause this, so send smaller pieces.'
-        )
-    except OSError as e:
-        LOGGER.error('Could not reach nukeserversocket: %s', e)
-        return _tool_error(
-            msg_id, f'Could not reach nukeserversocket at {host}:{port} ({e}). '
+        return (f'Connection to nukeserversocket dropped ({e}). '
+                'A request over about 100 KB can cause this, so send smaller pieces.')
+    LOGGER.error('Could not reach nukeserversocket: %s', e)
+    return (f'Could not reach nukeserversocket at {host}:{port} ({e}). '
             'Is Nuke running with the nukeserversocket panel connected on that port? '
-            'A Nuke on another machine also needs Allow LAN Connections turned on.'
-        )
-
-    return _result(msg_id, {'content': [{'type': 'text', 'text': output}],
-                            'isError': _is_error(output)})
+            'A Nuke on another machine also needs Allow LAN Connections turned on.')
 
 
-def handle_message(
-    msg: dict[str, Any],
-    host: str = DEFAULT_HOST,
-    port: int = DEFAULT_PORT,
-    timeout: float = DEFAULT_TIMEOUT,
-) -> dict[str, Any] | None:
-    """Dispatch one JSON-RPC message and return the response, or None for notifications."""
-    if 'id' in msg and msg['id'] is None:
-        return _error(None, INVALID_REQUEST, 'Request id must not be null.')
+class Bridge:
+    """Answers MCP messages with the tools of the Nuke at host:port.
 
-    # No id = notification: never answered, whatever the method.
-    if 'id' not in msg:
-        return None
+    Until Nuke first answers, only nuke_execute_code is listed, as a Nuke without a tool
+    file allows. Once Nuke answers, a client that already listed tools gets list_changed.
+    """
 
-    msg_id = msg['id']
-    method = msg.get('method')
-    params = msg.get('params')
-    if not isinstance(params, dict):
-        params = {}
+    def __init__(self, host: str = DEFAULT_HOST, port: int = DEFAULT_PORT,
+                 timeout: float = DEFAULT_TIMEOUT):
+        self.host = host
+        self.port = port
+        self.timeout = timeout
+        self._lock = threading.Lock()
+        self._allow_code = True
+        # name -> tool as Nuke lists it; None until Nuke answers
+        self._nuke_tools: dict[str, dict[str, Any]] | None = None
+        # the list last sent to the client; None until the client asks
+        self._served: list[dict[str, Any]] | None = None
 
-    if method == 'initialize':
-        return _result(msg_id, _initialize(params))
+    def refresh(self) -> bool:
+        """Ask Nuke for its tools. Return False when Nuke cannot be reached."""
+        try:
+            reply = _send({'list_tools': True, 'file': 'MCP'}, self.host, self.port,
+                          min(LIST_TIMEOUT, self.timeout))
+        except OSError:
+            return False
 
-    if method == 'ping':
-        return _result(msg_id, {})
+        try:
+            listing = json.loads(reply)
+        except ValueError:
+            listing = None
+        if not isinstance(listing, dict):
+            # a nukeserversocket without tool support: code only
+            listing = {'allow_code': True, 'tools': []}
 
-    if method == 'tools/list':
-        return _result(msg_id, {'tools': TOOLS})
+        tools = listing.get('tools')
+        tools = tools if isinstance(tools, list) else []
+        with self._lock:
+            self._allow_code = listing.get('allow_code') is True
+            self._nuke_tools = {
+                t['name']: t for t in tools
+                if isinstance(t, dict) and isinstance(t.get('name'), str)
+                and t['name'] != EXECUTE_TOOL['name']
+            }
+        return True
 
-    if method == 'tools/call':
-        return _tools_call(msg_id, params, host, port, timeout)
+    def tools(self) -> list[dict[str, Any]]:
+        with self._lock:
+            tools = [EXECUTE_TOOL] if self._allow_code else []
+            for tool in (self._nuke_tools or {}).values():
+                tools.append({'name': tool['name'], 'description': tool.get('description', ''),
+                              'inputSchema': tool.get('inputSchema') or {'type': 'object'}})
+        return tools
 
-    if not isinstance(method, str):
-        return _error(msg_id, INVALID_REQUEST, 'Missing method.')
+    def wait_for_nuke(self) -> None:
+        """Poll until Nuke first answers, then tell the client if its list is stale."""
+        while not self.refresh():
+            time.sleep(POLL_INTERVAL)
+        LOGGER.info('Nuke answered with %s tool(s).', len(self._nuke_tools or {}))
+        if self._served is not None and self._served != self.tools():
+            _write({'jsonrpc': '2.0', 'method': 'notifications/tools/list_changed'})
 
-    LOGGER.warning('Unknown method: %s', method)
-    return _error(msg_id, METHOD_NOT_FOUND, f'Unknown method: {method}')
+    def _tools_list(self, msg_id: Any) -> dict[str, Any]:
+        self.refresh()
+        self._served = self.tools()
+        return _result(msg_id, {'tools': self._served})
+
+    def _execute_code(self, msg_id: Any, arguments: Any) -> dict[str, Any]:
+        code = arguments.get('code') if isinstance(arguments, dict) else None
+        if not isinstance(code, str) or not code:
+            return _tool_error(msg_id, "'code' must be a non-empty string.")
+
+        try:
+            output = send_to_nuke(code, self.host, self.port, self.timeout)
+        except OSError as e:
+            return _tool_error(msg_id, _connection_error(
+                e, self.host, self.port, self.timeout, 'Raise --timeout for long runs.'))
+
+        return _result(msg_id, {'content': [{'type': 'text', 'text': output}],
+                                'isError': _is_error(output)})
+
+    def _call_nuke_tool(self, msg_id: Any, name: Any, arguments: Any) -> dict[str, Any]:
+        tool = (self._nuke_tools or {}).get(name) if isinstance(name, str) else None
+        if tool is None and isinstance(name, str) and self.refresh():
+            tool = (self._nuke_tools or {}).get(name)
+        if tool is None:
+            return _error(msg_id, INVALID_PARAMS, f'Unknown tool: {name!r}')
+
+        timeout = tool.get('timeout') or self.timeout
+        payload = {'call_tool': name, 'arguments': arguments, 'file': 'MCP'}
+        try:
+            reply = _send(payload, self.host, self.port, timeout)
+        except OSError as e:
+            return _tool_error(msg_id, _connection_error(
+                e, self.host, self.port, timeout, 'Raise its timeout in the tool file.'))
+
+        try:
+            result = json.loads(reply)
+            ok, output = result['ok'] is True, str(result['output'])
+        except (ValueError, TypeError, KeyError):
+            ok, output = False, reply
+        return _result(msg_id, {'content': [{'type': 'text', 'text': output}], 'isError': not ok})
+
+    def handle(self, msg: dict[str, Any]) -> dict[str, Any] | None:
+        """Dispatch one JSON-RPC message and return the response, or None for notifications."""
+        if 'id' in msg and msg['id'] is None:
+            return _error(None, INVALID_REQUEST, 'Request id must not be null.')
+
+        # No id = notification: never answered, whatever the method.
+        if 'id' not in msg:
+            return None
+
+        msg_id = msg['id']
+        method = msg.get('method')
+        params = msg.get('params')
+        if not isinstance(params, dict):
+            params = {}
+
+        if method == 'initialize':
+            return _result(msg_id, _initialize(params))
+
+        if method == 'ping':
+            return _result(msg_id, {})
+
+        if method == 'tools/list':
+            return self._tools_list(msg_id)
+
+        if method == 'tools/call':
+            if params.get('name') == EXECUTE_TOOL['name']:
+                return self._execute_code(msg_id, params.get('arguments'))
+            return self._call_nuke_tool(msg_id, params.get('name'), params.get('arguments'))
+
+        if not isinstance(method, str):
+            return _error(msg_id, INVALID_REQUEST, 'Missing method.')
+
+        LOGGER.warning('Unknown method: %s', method)
+        return _error(msg_id, METHOD_NOT_FOUND, f'Unknown method: {method}')
 
 
 def _write(msg: dict[str, Any]) -> None:
-    sys.stdout.write(json.dumps(msg) + '\n')
-    sys.stdout.flush()
+    # the wait_for_nuke thread writes too; lines must not interleave
+    with _WRITE_LOCK:
+        sys.stdout.write(json.dumps(msg) + '\n')
+        sys.stdout.flush()
 
 
 def serve(host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> None:
@@ -204,7 +290,9 @@ def serve(host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> None:
     sys.stdin.reconfigure(encoding='utf-8', errors='replace')
     sys.stdout.reconfigure(encoding='utf-8', newline='\n')
 
-    LOGGER.info('Serving MCP on stdio. Forwarding code to %s:%s', host, port)
+    LOGGER.info('Serving MCP on stdio. Forwarding to %s:%s', host, port)
+    bridge = Bridge(host, port, timeout)
+    threading.Thread(target=bridge.wait_for_nuke, daemon=True).start()
 
     for line in sys.stdin:
         line = line.strip()
@@ -222,7 +310,7 @@ def serve(host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> None:
             continue
 
         try:
-            response = handle_message(msg, host, port, timeout)
+            response = bridge.handle(msg)
         except Exception:
             LOGGER.exception('Unhandled error while handling message.')
             response = _error(msg['id'], INTERNAL_ERROR, 'Internal error.') if 'id' in msg else None

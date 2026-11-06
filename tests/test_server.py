@@ -1,6 +1,7 @@
 
 from __future__ import annotations
 
+import sys
 import json
 import socket
 
@@ -179,6 +180,88 @@ def test_console_shows_html_as_plain_text(qtbot: QtBot):
     console.write('<b>x</b> & y')
 
     assert console._console.toPlainText().replace('\xa0', ' ') == '<b>x</b> & y'
+
+
+TOOLS_MODULE = '''
+def publish_shot(comment):
+    print('publishing')
+    return {'version': 2, 'comment': comment}
+'''
+
+
+@pytest.fixture()
+def tool_server(server: NssServer, tmp_path, monkeypatch):
+    """A server listening with a tool file that turns code off and adds publish_shot."""
+    (tmp_path / 'nss_test_server_tools.py').write_text(TOOLS_MODULE)
+    monkeypatch.syspath_prepend(str(tmp_path))
+    tool_file = tmp_path / 'nss_tools.json'
+    tool_file.write_text(json.dumps({'allow_code': False, 'tools': [{
+        'name': 'publish_shot',
+        'description': 'Publish the open script.',
+        'function': 'nss_test_server_tools:publish_shot',
+        'timeout': 600,
+        'inputSchema': {'type': 'object', 'properties': {'comment': {'type': 'string'}},
+                        'required': ['comment']},
+    }]}))
+    monkeypatch.setenv('NSS_TOOLS', str(tool_file))
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+    yield server
+    sys.modules.pop('nss_test_server_tools', None)
+
+
+def request(qtbot: QtBot, payload: dict) -> str:
+    client = socket.create_connection(('127.0.0.1', PORT))
+    client.settimeout(1)
+    client.sendall(json.dumps(payload).encode('utf-8'))
+    qtbot.wait(100)
+    reply = client.recv(65536).decode('utf-8')
+    client.close()
+    return reply
+
+
+def test_server_lists_tools(qtbot: QtBot, tool_server: NssServer):
+    assert json.loads(request(qtbot, {'list_tools': True})) == {
+        'allow_code': False,
+        'tools': [{
+            'name': 'publish_shot',
+            'description': 'Publish the open script.',
+            'inputSchema': {'type': 'object', 'properties': {'comment': {'type': 'string'}},
+                            'required': ['comment']},
+            'timeout': 600,
+        }],
+        'skipped': {},
+    }
+
+
+def test_server_calls_tool(qtbot: QtBot, tool_server: NssServer):
+    reply = request(qtbot, {'call_tool': 'publish_shot', 'arguments': {'comment': 'v2'}})
+    assert json.loads(reply) == {'ok': True, 'output': 'publishing\n{"version": 2, "comment": "v2"}'}
+
+
+@pytest.mark.parametrize('payload, output', [
+    ({'call_tool': 'publish_shot', 'arguments': {}}, 'missing required'),
+    ({'call_tool': ['publish_shot']}, '"call_tool" must be a tool name.'),
+])
+def test_server_reports_bad_tool_calls(qtbot: QtBot, tool_server: NssServer, payload, output):
+    reply = json.loads(request(qtbot, payload))
+    assert reply['ok'] is False
+    assert output in reply['output']
+
+
+def test_server_rejects_code_when_tool_file_turns_it_off(qtbot: QtBot, tool_server: NssServer):
+    reply = request(qtbot, {'text': "print('hi')"})
+    assert reply.startswith('NukeServerSocket error: code execution is turned off')
+    assert tool_server._editor.input_editor.toPlainText() == 'initial input'
+
+
+def test_server_without_tool_file_still_runs_code(qtbot: QtBot, server: NssServer, monkeypatch):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT)
+    assert request(qtbot, {'text': "print('hi')"}).strip() == 'hi'
+    assert json.loads(request(qtbot, {'list_tools': True})) == {
+        'allow_code': True, 'tools': [], 'skipped': {}}
 
 
 @pytest.mark.parametrize('payload', (b'not json', b'{"text": ""}'))

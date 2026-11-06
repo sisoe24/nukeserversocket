@@ -1,0 +1,315 @@
+"""Load the tools that clients may call, from the JSON file named by NSS_TOOLS.
+
+{
+    "allow_code": false,
+    "tools": [
+        {
+            "name": "publish_shot",
+            "description": "Publish the open script as a new version of its shot.",
+            "function": "studio_tools:publish_shot",
+            "timeout": 600,
+            "inputSchema": {"type": "object", "properties": {...}, "required": [...]}
+        }
+    ]
+}
+
+Without NSS_TOOLS, code runs as before and there are no tools.
+
+Clients use the tools with two requests; the reply is JSON:
+
+    {"list_tools": true}
+        -> {"allow_code": bool, "tools": [{"name", "description", "inputSchema", "timeout"}],
+            "skipped": {"name": "reason"}}
+    {"call_tool": "publish_shot", "arguments": {"comment": "v2"}}
+        -> {"ok": bool, "output": str}
+"""
+from __future__ import annotations
+
+import os
+import re
+import json
+import inspect
+import pathlib
+import importlib
+import traceback
+from typing import Any, Dict, Callable, Optional
+from dataclasses import field, dataclass
+
+from .utils import stdoutIO
+from .logger import get_logger
+
+LOGGER = get_logger()
+
+BUILTIN_TOOL = 'execute_code'
+
+_NAME = re.compile(r'^[A-Za-z0-9_.-]{1,128}$')
+
+
+@dataclass
+class Tool:
+    name: str
+    description: str
+    input_schema: Dict[str, Any]
+    function: Callable[..., Any]
+    timeout: Optional[float] = None
+
+
+@dataclass
+class ToolSet:
+    allow_code: bool = True
+    tools: Dict[str, Tool] = field(default_factory=dict)
+    # tool name (or entry position) -> why it was not loaded
+    skipped: Dict[str, str] = field(default_factory=dict)
+
+
+def _import_function(reference: str) -> Callable[..., Any]:
+    module_name, _, attr_path = reference.partition(':')
+    if not module_name or not attr_path:
+        raise ValueError(f'"function" must look like "module:function", got {reference!r}.')
+
+    obj: Any = importlib.import_module(module_name)
+    for attr in attr_path.split('.'):
+        obj = getattr(obj, attr)
+
+    if not callable(obj):
+        raise TypeError(f'{reference} is not callable.')
+    return obj
+
+
+def _check_schema(schema: Any) -> None:
+    if not isinstance(schema, dict) or schema.get('type') != 'object':
+        raise ValueError('"inputSchema" must be an object schema: {"type": "object", ...}.')
+
+    properties = schema.get('properties', {})
+    required = schema.get('required', [])
+    if not isinstance(properties, dict):
+        raise ValueError('"inputSchema.properties" must be an object.')
+    if not isinstance(required, list) or not all(isinstance(key, str) for key in required):
+        raise ValueError('"inputSchema.required" must be a list of names.')
+
+    unknown = [key for key in required if key not in properties]
+    if unknown:
+        raise ValueError(f'"required" names properties that do not exist: {unknown}.')
+
+
+def _check_signature(function: Callable[..., Any], schema: Dict[str, Any]) -> None:
+    """Fail at load time on what would otherwise be a TypeError at call time."""
+    try:
+        params = inspect.signature(function).parameters.values()
+    except (TypeError, ValueError) as e:
+        raise ValueError(f'cannot read the function signature ({e}).') from e
+
+    if any(p.kind is p.POSITIONAL_ONLY and p.default is p.empty for p in params):
+        raise ValueError('positional-only parameters cannot be passed by name.')
+
+    properties = schema.get('properties', {})
+    required = set(schema.get('required', []))
+    named = {p.name: p for p in params if p.kind in (p.POSITIONAL_OR_KEYWORD, p.KEYWORD_ONLY)}
+
+    if not any(p.kind is p.VAR_KEYWORD for p in params):
+        extra = [key for key in properties if key not in named]
+        if extra:
+            raise ValueError(f'schema properties missing from the function signature: {extra}.')
+
+    missing = [name for name, p in named.items() if p.default is p.empty and name not in required]
+    if missing:
+        raise ValueError(f'function parameters without a default must be "required": {missing}.')
+
+
+def _load_tool(entry: Any, loaded: Dict[str, Tool]) -> Tool:
+    if not isinstance(entry, dict):
+        raise ValueError('entry must be an object.')
+
+    name = entry.get('name')
+    if not isinstance(name, str) or not _NAME.match(name):
+        raise ValueError('"name" must be 1-128 characters of letters, digits, "_", "-" or ".".')
+    if name == BUILTIN_TOOL:
+        raise ValueError(f'"{BUILTIN_TOOL}" is reserved for the built-in tool.')
+    if name in loaded:
+        raise ValueError('a tool with this name is already loaded.')
+
+    description = entry.get('description')
+    if not isinstance(description, str) or not description.strip():
+        raise ValueError('"description" must be a non-empty string.')
+
+    timeout = entry.get('timeout')
+    if timeout is not None and (isinstance(timeout, bool) or
+                                not isinstance(timeout, (int, float)) or timeout <= 0):
+        raise ValueError('"timeout" must be a positive number of seconds.')
+
+    schema = entry.get('inputSchema', {'type': 'object', 'properties': {}})
+    _check_schema(schema)
+
+    reference = entry.get('function')
+    if not isinstance(reference, str):
+        raise ValueError('"function" must be a string like "module:function".')
+
+    try:
+        function = _import_function(reference)
+    except Exception as e:
+        # studio code can raise anything at import; one broken module must not stop the rest
+        raise ValueError(f'cannot load {reference!r}: {type(e).__name__}: {e}') from e
+
+    _check_signature(function, schema)
+    return Tool(name, description, schema, function, timeout)
+
+
+def load_tools(path: Optional[str] = None) -> ToolSet:
+    """Load the tool file at `path`, or at NSS_TOOLS when `path` is None.
+
+    A tool file that is set but cannot be read turns code execution off: falling
+    back to the default would reopen arbitrary code on a locked-down install.
+    """
+    path = os.environ.get('NSS_TOOLS') if path is None else path
+    if not path:
+        return ToolSet()
+
+    try:
+        config = json.loads(pathlib.Path(path).read_text(encoding='utf-8'))
+    except (OSError, ValueError) as e:
+        LOGGER.error('Cannot read the tool file %s (%s). Code execution is off.', path, e)
+        return ToolSet(allow_code=False)
+
+    if not isinstance(config, dict):
+        LOGGER.error('The tool file %s must hold a JSON object. Code execution is off.', path)
+        return ToolSet(allow_code=False)
+
+    allow_code = config.get('allow_code', True)
+    if not isinstance(allow_code, bool):
+        LOGGER.error('"allow_code" in %s must be true or false. Code execution is off.', path)
+        allow_code = False
+
+    entries = config.get('tools', [])
+    if not isinstance(entries, list):
+        LOGGER.error('"tools" in %s must be a list. No tools loaded.', path)
+        entries = []
+
+    toolset = ToolSet(allow_code=allow_code)
+    for index, entry in enumerate(entries):
+        label = entry.get('name') if isinstance(entry, dict) else None
+        label = label if isinstance(label, str) and label else f'tools[{index}]'
+        try:
+            tool = _load_tool(entry, toolset.tools)
+        except ValueError as e:
+            LOGGER.warning('Skipped tool %s: %s', label, e)
+            toolset.skipped[label] = str(e)
+            continue
+        toolset.tools[tool.name] = tool
+
+    LOGGER.info(
+        'Loaded %s tool(s) from %s, %s skipped. Code execution is %s.',
+        len(toolset.tools), path, len(toolset.skipped), 'on' if allow_code else 'off',
+    )
+    return toolset
+
+
+_JSON_TYPES: Dict[str, Callable[[Any], bool]] = {
+    'string': lambda v: isinstance(v, str),
+    'integer': lambda v: isinstance(v, int) and not isinstance(v, bool),
+    'number': lambda v: isinstance(v, (int, float)) and not isinstance(v, bool),
+    'boolean': lambda v: isinstance(v, bool),
+    'array': lambda v: isinstance(v, list),
+    'object': lambda v: isinstance(v, dict),
+    'null': lambda v: v is None,
+}
+
+
+def _check_arguments(tool: Tool, arguments: Dict[str, Any]) -> None:
+    """Check names, `type` and `enum` only: stdlib has no JSON Schema validator."""
+    properties = tool.input_schema.get('properties', {})
+
+    missing = [key for key in tool.input_schema.get('required', []) if key not in arguments]
+    if missing:
+        raise ValueError(f'missing required argument(s): {missing}.')
+
+    takes_kwargs = any(
+        p.kind is p.VAR_KEYWORD for p in inspect.signature(tool.function).parameters.values()
+    )
+    for key, value in arguments.items():
+        if key not in properties:
+            if takes_kwargs:
+                continue
+            raise ValueError(f'unknown argument {key!r}. Expected: {sorted(properties)}.')
+
+        spec = properties[key]
+        types = spec.get('type')
+        types = [types] if isinstance(types, str) else types or []
+        if types and not any(_JSON_TYPES.get(t, lambda v: True)(value) for t in types):
+            raise ValueError(f'argument {key!r} must be {" or ".join(types)}, got {value!r}.')
+        if 'enum' in spec and value not in spec['enum']:
+            raise ValueError(f'argument {key!r} must be one of {spec["enum"]}, got {value!r}.')
+
+
+def _format_result(result: Any) -> str:
+    if result is None:
+        return ''
+    if isinstance(result, str):
+        return result
+    return json.dumps(result, default=str)
+
+
+def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, Any]:
+    """Call a loaded tool and return {"ok": bool, "output": str}.
+
+    The output is what the tool printed, followed by its return value. A failure
+    returns ok False with the reason, so the caller never has to read the text.
+    """
+    tool = toolset.tools.get(name)
+    if tool is None:
+        reason = toolset.skipped.get(name)
+        if reason:
+            return {'ok': False, 'output': f'Tool {name!r} was not loaded: {reason}'}
+        return {'ok': False, 'output': f'Unknown tool {name!r}. Available: {sorted(toolset.tools)}.'}
+
+    arguments = {} if arguments is None else arguments
+    if not isinstance(arguments, dict):
+        return {'ok': False, 'output': 'Arguments must be a JSON object.'}
+
+    try:
+        _check_arguments(tool, arguments)
+    except ValueError as e:
+        return {'ok': False, 'output': f'Invalid arguments for {name!r}: {e}'}
+
+    with stdoutIO() as printed:
+        try:
+            result = tool.function(**arguments)
+        except Exception:
+            LOGGER.error('Tool %s failed.', name)
+            return {'ok': False, 'output': printed.getvalue() + traceback.format_exc()}
+
+    return {'ok': True, 'output': printed.getvalue() + _format_result(result)}
+
+
+def list_tools(toolset: ToolSet) -> Dict[str, Any]:
+    return {
+        'allow_code': toolset.allow_code,
+        'tools': [
+            {'name': t.name, 'description': t.description,
+             'inputSchema': t.input_schema, 'timeout': t.timeout}
+            for t in toolset.tools.values()
+        ],
+        'skipped': toolset.skipped,
+    }
+
+
+def parse_tool_request(raw: bytes) -> Optional[Dict[str, Any]]:
+    """Return the request when it is a tool request, else None for the code path."""
+    try:
+        request = json.loads(raw)
+    except ValueError:
+        return None
+    if isinstance(request, dict) and ('list_tools' in request or 'call_tool' in request):
+        return request
+    return None
+
+
+def handle_tool_request(toolset: ToolSet, request: Dict[str, Any]) -> str:
+    if 'call_tool' in request:
+        name = request['call_tool']
+        if isinstance(name, str):
+            reply = call_tool(toolset, name, request.get('arguments'))
+        else:
+            reply = {'ok': False, 'output': '"call_tool" must be a tool name.'}
+    else:
+        reply = list_tools(toolset)
+    return json.dumps(reply, default=str)
