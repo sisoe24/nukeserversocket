@@ -1,23 +1,6 @@
-"""Hand-rolled MCP server bridging an MCP client (stdio) to a running nukeserversocket.
+"""MCP stdio server (spec 2025-11-25) that forwards code to a running nukeserversocket.
 
-Protocol notes (stdio transport, spec revision 2025-11-25):
-
-- Framing: one JSON-RPC 2.0 message per line, UTF-8, no embedded newlines.
-- Lifecycle: client sends ``initialize`` -> server replies with its capabilities ->
-  client sends ``notifications/initialized`` -> normal traffic (``tools/list``,
-  ``tools/call``, ``ping``).
-- Notifications carry no ``id`` and must never receive a response.
-- Responses echo the request ``id`` verbatim; a request id must not be null.
-- Version negotiation: echo the client's version only if supported, otherwise
-  answer with the latest version this server supports.
-- Tool execution failures (including argument validation) are tool results with
-  ``isError: true`` so the model can self-correct; protocol errors are reserved
-  for malformed requests and unknown tools/methods.
-- stdout is the transport: anything human-readable goes to stderr.
-
-Stdlib-only and self-contained on purpose, so it can be launched by absolute path
-(``python /path/to/server.py``), as a module (``python -m nss_mcp``) or via the
-``nss-mcp`` console script.
+Stdlib only and self-contained, so MCP clients can launch it by absolute path.
 """
 from __future__ import annotations
 
@@ -33,7 +16,7 @@ LOGGER = logging.getLogger('nss_mcp')
 
 __version__ = '0.2.0'
 
-# Newest first; the features used here (initialize, tools, ping) exist in all of them.
+# newest first
 SUPPORTED_VERSIONS = ('2025-11-25', '2025-06-18', '2025-03-26', '2024-11-05')
 
 DEFAULT_HOST = '127.0.0.1'
@@ -55,9 +38,8 @@ TOOLS = [
     {
         'name': 'nuke_execute_code',
         'description': (
-            'Execute Python code inside a running Nuke session via nukeserversocket '
-            'and return its output. The code runs in Nuke\'s script editor, so the '
-            '`nuke` module is available.'
+            'Execute Python code inside a running Nuke session and return its output. '
+            'The `nuke` module is available. Use print() to return values.'
         ),
         'inputSchema': {
             'type': 'object',
@@ -74,15 +56,13 @@ TOOLS = [
 
 
 def send_to_nuke(code: str, host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> str:
-    """Forward code to nukeserversocket over TCP and return its output.
+    """Send code to nukeserversocket over TCP and return its output.
 
-    nukeserversocket serves one request per connection and closes the socket
-    after writing the output, so the response is read until EOF.
+    The server closes the socket after replying, so the reply is read until EOF.
     """
-    # shortcut: nukeserversocket reads a single readyRead burst, so a payload split
-    # across TCP segments (>~64KB or slow LAN) is parsed as empty; fix in the Qt
-    # server if large scripts become a real use case.
-    payload = json.dumps({'text': code, 'formatText': '0'}).encode('utf-8')
+    # shortcut: the server parses only its first read, so code over about 100 KB or split
+    # across TCP segments fails; add server framing when remote Nuke or large code is in use.
+    payload = json.dumps({'text': code, 'file': 'MCP', 'formatText': '0'}).encode('utf-8')
 
     with socket.create_connection((host, port), timeout=timeout) as sock:
         sock.sendall(payload)
@@ -107,6 +87,18 @@ def _error(msg_id: Any, code: int, message: str) -> dict[str, Any]:
 
 def _tool_error(msg_id: Any, text: str) -> dict[str, Any]:
     return _result(msg_id, {'content': [{'type': 'text', 'text': text}], 'isError': True})
+
+
+def _is_error(output: str) -> bool:
+    # shortcut: replies are plain text with no status, so code that prints a traceback is
+    # flagged too; add a status to the wire protocol if that misleads clients.
+    return (
+        output.startswith('NukeServerSocket error:')
+        or '\nTraceback (most recent call last):' in f'\n{output}'
+        # Nuke prints syntax errors without the Traceback header
+        or output.rstrip().rpartition('\n')[2].startswith(
+            ('SyntaxError:', 'IndentationError:', 'TabError:'))
+    )
 
 
 def _initialize(params: dict[str, Any]) -> dict[str, Any]:
@@ -141,17 +133,25 @@ def _tools_call(
     except socket.timeout:
         LOGGER.error('Timed out waiting for nukeserversocket output.')
         return _tool_error(
-            msg_id, f'Timed out after {timeout:g}s waiting for Nuke output. '
-            'Long-running code may need a higher --timeout.'
+            msg_id, f'Timed out after {timeout:g}s waiting for Nuke. The code may have run or '
+            'may still be running, so check before retrying. Raise --timeout for long runs.'
+        )
+    except (BrokenPipeError, ConnectionResetError) as e:
+        LOGGER.error('Connection to nukeserversocket dropped: %s', e)
+        return _tool_error(
+            msg_id, f'Connection to nukeserversocket dropped ({e}). '
+            'Code over about 100 KB can cause this, so send smaller pieces.'
         )
     except OSError as e:
         LOGGER.error('Could not reach nukeserversocket: %s', e)
         return _tool_error(
             msg_id, f'Could not reach nukeserversocket at {host}:{port} ({e}). '
-            'Is Nuke running with the nukeserversocket panel connected on that port?'
+            'Is Nuke running with the nukeserversocket panel connected on that port? '
+            'A Nuke on another machine also needs Allow LAN Connections turned on.'
         )
 
-    return _result(msg_id, {'content': [{'type': 'text', 'text': output}], 'isError': False})
+    return _result(msg_id, {'content': [{'type': 'text', 'text': output}],
+                            'isError': _is_error(output)})
 
 
 def handle_message(
@@ -200,8 +200,7 @@ def _write(msg: dict[str, Any]) -> None:
 
 def serve(host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> None:
     """Run the stdio loop until the client closes stdin."""
-    # The platform may default stdio to a locale codepage (cp1252 on Windows);
-    # the transport mandates UTF-8 and '\n' framing.
+    # stdio defaults to the locale codepage on Windows; MCP requires UTF-8
     sys.stdin.reconfigure(encoding='utf-8', errors='replace')
     sys.stdout.reconfigure(encoding='utf-8', newline='\n')
 
@@ -235,8 +234,7 @@ def serve(host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description='MCP stdio bridge to nukeserversocket.')
     parser.add_argument('--host', default=os.getenv('NSS_MCP_HOST', DEFAULT_HOST))
-    # String defaults so argparse applies `type` to env values too, turning a bad
-    # NSS_MCP_PORT into a usage error instead of a startup traceback.
+    # string defaults: argparse then reports a bad env value as a usage error
     parser.add_argument('--port', type=int, default=os.getenv('NSS_MCP_PORT', str(DEFAULT_PORT)))
     parser.add_argument('--timeout', type=float,
                         default=os.getenv('NSS_MCP_TIMEOUT', str(DEFAULT_TIMEOUT)))

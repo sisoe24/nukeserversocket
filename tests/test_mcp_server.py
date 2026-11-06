@@ -10,7 +10,7 @@ from pathlib import Path
 import pytest
 
 from nss_mcp.server import (PARSE_ERROR, INVALID_REQUEST, METHOD_NOT_FOUND, INVALID_PARAMS,
-                            TOOLS, SUPPORTED_VERSIONS, send_to_nuke, handle_message)
+                            TOOLS, SUPPORTED_VERSIONS, _is_error, send_to_nuke, handle_message)
 
 REPO_ROOT = Path(__file__).parents[1]
 
@@ -157,7 +157,36 @@ def test_tools_call_executes_code(fake_nuke_server):
     )
     assert response['result']['isError'] is False
     assert response['result']['content'] == [{'type': 'text', 'text': 'hello world\n'}]
-    assert received['payload'] == {'text': 'print("hi")', 'formatText': '0'}
+    assert received['payload'] == {'text': 'print("hi")', 'file': 'MCP', 'formatText': '0'}
+
+
+@pytest.mark.parametrize('output, expected', [
+    ('hello\n', False),
+    ('', False),
+    ('the word Traceback\n', False),
+    ('NukeServerSocket error: no code received.', True),
+    ('Traceback (most recent call last):\n  File "x"\nValueError: boom\n', True),
+    ('printed first\nTraceback (most recent call last):\nValueError: boom\n', True),
+    ('  File "<string>", line 1\n    def (\n        ^\nSyntaxError: invalid syntax\n', True),
+    ('  File "<string>", line 2\n    x\nIndentationError: unexpected indent\n', True),
+    ('SyntaxError: mentioned first\nthen normal output\n', False),
+])
+def test_is_error_recognizes_failed_replies(output, expected):
+    """Server errors and tracebacks are flagged; ordinary output is not."""
+    assert _is_error(output) is expected
+
+
+@pytest.mark.parametrize('error', [BrokenPipeError('pipe'), ConnectionResetError('reset')])
+def test_tools_call_dropped_connection_suggests_smaller_code(monkeypatch, error):
+    """A connection dropped mid-request blames the code size, not a missing Nuke."""
+    def _raise(*_):
+        raise error
+
+    monkeypatch.setattr('nss_mcp.server.send_to_nuke', _raise)
+    response = handle_message(
+        _request('tools/call', {'name': 'nuke_execute_code', 'arguments': {'code': 'x'}}))
+    assert response['result']['isError'] is True
+    assert 'smaller pieces' in response['result']['content'][0]['text']
 
 
 def test_tools_call_unreachable_nuke_returns_is_error(free_port):
@@ -193,7 +222,7 @@ def test_send_to_nuke_round_trip(fake_nuke_server):
     port, received = fake_nuke_server
     output = send_to_nuke('print("hi")', '127.0.0.1', port)
     assert output == 'hello world\n'
-    assert received['payload'] == {'text': 'print("hi")', 'formatText': '0'}
+    assert received['payload'] == {'text': 'print("hi")', 'file': 'MCP', 'formatText': '0'}
 
 
 def test_stdio_end_to_end():

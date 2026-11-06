@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- MCP server (`nss_mcp`) so MCP clients can run code in Nuke.
+- The panel's Logs show the client and the first line of the code for each request.
+
+### Changed
+
+- Execution errors sent to clients always start with `NukeServerSocket error:`.
+
+### Fixed
+
+- The panel's Logs show `<` and `&` as text instead of reading them as HTML.
+
 ## [1.4.0] - 2026-11-02
 
 ### Added

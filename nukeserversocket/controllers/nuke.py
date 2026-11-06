@@ -45,9 +45,7 @@ class NukeScriptEditor:
         )
         if not btn:
             # likely will never going to happen
-            raise RuntimeError(
-                'NukeServerSocket error: Could not find Nuke Script Editor execute button'
-            )
+            raise RuntimeError('Could not find Nuke Script Editor execute button')
 
         return btn
 

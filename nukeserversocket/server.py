@@ -33,22 +33,27 @@ class NssServer(QTcpServer):
         self.acceptError.connect(lambda err: LOGGER.error('Server error: %s', self.errorString()))
 
     def _on_socket_ready(self, socket: QTcpSocket):
-        LOGGER.info('Received data from client.')
         LOGGER.debug('Socket ready.')
 
         # parse the incoming data
         data = ReceivedData(socket.readAll().data())
 
+        client = socket.peerAddress().toString()
+        if data.file:
+            client += f' ({data.file})'
+
         if not data.text:
             # invalid JSON or empty text: running it would only echo the editor's old output
+            LOGGER.warning('Rejected request from %s: no code received.', client)
             output = 'NukeServerSocket error: no code received. Expected JSON with a non-empty "text" field.'
         else:
+            LOGGER.info('Running code from %s: %s', client, data.text.strip().partition('\n')[0][:80])
             try:
                 output = self._editor.execute(data)
             except RuntimeError as err:
                 # e.g. the Nuke Script Editor is not open; reply so the client does not hang
                 LOGGER.error('Execution failed: %s', err)
-                output = str(err)
+                output = f'NukeServerSocket error: {err}'
 
         self.on_data_received.emit()
 
