@@ -43,8 +43,15 @@ For CMD or PowerShell, see Microsoft's documentation on environment variables.
 }
 ```
 
+## Use
+
+1. In a Houdini pane, click the tab menu (**+**) and choose **NukeServerSocket**.
+2. Click **Connect**.
+3. Send code from a client, as for Nuke. See [clients.md](clients.md).
+
 ## Notes
 
-Only the Server Timeout, Auto Start and Allow LAN Connections settings apply to Houdini.
-
-Houdini runs the code with Python's `exec`. Nuke runs it in its Script Editor.
+- Houdini runs the code with Python's `exec`. Nuke runs it in its Script Editor.
+- The Mirror Script Editor, Format Output and Clear Output settings apply only to Nuke.
+- A tools file works in Houdini, but **Create sample...** makes a Nuke sample. Its adapter module imports `nuke`, so its tools do not load in Houdini. Write adapters that use `hou`.
+- The [MCP server](mcp.md) supports only Nuke for now. Its tool and its instructions to the agent are written for Nuke.

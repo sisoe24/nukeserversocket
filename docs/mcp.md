@@ -4,6 +4,8 @@
 
 The MCP server lets an AI client, such as Claude Code or Claude Desktop, run Python in a running Nuke session. The server is the file `nss_mcp/server.py`. It needs only Python 3, with no other packages. The client starts the server and talks to it over stdio, with [MCP](https://modelcontextprotocol.io) (JSON-RPC 2.0). The server sends each request to the nukeserversocket panel over TCP. The panel's Logs mark each of these requests with `(MCP)`.
 
+The MCP server supports only Nuke for now, not [Houdini](houdini.md).
+
 ## Install in a client
 
 Each client starts the server with this command:
