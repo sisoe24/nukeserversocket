@@ -51,7 +51,7 @@ Client applications that use nukeserversocket:
 
 ### 1.1.1. Create a custom client
 
-You can create a custom client in any programming language that supports socket communication. The client sends the code to the server, which then executes it in Nuke and sends back the result. For more information, see the [wiki page](https://github.com/sisoe24/nukeserversocket/wiki/Client-Applications-for-NukeServerSocket)
+You can create a custom client in any programming language that supports socket communication. The client sends the code to the server, which then executes it in Nuke and sends back the result. For the request format and full samples, see [docs/clients.md](docs/clients.md).
 
 ```py
 # ... your socket code

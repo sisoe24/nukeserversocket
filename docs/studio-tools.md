@@ -25,13 +25,13 @@ A tools file declares the functions clients may call, and whether they may still
 }
 ```
 
-| Field | Meaning |
-| --- | --- |
-| `allow_code` | `true` (default) keeps code execution on. `false` refuses every code request. |
-| `name` | Letters, digits, `_`, `-` or `.`, up to 128 characters. `execute_code` is reserved. |
-| `description` | What the tool does. LLM clients read it to decide when to call the tool. |
-| `function` | `module:function`, imported when the panel connects. Dots reach nested attributes, such as `module:Class.static_method`. |
-| `timeout` | Optional. Seconds the MCP server waits for this tool, instead of its `--timeout`. |
+| Field         | Meaning                                                                                                                                                       |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `allow_code`  | `true` (default) keeps code execution on. `false` refuses every code request.                                                                                 |
+| `name`        | Letters, digits, `_`, `-` or `.`, up to 128 characters. `execute_code` is reserved.                                                                           |
+| `description` | What the tool does. LLM clients read it to decide when to call the tool.                                                                                      |
+| `function`    | `module:function`, imported when the panel connects. Dots reach nested attributes, such as `module:Class.static_method`.                                      |
+| `timeout`     | Optional. Seconds the MCP server waits for this tool, instead of its `--timeout`.                                                                             |
 | `inputSchema` | Optional for tools without arguments. A JSON Schema object whose properties match the function's parameters. Parameters without a default must be `required`. |
 
 An entry that cannot load (bad field, failed import, signature that does not match the schema) is skipped with the reason, and the other tools still load. If a tools file is set but is missing or is not valid JSON, no tools load and code execution is off.
@@ -52,7 +52,7 @@ Tools run on Nuke's main thread, so Nuke's interface is busy until a tool return
 
 ## Requests for custom clients
 
-Custom clients use two requests, each on its own connection like code requests. The reply is JSON:
+Custom clients use two requests, each on its own connection like [code requests](clients.md). The reply is JSON:
 
 ```py
 {"list_tools": true}
