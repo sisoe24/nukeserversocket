@@ -3,12 +3,12 @@ from __future__ import annotations
 import sys
 import json
 import types
-import pathlib
 import textwrap
 
 import pytest
 
-from nukeserversocket.tools import BUILTIN_TOOL, ToolSet, call_tool, load_tools
+from nukeserversocket.tools import (BUILTIN_TOOL, SAMPLE_DIR, ToolSet, call_tool, load_tools,
+                                    create_sample)
 
 MODULE = 'nss_test_studio_tools'
 
@@ -38,6 +38,12 @@ def positional_only(shot, /):
 
 NOT_CALLABLE = 42
 '''
+
+
+@pytest.fixture(autouse=True)
+def restore_sys_path(monkeypatch):
+    """load_tools adds the tool file's folder to sys.path."""
+    monkeypatch.setattr(sys, 'path', list(sys.path))
 
 
 @pytest.fixture()
@@ -193,17 +199,53 @@ def test_non_list_tools_loads_nothing_but_keeps_policy(tool_file):
     assert toolset == ToolSet(allow_code=False)
 
 
-def test_example_tool_file_loads_every_tool(monkeypatch):
-    """The documented example stays valid."""
-    examples = pathlib.Path(__file__).parents[1] / 'examples'
-    monkeypatch.setitem(sys.modules, 'nuke', types.ModuleType('nuke'))
-    monkeypatch.syspath_prepend(str(examples))
-    toolset = load_tools(str(examples / 'nss_tools.json'))
-    sys.modules.pop('studio_tools', None)
+@pytest.mark.parametrize('content, reason', [
+    ('{not json', 'cannot read nss_tools.json'),
+    ('[]', 'nss_tools.json is not a JSON object'),
+    ('{"allow_code": 0}', 'allow_code is not true or false in nss_tools.json'),
+    ('{"allow_code": false}', 'allow_code is false in nss_tools.json'),
+    ('{}', ''),
+])
+def test_code_off_reason_names_the_cause(tool_file, content, reason):
+    assert load_tools(tool_file(content)).code_off_reason == reason
 
-    assert toolset.allow_code is False
+
+def test_module_next_to_the_tool_file_imports(tmp_path, monkeypatch):
+    """The tool file's folder is importable, so adapters need no NUKE_PATH entry."""
+    (tmp_path / 'nss_test_adapter.py').write_text('def ping():\n    return "pong"\n')
+    path = tmp_path / 'nss_tools.json'
+    path.write_text(json.dumps({'tools': [
+        {'name': 'ping', 'description': 'Ping.', 'function': 'nss_test_adapter:ping'}]}))
+
+    toolset = load_tools(str(path))
+    sys.modules.pop('nss_test_adapter', None)
+
+    assert toolset.tools['ping'].function() == 'pong'
+
+
+def test_sample_tool_file_loads_every_tool(monkeypatch):
+    """The sample that Create sample copies stays valid."""
+    monkeypatch.setitem(sys.modules, 'nuke', types.ModuleType('nuke'))
+    toolset = load_tools(str(SAMPLE_DIR / 'nss_tools.json'))
+    sys.modules.pop('nss_tools_example', None)
+
+    assert toolset.allow_code is True
     assert list(toolset.tools) == ['script_info', 'list_writes', 'render_write']
     assert toolset.skipped == {}
+
+
+def test_create_sample_copies_the_sample(tmp_path):
+    path = create_sample(str(tmp_path))
+    assert path == str(tmp_path / 'nss_tools.json')
+    assert sorted(p.name for p in tmp_path.iterdir()) == ['nss_tools.json', 'nss_tools_example.py']
+
+
+def test_create_sample_keeps_existing_files(tmp_path):
+    (tmp_path / 'nss_tools.json').write_text('mine')
+    with pytest.raises(FileExistsError, match='nss_tools.json'):
+        create_sample(str(tmp_path))
+    assert (tmp_path / 'nss_tools.json').read_text() == 'mine'
+    assert not (tmp_path / 'nss_tools_example.py').exists()
 
 
 @pytest.fixture()

@@ -1,8 +1,9 @@
-"""Example adapters for nss_tools.json.
+"""Example tools for nss_tools.json, which sits in the same folder.
 
-Each adapter is the only thing a client can run. Keep them safe to call from a
-remote client: arguments are JSON values, nothing opens a dialog, nothing reads
-the user's selection, and every result is JSON.
+Clients call these by name. Keep them safe to call from a remote client:
+arguments are JSON values, nothing opens a dialog, nothing reads the user's
+selection, and every result is JSON. Set "allow_code" to false in
+nss_tools.json to allow only these tools.
 """
 from __future__ import annotations
 

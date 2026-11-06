@@ -102,11 +102,27 @@ Claude Desktop (`claude_desktop_config.json`):
 
 By default any client can run any code in Nuke. A studio can instead give clients a fixed set of tools, such as "render this Write node", and turn arbitrary code off. Whoever sets up the plugin decides this, not the client.
 
-1. Write adapter functions in a Python module that Nuke can import (for example a folder on `NUKE_PATH`). See [examples/studio_tools.py](examples/studio_tools.py).
-2. Declare them in a JSON file. See [examples/nss_tools.json](examples/nss_tools.json).
-3. Set `NSS_TOOLS` to the path of the JSON file before Nuke starts.
+1. In the panel, open **Settings** and click **Create sample...** next to **Tools file**. Choose a folder. The panel copies [nss_tools.json](resources/sample/nss_tools.json) and its adapter module [nss_tools_example.py](resources/sample/nss_tools_example.py) there, and sets **Tools file** to the new JSON file.
+2. Edit the adapter functions and declare them in the JSON file. Nuke can import any module in the JSON file's folder.
+3. To set the file for a whole studio, set `NSS_TOOLS` to its path before Nuke starts. `NSS_TOOLS` wins over the setting and makes the field read-only, so artists cannot change it from the panel.
 
-The tools load each time the panel connects. The panel's **Clients** row then shows what clients may run, for example `3 tool(s) only, code off`, and its tooltip names the tools and any skipped entries. The Logs report the same. To pick up a change to the JSON file, disconnect and connect the panel. A change to the adapter module needs a Nuke restart, because Python keeps the module it imported.
+The tools load each time the panel connects. The panel then shows:
+
+- **Code:** `Allowed`, or `Off (tools file)`.
+- **Tools:** the names of the loaded tools, and how many entries were skipped. Hover over the row to see the file path.
+
+The Logs show the tools file when the panel starts listening, and one line for each request, starting with the client:
+
+```text
+Listening on 127.0.0.1:54321
+Tools file /studio/nuke/nss_tools.json (NSS_TOOLS): 3 tools, code off
+(MCP) list tools: 3
+(MCP) render_write: ok (42.0 s)
+(MCP) code refused: allow_code is false in nss_tools.json
+(127.0.0.1 main.py) code: print(nuke.root().name())
+```
+
+The time shows only for requests that take 1 second or more. To pick up a change to the JSON file, disconnect and connect the panel. A change to the adapter module needs a Nuke restart, because Python keeps the module it imported.
 
 ```json
 {
@@ -115,7 +131,7 @@ The tools load each time the panel connects. The panel's **Clients** row then sh
         {
             "name": "render_write",
             "description": "Render one Write node by name.",
-            "function": "studio_tools:render_write",
+            "function": "nss_tools_example:render_write",
             "timeout": 3600,
             "inputSchema": {
                 "type": "object",
@@ -136,7 +152,7 @@ The tools load each time the panel connects. The panel's **Clients** row then sh
 | `timeout` | Optional. Seconds the MCP server waits for this tool, instead of its `--timeout`. |
 | `inputSchema` | Optional for tools without arguments. A JSON Schema object whose properties match the function's parameters. Parameters without a default must be `required`. |
 
-An entry that cannot load (bad field, failed import, signature that does not match the schema) is skipped with the reason, and the other tools still load. If `NSS_TOOLS` is set but the file is missing or is not valid JSON, no tools load and code execution is off.
+An entry that cannot load (bad field, failed import, signature that does not match the schema) is skipped with the reason, and the other tools still load. If a tools file is set but is missing or is not valid JSON, no tools load and code execution is off.
 
 Before calling a function, the server checks that required arguments are present, that no unknown arguments are sent (unless the function takes `**kwargs`), and each argument's `type` and `enum`. It does not check nested values or other schema keywords, so the adapter must check those itself. Arguments are passed as Python values and are never inserted into code.
 
@@ -229,7 +245,7 @@ The Houdini execution method differs from Nuke's. Nuke relies on its internal sc
 
 ## 1.3. Usage
 
-![Execute Code](images/run_code.gif)
+![Execute Code](resources/images/run_code.gif)
 
 1. Open the nukeserversocket panel inside Nuke, and start the server by clicking **Connect**.
    To start the server when the panel opens, turn on **Auto Start** in the settings (off by default). To start it when Nuke opens, save a workspace that has the NukeServerSocket panel (*Workspace > Save Workspace*), then set it as your **startup workspace** in the preferences (*Behaviors > Startup*). Otherwise, the server starts only when you open the panel.

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Optional
+import time
+import logging
+from typing import TYPE_CHECKING, Tuple, Optional
 
 from ._qt import Signal, QWidget, QTcpServer, QTcpSocket, QHostAddress
 
@@ -12,6 +14,16 @@ if TYPE_CHECKING:
     from .controllers.base import BaseController
 
 LOGGER = get_logger()
+
+# the mark the MCP bridge sends as its "file"
+MCP_CLIENT = 'MCP'
+
+
+def _source(address: QHostAddress, file: str) -> str:
+    """Name the client the way the Logs show it, e.g. "(MCP)" or "(127.0.0.1 main.py)"."""
+    if file == MCP_CLIENT:
+        return f'({MCP_CLIENT})' if address.isLoopback() else f'({MCP_CLIENT} at {address.toString()})'
+    return f'({address.toString()} {file})' if file else f'({address.toString()})'
 
 
 class NssServer(QTcpServer):
@@ -37,44 +49,49 @@ class NssServer(QTcpServer):
     def _on_socket_ready(self, socket: QTcpSocket):
         LOGGER.debug('Socket ready.')
 
+        started = time.perf_counter()
         raw = socket.readAll().data()
-        client = socket.peerAddress().toString()
 
         request = parse_tool_request(raw)
         if request is not None:
-            if request.get('file'):
-                client += f' ({request["file"]})'
-            LOGGER.info('Tool request from %s: %s', client, request.get('call_tool', 'list_tools'))
-            self._reply(socket, handle_tool_request(self.toolset, request))
-            return
-
-        data = ReceivedData(raw)
-        if data.file:
-            client += f' ({data.file})'
-
-        if not self.toolset.allow_code:
-            LOGGER.warning('Rejected code from %s: code execution is off.', client)
-            output = ('NukeServerSocket error: code execution is turned off by the tool file. '
-                      'Use the tools it lists instead.')
-        elif not data.text:
-            # invalid JSON or empty text: running it would only echo the editor's old output
-            LOGGER.warning('Rejected request from %s: no code received.', client)
-            output = 'NukeServerSocket error: no code received. Expected JSON with a non-empty "text" field.'
+            source = _source(socket.peerAddress(), str(request.get('file') or ''))
+            output, ok, summary = handle_tool_request(self.toolset, request)
+            level = logging.INFO if ok else logging.WARNING
         else:
-            LOGGER.info('Running code from %s: %s', client, data.text.strip().partition('\n')[0][:80])
-            try:
-                output = self._editor.execute(data)
-            except RuntimeError as err:
-                # e.g. the Nuke Script Editor is not open; reply so the client does not hang
-                LOGGER.error('Execution failed: %s', err)
-                output = f'NukeServerSocket error: {err}'
+            data = ReceivedData(raw)
+            source = _source(socket.peerAddress(), data.file)
+            level, summary, output = self._run_code(data)
 
+        elapsed = time.perf_counter() - started
+        # only slow requests show their time: (0.0 s) on every line is noise
+        if elapsed >= 1:
+            summary += f' ({elapsed:.1f} s)'
+        LOGGER.log(level, '%s %s', source, summary)
         self._reply(socket, output)
+
+    def _run_code(self, data: ReceivedData) -> Tuple[int, str, str]:
+        """Return the log level, what to log, and the reply."""
+        if not self.toolset.allow_code:
+            reason = self.toolset.code_off_reason
+            return (logging.WARNING, f'code refused: {reason}',
+                    f'NukeServerSocket error: code execution is off ({reason}). '
+                    'Use the tools it lists instead.')
+
+        if not data.text:
+            # invalid JSON or empty text: running it would only echo the editor's old output
+            return (logging.WARNING, 'request has no code',
+                    'NukeServerSocket error: no code received. '
+                    'Expected JSON with a non-empty "text" field.')
+
+        preview = data.text.strip().partition('\n')[0][:80]
+        try:
+            return logging.INFO, f'code: {preview}', self._editor.execute(data)
+        except RuntimeError as err:
+            # e.g. the Nuke Script Editor is not open; reply so the client does not hang
+            return logging.ERROR, f'code: {err}', f'NukeServerSocket error: {err}'
 
     def _reply(self, socket: QTcpSocket, output: str) -> None:
         self.on_data_received.emit()
-
-        LOGGER.info('Writing output to back socket...')
 
         socket.write(output.encode('utf-8'))
         LOGGER.debug('Output: %s', output.replace('\n', '\\n'))
@@ -95,10 +112,12 @@ class NssServer(QTcpServer):
             # bind each socket to its own handler, so replies go to the right client
             socket.readyRead.connect(lambda socket=socket: self._on_socket_ready(socket))
 
-    def try_connect(self, port: int, allow_lan: bool = False) -> bool:
+    def try_connect(self, port: int, allow_lan: bool = False,
+                    tools_file: Optional[str] = None) -> bool:
+        """Load `tools_file` (NSS_TOOLS when None) and listen on `port`."""
         LOGGER.debug('Trying to connect to port %s...', port)
         # reload on each connect, so a changed tool file applies without restarting Nuke
-        self.toolset = load_tools()
+        self.toolset = load_tools(tools_file)
         # no authentication
         address = QHostAddress.Any if allow_lan else QHostAddress.LocalHost
         return self.listen(address, port)

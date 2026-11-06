@@ -1,9 +1,11 @@
 
 from __future__ import annotations
 
+import re
 import sys
 import json
 import socket
+import logging
 
 import pytest
 from pytestqt.qtbot import QtBot
@@ -135,24 +137,61 @@ def test_server_frees_closed_sockets(qtbot: QtBot, server: NssServer):
     qtbot.waitUntil(lambda: not server.findChildren(QTcpSocket), timeout=1000)
 
 
-def test_server_logs_client_and_code_preview(qtbot: QtBot, server: NssServer, monkeypatch):
+@pytest.fixture()
+def logged(monkeypatch) -> list:
+    """The (level, line) pairs the server logs for requests."""
+    lines: list = []
+    monkeypatch.setattr('nukeserversocket.server.LOGGER.log',
+                        lambda level, fmt, *args: lines.append((level, fmt % args)))
+    return lines
+
+
+def handled(qtbot: QtBot, logged: list, payload) -> tuple:
+    """Send one request and return the (level, line) the server logged for it."""
+    count = len(logged)
+    client = socket.create_connection(('127.0.0.1', PORT))
+    client.sendall(payload if isinstance(payload, bytes) else json.dumps(payload).encode())
+    qtbot.waitUntil(lambda: len(logged) > count, timeout=1000)
+    client.close()
+    return logged[-1]
+
+
+@pytest.mark.parametrize('file, source', [('', '(127.0.0.1)'), ('main.py', '(127.0.0.1 main.py)'),
+                                          ('MCP', '(MCP)')])
+def test_server_logs_code_with_its_source(qtbot: QtBot, server: NssServer, monkeypatch, logged,
+                                          file, source):
     server._editor.settings.set('mirror_script_editor', False)
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
     server.try_connect(PORT)
 
-    logged = []
-    monkeypatch.setattr(
-        'nukeserversocket.server.LOGGER.info', lambda msg, *args: logged.append(msg % args)
-    )
-
-    client = socket.create_connection(('127.0.0.1', PORT))
-    client.settimeout(1)
     code = f"print('{'x' * 100}')\nprint('second line')"
-    client.sendall(json.dumps({'text': code, 'file': 'MCP'}).encode('utf-8'))
+    assert handled(qtbot, logged, {'text': code, 'file': file}) == (
+        logging.INFO, f'{source} code: {code[:80]}')
 
-    qtbot.waitUntil(lambda: bool(logged), timeout=1000)
-    client.close()
 
-    assert logged[0] == f'Running code from 127.0.0.1 (MCP): {code[:80]}'
+def test_server_logs_the_time_of_slow_requests(qtbot: QtBot, server: NssServer, monkeypatch,
+                                               logged):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    server.try_connect(PORT)
+    times = iter([10.0, 12.34])
+    monkeypatch.setattr('nukeserversocket.server.time.perf_counter', lambda: next(times))
+    monkeypatch.setattr(server._editor, 'execute', lambda data: 'done')
+
+    assert handled(qtbot, logged, {'text': 'render()'}) == (
+        logging.INFO, '(127.0.0.1) code: render() (2.3 s)')
+
+
+@pytest.mark.parametrize('payload, line', [
+    (b'not json', '(127.0.0.1) request has no code'),
+    ({'text': '', 'file': 'MCP'}, '(MCP) request has no code'),
+])
+def test_server_logs_one_warning_for_bad_requests(qtbot: QtBot, server: NssServer, monkeypatch,
+                                                  logged, payload, line):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    server.try_connect(PORT)
+
+    assert handled(qtbot, logged, payload) == (logging.WARNING, line)
+    assert len(logged) == 1
 
 
 def test_server_prefixes_execution_errors(qtbot: QtBot, server: NssServer, monkeypatch):
@@ -249,9 +288,32 @@ def test_server_reports_bad_tool_calls(qtbot: QtBot, tool_server: NssServer, pay
     assert output in reply['output']
 
 
+@pytest.mark.parametrize('payload, line', [
+    ({'list_tools': True, 'file': 'MCP'}, (logging.INFO, '(MCP) list tools: 1')),
+    ({'call_tool': 'publish_shot', 'arguments': {'comment': 'v2'}, 'file': 'MCP'},
+     (logging.INFO, '(MCP) publish_shot: ok')),
+    ({'call_tool': 'publish_shot', 'arguments': {'comment': 1}, 'file': 'MCP'},
+     (logging.WARNING, "(MCP) publish_shot: Invalid arguments: 'comment' must be string, got 1.")),
+    ({'text': 'print(1)', 'file': 'MCP'},
+     (logging.WARNING, '(MCP) code refused: allow_code is false in nss_tools.json')),
+])
+def test_server_logs_tool_requests(qtbot: QtBot, tool_server: NssServer, logged, payload, line):
+    assert handled(qtbot, logged, payload) == line
+
+
+def test_server_logs_the_tool_error(qtbot: QtBot, tool_server: NssServer, monkeypatch, logged):
+    def fail(comment):
+        raise RuntimeError('no write node')
+    monkeypatch.setattr(tool_server.toolset.tools['publish_shot'], 'function', fail)
+
+    assert handled(qtbot, logged, {'call_tool': 'publish_shot', 'arguments': {'comment': 'v2'}}) == (
+        logging.WARNING, '(127.0.0.1) publish_shot: RuntimeError: no write node')
+
+
 def test_server_rejects_code_when_tool_file_turns_it_off(qtbot: QtBot, tool_server: NssServer):
     reply = request(qtbot, {'text': "print('hi')"})
-    assert reply.startswith('NukeServerSocket error: code execution is turned off')
+    assert reply == ('NukeServerSocket error: code execution is off '
+                     '(allow_code is false in nss_tools.json). Use the tools it lists instead.')
     assert tool_server._editor.input_editor.toPlainText() == 'initial input'
 
 

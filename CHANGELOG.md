@@ -5,11 +5,14 @@
 ### Added
 
 - MCP server (`nss_mcp`) so MCP clients can run code in Nuke.
-- Studio tools: `NSS_TOOLS` names a JSON file of functions clients may call, and can turn code execution off. The MCP server lists them next to `nuke_execute_code`, and the panel's Clients row shows what clients may run.
-- The panel's Logs show the client and the first line of the code for each request.
+- Studio tools: a JSON file of functions clients may call, which can also turn code execution off. Choose it in Settings > Tools file, or set `NSS_TOOLS`, which takes priority. The MCP server lists the tools next to `nuke_execute_code`.
+- Settings > Tools file > **Create sample...** copies a sample tools file and its Python module into a folder. Modules next to the tools file import without a `NUKE_PATH` entry.
+- The panel shows whether code is allowed and the loaded tools.
 
 ### Changed
 
+- The Logs show one line for each request, starting with the client in parentheses, such as `(MCP) render_write: ok`. Requests that take 1 second or more show the time. One bad request logs one warning instead of three lines.
+- The Logs show the address and the tools file when the panel starts listening, and why it stopped when the Server Timeout closes it.
 - Execution errors sent to clients always start with `NukeServerSocket error:`.
 
 ### Fixed

@@ -194,8 +194,11 @@ class Bridge:
 
     def wait_for_nuke(self) -> None:
         """Poll until Nuke first answers, then tell the client if its list is stale."""
-        while not self.refresh():
+        while True:
+            # wait first: the client's own tools/list usually reaches Nuke at startup
             time.sleep(POLL_INTERVAL)
+            if self._nuke_tools is not None or self.refresh():
+                break
         LOGGER.info('Nuke answered with %s tool(s).', len(self._nuke_tools or {}))
         if self._served is not None and self._served != self.tools():
             _write({'jsonrpc': '2.0', 'method': 'notifications/tools/list_changed'})

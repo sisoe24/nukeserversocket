@@ -37,14 +37,15 @@ class ReceivedData:
             self.data.setdefault('file', '')
             self.data.setdefault('formatText', '1')
         except Exception as e:
-            LOGGER.error(f'An exception occurred while decoding the data. {e}')
+            # the server logs one warning for the rejected request
+            LOGGER.debug('Could not decode the data: %s', e)
             self.data = {'text': '', 'file': '', 'formatText': '1'}
 
         LOGGER.debug('Received data: %s', self.data)
 
         self.text = self.data.get('text', '')
         if not self.text:
-            LOGGER.critical('Data has invalid text.')
+            LOGGER.debug('Data has no text.')
 
         self.file = self.data['file']
 

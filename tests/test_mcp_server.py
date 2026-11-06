@@ -16,6 +16,11 @@ from nss_mcp.server import (PARSE_ERROR, INVALID_REQUEST, METHOD_NOT_FOUND, INVA
 REPO_ROOT = Path(__file__).parents[1]
 
 
+@pytest.fixture(autouse=True)
+def no_poll_wait(monkeypatch):
+    monkeypatch.setattr(bridge_module, 'POLL_INTERVAL', 0)
+
+
 def handle_message(msg: dict, **bridge_args):
     return Bridge(**bridge_args).handle(msg)
 
@@ -244,6 +249,17 @@ def test_list_changed_is_not_sent_when_the_list_is_the_same(fake_nuke, monkeypat
     bridge.handle(_request('tools/list'))
     bridge.wait_for_nuke()
     assert written == []
+
+
+def test_poll_does_not_ask_again_once_nuke_answered(fake_nuke):
+    """The startup poll must not repeat the client's own tools/list request."""
+    port, received = fake_nuke(nuke_with_tools(False))
+    bridge = Bridge(port=port)
+    bridge.handle(_request('tools/list'))
+
+    bridge.wait_for_nuke()
+
+    assert len(received) == 1
 
 
 def test_unknown_method_returns_method_not_found():

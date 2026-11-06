@@ -5,7 +5,7 @@ import os
 import json
 import pathlib
 from pprint import pformat
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 
 class _NssSettings:
@@ -17,6 +17,8 @@ class _NssSettings:
         'mirror_script_editor': False,
         'clear_output': True,
         'format_output': '[%d NukeTools] %F%n%t',
+        # NSS_TOOLS overrides it, see tools_file()
+        'tools_file': '',
     }
 
     def __init__(self, settings_file: pathlib.Path):
@@ -43,6 +45,14 @@ class _NssSettings:
     def set(self, key: str, value: Any):
         self.data[key] = value
         self.save()
+
+    def tools_file(self) -> Tuple[str, bool]:
+        """Return the tools file path ('' for none) and whether NSS_TOOLS set it.
+
+        NSS_TOOLS wins, so a studio can set the file where artists cannot change it.
+        """
+        env = os.environ.get('NSS_TOOLS', '')
+        return (env, True) if env else (self.get('tools_file') or '', False)
 
 
 def _nss_settings_path() -> pathlib.Path:

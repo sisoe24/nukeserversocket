@@ -1,4 +1,4 @@
-"""Load the tools that clients may call, from the JSON file named by NSS_TOOLS.
+"""Load the tools that clients may call, from a JSON tools file.
 
 {
     "allow_code": false,
@@ -13,7 +13,8 @@
     ]
 }
 
-Without NSS_TOOLS, code runs as before and there are no tools.
+The tools file's folder is importable, so "function" can name a module next to it.
+Without a tools file, code runs as before and there are no tools.
 
 Clients use the tools with two requests; the reply is JSON:
 
@@ -27,12 +28,14 @@ from __future__ import annotations
 
 import os
 import re
+import sys
 import json
+import shutil
 import inspect
 import pathlib
 import importlib
 import traceback
-from typing import Any, Dict, Callable, Optional
+from typing import Any, Dict, Tuple, Callable, Optional
 from dataclasses import field, dataclass
 
 from .utils import stdoutIO
@@ -60,6 +63,24 @@ class ToolSet:
     tools: Dict[str, Tool] = field(default_factory=dict)
     # tool name (or entry position) -> why it was not loaded
     skipped: Dict[str, str] = field(default_factory=dict)
+    # why code is off, naming the file, for logs and client errors
+    code_off_reason: str = field(default='', compare=False)
+
+
+# repo root, next to the package: copy installs and the release zip ship it, pip does not
+SAMPLE_DIR = pathlib.Path(__file__).parents[1] / 'resources' / 'sample'
+
+
+def create_sample(folder: str) -> str:
+    """Copy the sample tools file and its module into `folder`; return the tools file path."""
+    target = pathlib.Path(folder)
+    files = [p for p in SAMPLE_DIR.iterdir() if p.is_file()]
+    existing = [p.name for p in files if (target / p.name).exists()]
+    if existing:
+        raise FileExistsError(f'{", ".join(existing)} already in {target}.')
+    for source in files:
+        shutil.copyfile(source, target / source.name)
+    return str(target / 'nss_tools.json')
 
 
 def _import_function(reference: str) -> Callable[..., Any]:
@@ -163,28 +184,35 @@ def load_tools(path: Optional[str] = None) -> ToolSet:
     path = os.environ.get('NSS_TOOLS') if path is None else path
     if not path:
         return ToolSet()
+    name = pathlib.Path(path).name
 
     try:
         config = json.loads(pathlib.Path(path).read_text(encoding='utf-8'))
     except (OSError, ValueError) as e:
-        LOGGER.error('Cannot read the tool file %s (%s). Code execution is off.', path, e)
-        return ToolSet(allow_code=False)
+        LOGGER.error('Cannot read the tools file %s (%s). Code execution is off.', path, e)
+        return ToolSet(allow_code=False, code_off_reason=f'cannot read {name}')
 
     if not isinstance(config, dict):
-        LOGGER.error('The tool file %s must hold a JSON object. Code execution is off.', path)
-        return ToolSet(allow_code=False)
+        LOGGER.error('The tools file %s must hold a JSON object. Code execution is off.', path)
+        return ToolSet(allow_code=False, code_off_reason=f'{name} is not a JSON object')
 
     allow_code = config.get('allow_code', True)
+    reason = f'allow_code is false in {name}'
     if not isinstance(allow_code, bool):
         LOGGER.error('"allow_code" in %s must be true or false. Code execution is off.', path)
-        allow_code = False
+        allow_code, reason = False, f'allow_code is not true or false in {name}'
 
     entries = config.get('tools', [])
     if not isinstance(entries, list):
         LOGGER.error('"tools" in %s must be a list. No tools loaded.', path)
         entries = []
 
-    toolset = ToolSet(allow_code=allow_code)
+    # lets "function" name a module next to the tools file, with no NUKE_PATH setup
+    folder = str(pathlib.Path(path).resolve().parent)
+    if folder not in sys.path:
+        sys.path.append(folder)
+
+    toolset = ToolSet(allow_code=allow_code, code_off_reason='' if allow_code else reason)
     for index, entry in enumerate(entries):
         label = entry.get('name') if isinstance(entry, dict) else None
         label = label if isinstance(label, str) and label else f'tools[{index}]'
@@ -196,7 +224,8 @@ def load_tools(path: Optional[str] = None) -> ToolSet:
             continue
         toolset.tools[tool.name] = tool
 
-    LOGGER.info(
+    # the panel logs the summary when it starts listening
+    LOGGER.debug(
         'Loaded %s tool(s) from %s, %s skipped. Code execution is %s.',
         len(toolset.tools), path, len(toolset.skipped), 'on' if allow_code else 'off',
     )
@@ -235,9 +264,9 @@ def _check_arguments(tool: Tool, arguments: Dict[str, Any]) -> None:
         types = spec.get('type')
         types = [types] if isinstance(types, str) else types or []
         if types and not any(_JSON_TYPES.get(t, lambda v: True)(value) for t in types):
-            raise ValueError(f'argument {key!r} must be {" or ".join(types)}, got {value!r}.')
+            raise ValueError(f'{key!r} must be {" or ".join(types)}, got {value!r}.')
         if 'enum' in spec and value not in spec['enum']:
-            raise ValueError(f'argument {key!r} must be one of {spec["enum"]}, got {value!r}.')
+            raise ValueError(f'{key!r} must be one of {spec["enum"]}, got {value!r}.')
 
 
 def _format_result(result: Any) -> str:
@@ -268,13 +297,12 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, A
     try:
         _check_arguments(tool, arguments)
     except ValueError as e:
-        return {'ok': False, 'output': f'Invalid arguments for {name!r}: {e}'}
+        return {'ok': False, 'output': f'Invalid arguments: {e}'}
 
     with stdoutIO() as printed:
         try:
             result = tool.function(**arguments)
         except Exception:
-            LOGGER.error('Tool %s failed.', name)
             return {'ok': False, 'output': printed.getvalue() + traceback.format_exc()}
 
     return {'ok': True, 'output': printed.getvalue() + _format_result(result)}
@@ -303,13 +331,23 @@ def parse_tool_request(raw: bytes) -> Optional[Dict[str, Any]]:
     return None
 
 
-def handle_tool_request(toolset: ToolSet, request: Dict[str, Any]) -> str:
-    if 'call_tool' in request:
-        name = request['call_tool']
-        if isinstance(name, str):
-            reply = call_tool(toolset, name, request.get('arguments'))
-        else:
-            reply = {'ok': False, 'output': '"call_tool" must be a tool name.'}
-    else:
+def _last_line(output: str) -> str:
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    return lines[-1][:200] if lines else 'no output'
+
+
+def handle_tool_request(toolset: ToolSet, request: Dict[str, Any]) -> Tuple[str, bool, str]:
+    """Return the JSON reply, whether the request succeeded, and what to log about it."""
+    if 'call_tool' not in request:
         reply = list_tools(toolset)
-    return json.dumps(reply, default=str)
+        return json.dumps(reply, default=str), True, f'list tools: {len(reply["tools"])}'
+
+    name = request['call_tool']
+    if isinstance(name, str):
+        reply = call_tool(toolset, name, request.get('arguments'))
+    else:
+        name = repr(name)
+        reply = {'ok': False, 'output': '"call_tool" must be a tool name.'}
+
+    summary = f'{name}: ok' if reply['ok'] else f'{name}: {_last_line(reply["output"])}'
+    return json.dumps(reply, default=str), reply['ok'], summary
