@@ -34,7 +34,7 @@ INTERNAL_ERROR = -32603
 INSTRUCTIONS = (
     'Works inside a running Nuke session. Nuke must be running with the nukeserversocket '
     'panel connected. The tools are the ones the Nuke setup allows: nuke_execute_code runs '
-    'Python with the `nuke` module, and any other tool is a studio tool.'
+    'Python with the `nuke` module, and any other tool comes from the tools file of the Nuke setup.'
 )
 
 EXECUTE_TOOL = {

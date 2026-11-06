@@ -1,10 +1,10 @@
-# Studio tools
+# MCP server: tools file
 
 > **Experimental.** The tools file format and the tool requests may change in a future release.
 
-A tools file declares the functions clients may call, and whether they may still run arbitrary code. To create one and choose it, see [Studio tools in the README](../README.md#113-studio-tools).
+A tools file declares the functions clients may call, and whether they may still run arbitrary code. The [MCP server](../README.md#112-mcp-server-llm-clients) lists these tools next to `nuke_execute_code`. To create a tools file and choose it, see [Tools file in the README](../README.md#1121-tools-file).
 
-## Tools file
+## Fields
 
 ```json
 {
@@ -50,20 +50,6 @@ Write adapters for remote callers, not for artists:
 
 Tools run on Nuke's main thread, so Nuke's interface is busy until a tool returns.
 
-## Requests for custom clients
-
-Custom clients use two requests, each on its own connection like [code requests](clients.md). The reply is JSON:
-
-```py
-{"list_tools": true}
-# {"allow_code": false, "tools": [{"name", "description", "inputSchema", "timeout"}], "skipped": {"name": "reason"}}
-
-{"call_tool": "render_write", "arguments": {"node": "Write1"}}
-# {"ok": true, "output": "printed text, then the return value as JSON"}
-```
-
-When `allow_code` is `false`, a code request gets a reply starting with `NukeServerSocket error:`.
-
 ## Security
 
-Studio tools limit what a remote client or an LLM agent can do through nukeserversocket. It does not stop people or code that already run as the same user: an artist can still use the Script Editor, and anyone who can edit `menu.py`, the adapter module or the JSON file can change the tools. There is no authentication, so with **Allow LAN Connections** on, anyone on the network can call the tools.
+A tools file limits what a remote client or an LLM agent can do through nukeserversocket. It does not stop people or code that already run as the same user: an artist can still use the Script Editor, and anyone who can edit `menu.py`, the adapter module or the JSON file can change the tools. There is no authentication, so with **Allow LAN Connections** on, anyone on the network can call the tools.

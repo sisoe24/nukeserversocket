@@ -19,7 +19,7 @@
   - [1.1. Client applications](#11-client-applications)
     - [1.1.1. Create a custom client](#111-create-a-custom-client)
     - [1.1.2. MCP server (LLM clients)](#112-mcp-server-llm-clients)
-    - [1.1.3. Studio tools](#113-studio-tools)
+      - [1.1.2.1. Tools file](#1121-tools-file)
   - [1.2. Installation](#12-installation)
     - [1.2.1. Nuke](#121-nuke)
       - [1.2.1.1. Using NukeTools (Recommended)](#1211-using-nuketools-recommended)
@@ -71,11 +71,11 @@ for node in nodes:
 
 ### 1.1.2. MCP server (LLM clients)
 
-> **Experimental.** The MCP server and [studio tools](#113-studio-tools) may change in a future release, including the tools file format and the requests they send to the panel.
+> **Experimental.** The MCP server and the [tools file](#1121-tools-file) may change in a future release, including the tools file format and the requests they send to the panel.
 
 The repository ships a small [MCP](https://modelcontextprotocol.io) server (`nss_mcp/server.py`) that lets MCP clients (Claude Desktop, Claude Code, etc.) execute Python inside a running Nuke session. It is a hand-rolled, dependency-free bridge: the client speaks JSON-RPC 2.0 over stdio, the server forwards the code to nukeserversocket over TCP.
 
-It exposes `nuke_execute_code`, plus any [studio tools](#113-studio-tools) the Nuke setup declares. Nuke must be running with the nukeserversocket panel connected (default port `54321`; override with `--port`/`--host`/`--timeout` or `NSS_MCP_PORT`/`NSS_MCP_HOST`/`NSS_MCP_TIMEOUT`). Each request appears in the panel's Logs, marked `(MCP)`.
+It exposes `nuke_execute_code`, plus any tools the [tools file](#1121-tools-file) declares. Nuke must be running with the nukeserversocket panel connected (default port `54321`; override with `--port`/`--host`/`--timeout` or `NSS_MCP_PORT`/`NSS_MCP_HOST`/`NSS_MCP_TIMEOUT`). Each request appears in the panel's Logs, marked `(MCP)`.
 
 The server asks Nuke for its tools each time the client lists them. If the client starts before Nuke, it sees only `nuke_execute_code` at first; when Nuke answers, the server tells the client to list the tools again.
 
@@ -100,7 +100,7 @@ Claude Desktop (`claude_desktop_config.json`):
 }
 ```
 
-### 1.1.3. Studio tools
+#### 1.1.2.1. Tools file
 
 By default any client can run any code in Nuke. A studio can instead give clients a fixed set of tools, such as "render this Write node", and turn arbitrary code off. Whoever sets up the plugin decides this, not the client.
 
@@ -128,7 +128,7 @@ The time shows only for requests that take 1 second or more. To pick up a change
 
 **What this protects against:** it limits what a remote client or an LLM agent can do through nukeserversocket. It does not stop code that already runs as the same user, and there is no authentication.
 
-See [docs/studio-tools.md](docs/studio-tools.md) for the tools file fields, how the server checks arguments, how to write adapters, and the requests custom clients send.
+See [docs/mcp.md](docs/mcp.md) for the tools file fields, how the server checks arguments, and how to write adapters.
 
 ## 1.2. Installation
 

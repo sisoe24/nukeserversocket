@@ -39,9 +39,19 @@ The port is set in the NukeServerSocket plugin and is saved in the `nukeserverso
 * Send the code to the server.
 * Wait for and process the server's response.
 
-## Studio tools
+## Tool requests
 
-Besides code, a client can list and call the tools a studio declares. See [Requests for custom clients](studio-tools.md#requests-for-custom-clients).
+When the panel has a [tools file](mcp.md), clients can list and call its tools with two requests, each on its own connection like code requests. The reply is JSON:
+
+```py
+{"list_tools": true}
+# {"allow_code": false, "tools": [{"name", "description", "inputSchema", "timeout"}], "skipped": {"name": "reason"}}
+
+{"call_tool": "render_write", "arguments": {"node": "Write1"}}
+# {"ok": true, "output": "printed text, then the return value as JSON"}
+```
+
+When `allow_code` is `false`, a code request gets a reply starting with `NukeServerSocket error:`.
 
 ## Code Sample
 

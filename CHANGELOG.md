@@ -5,7 +5,7 @@
 ### Added
 
 - MCP server (`nss_mcp`) so MCP clients can run code in Nuke.
-- Studio tools: a JSON file of functions clients may call, which can also turn code execution off. Choose it in Settings > Tools file, or set `NSS_TOOLS`, which takes priority. The MCP server lists the tools next to `nuke_execute_code`.
+- Tools file: a JSON file of functions clients may call, which can also turn code execution off. Choose it in Settings > Tools file, or set `NSS_TOOLS`, which takes priority. The MCP server lists the tools next to `nuke_execute_code`.
 - Settings > Tools file > **Create sample...** copies a sample tools file and its Python module into a folder. Modules next to the tools file import without a `NUKE_PATH` entry.
 - The panel shows whether code is allowed and the loaded tools.
 

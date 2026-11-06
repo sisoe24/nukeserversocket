@@ -188,7 +188,7 @@ def test_tools_list_with_old_nuke_offers_only_code(fake_nuke, reply):
 
 
 def test_nuke_tool_named_like_the_code_tool_is_ignored(fake_nuke):
-    """A studio tool cannot replace nuke_execute_code."""
+    """A tools file tool cannot replace nuke_execute_code."""
     shadow = dict(PUBLISH_TOOL, name='nuke_execute_code')
     port, _ = fake_nuke(lambda p: {'allow_code': False, 'tools': [shadow], 'skipped': {}})
     assert handle_message(_request('tools/list'), port=port)['result']['tools'] == []
@@ -200,7 +200,7 @@ def test_nuke_tool_named_like_the_code_tool_is_ignored(fake_nuke):
     (b'not json', True, 'not json'),
 ])
 def test_tools_call_forwards_nuke_tools(fake_nuke, call_reply, is_error, text):
-    """A studio tool call goes to Nuke as call_tool, and ok decides isError."""
+    """A tools file tool call goes to Nuke as call_tool, and ok decides isError."""
     port, received = fake_nuke(nuke_with_tools(False, call_reply))
     response = handle_message(
         _request('tools/call', {'name': 'publish_shot', 'arguments': {'comment': 'v2'}}),
@@ -213,7 +213,7 @@ def test_tools_call_forwards_nuke_tools(fake_nuke, call_reply, is_error, text):
 
 
 def test_tools_call_uses_the_tool_timeout(fake_nuke, monkeypatch):
-    """A studio tool's own timeout replaces the bridge default."""
+    """A tools file tool's own timeout replaces the bridge default."""
     port, _ = fake_nuke(nuke_with_tools(False, {'ok': True, 'output': ''}))
     timeouts = []
     send = bridge_module._send
