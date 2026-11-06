@@ -94,5 +94,5 @@ Works with PySide6 (Nuke 16 and newer) and PySide2 (Nuke 15 and older), on Pytho
 
 ## Contributing
 
-If you have suggestions, bug reports or questions, open an issue or a pull request. Occasionally I pick something from the [Projects](https://github.com/users/sisoe24/projects/4) tab, so feel free to check it out.
+For suggestions, bug reports or questions, open an issue or a pull request. Planned work is in the [Projects](https://github.com/users/sisoe24/projects/4) tab.
 ****

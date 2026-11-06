@@ -47,4 +47,4 @@ For CMD or PowerShell, see Microsoft's documentation on environment variables.
 
 Only the Server Timeout, Auto Start and Allow LAN Connections settings apply to Houdini.
 
-Houdini runs code differently from Nuke. Nuke uses its internal Script Editor, while Houdini uses Python's `exec`. The Nuke controller used `exec` too, but it did not work in all cases, so it was removed. If you have a better approach, open an issue.
+Houdini runs the code with Python's `exec`. Nuke runs it in its Script Editor.

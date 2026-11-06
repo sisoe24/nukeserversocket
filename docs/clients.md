@@ -1,59 +1,55 @@
 # Client applications
 
-## Sending Code
+A client sends code to the nukeserversocket panel over TCP and gets back the output. This page shows the request format, so you can write your own client.
 
-Send a JSON object as a UTF-8 string. Each connection carries one request: the server sends back the output and closes the connection.
+## Send code
 
-### JSON Object Structure
+Send one JSON object as a UTF-8 string. Each connection carries one request. The panel sends back the output and closes the connection.
 
 ```json
 {
-  "text": "Your code here",
+  "text": "print(nuke.root().name())",
   "file": "path/to/script.py",
   "formatText": "0"
 }
 ```
 
-* text: (Required) Contains the code to be executed.
-* file: (Optional for Python, Required for BlinkScript and must end with `.cpp` or `.blink`) File path of the script.
-* formatText: (Optional. Defaults to `"1"`) `"0"` for plain text, `"1"` for formatted text. If you plan to parse the output, use `"0"`.
+- `text`: required. The code to run.
+- `file`: the path of the script.
+  - Optional for Python.
+  - Required for BlinkScript. The path must end with `.cpp` or `.blink`.
+- `formatText`: optional, default `"1"`. `"1"` formats the output, `"0"` sends plain text. Use `"0"` if your client parses the output.
 
-> [!IMPORTANT]
-> The json object must be stringified before sending it to the server.
+Convert the object to a string before you send it, for example with `json.dumps()` or `JSON.stringify()`.
 
-## Connecting to the Server
+## Connect
 
-### Host Address
+### Host
 
-* Local connection: Use `127.0.0.1`. Connect by IPv4: `localhost` resolved to `::1` is refused.
-* Remote connection: Turn on **Allow LAN Connections** in the panel's Settings, then use the IP address the panel shows (e.g., `192.168.1.10`). There is no authentication, so only do this on a network you trust.
+- On the same machine, use `127.0.0.1`. The panel listens on IPv4 only, so `localhost` fails if it resolves to `::1`.
+- From another machine, turn on **Allow LAN Connections** in the panel's Settings. Then use the IP address that the panel shows, for example `192.168.1.10`. There is no authentication, so use this only on a network that you trust.
 
 ### Port
 
-The port is set in the NukeServerSocket plugin and is saved in the `nukeserversocket.json` file located in the `.nuke` directory. Your client can read this file to get the current port.
-
-## Putting It All Together
-
-* Set up a socket connection using the host and port.
-* Prepare your code as a JSON object.
-* Send the code to the server.
-* Wait for and process the server's response.
+The panel saves its port in `~/.nuke/nukeserversocket.json`. Your client can read the port from this file. The default port is `54321`.
 
 ## Tool requests
 
-When the panel has a [tools file](mcp.md), clients can list and call its tools with two requests, each on its own connection like code requests. The reply is JSON:
+When the panel has a [tools file](mcp.md#tools-file), clients can list and call its tools. Send each request on its own connection, as for code. The reply is JSON:
 
 ```py
 {"list_tools": true}
-# {"allow_code": false, "tools": [{"name", "description", "inputSchema", "timeout"}], "skipped": {"name": "reason"}}
+# {"allow_code": false, "tools": [{"name", "description", "inputSchema", "timeout", "annotations"}], "skipped": {"name": "reason"}}
 
 {"call_tool": "render_write", "arguments": {"node": "Write1"}}
 # {"ok": true, "output": "printed text, then the return value as JSON"}
 ```
 
-When `allow_code` is `false`, a code request gets a reply starting with `NukeServerSocket error:`.
+When `allow_code` is `false`, the reply to a code request starts with `NukeServerSocket error:`.
 
-## Code Sample
+## Code samples
+
+Both samples print the names of all nodes in the script.
 
 ### Python
 
@@ -63,53 +59,45 @@ import json
 import socket
 
 def get_port():
-    """Get Port configuration from .nuke/nukeserversocket.json."""
+    """Get the port from ~/.nuke/nukeserversocket.json."""
     config_path = os.path.join(os.path.expanduser('~'), '.nuke', 'nukeserversocket.json')
     with open(config_path) as f:
         return json.load(f).get('port', 54321)
-
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.connect(('127.0.0.1', get_port()))
 
 data = {
     "text": "print([n.name() for n in nuke.allNodes()])",
-    "file" : "path/to/file.py",
-    "formatText": "0" 
+    "file": "path/to/file.py",
+    "formatText": "0"
 }
 
-# stringify the object before sending
-s.sendall(bytearray(json.dumps(data), 'utf-8'))
+s.sendall(json.dumps(data).encode('utf-8'))
 
-# the server closes the connection after the reply
-data = b''
+# the panel closes the connection after the reply
+reply = b''
 while chunk := s.recv(4096):
-    data += chunk
+    reply += chunk
 
 s.close()
 
-# convert the data to string
-result = data.decode('utf-8')
-
-# help json.loads to parse the string by replacing single quotes with double quotes
-nodes = json.loads(result.replace("'", '"'))
+# Python prints the list with single quotes; JSON needs double quotes
+nodes = json.loads(reply.decode('utf-8').replace("'", '"'))
 
 for node in nodes:
     print(node)
-
 ```
 
 ### Node.js
 
 ```js
-// Send Data Example node.js
 const fs = require('fs');
 const path = require('path');
 const net = require('net');
 
-
 /**
- * Get the server port value from nukeserversocket.json
+ * Get the port from ~/.nuke/nukeserversocket.json.
  */
 function getPort() {
     const configPath = path.join(process.env.HOME || process.env.USERPROFILE, '.nuke', 'nukeserversocket.json');
@@ -118,41 +106,30 @@ function getPort() {
 }
 
 const client = new net.Socket();
-const port = getPort();
+const chunks = [];
 
-client.connect(port, '127.0.0.1', () => {
-    console.log('Connected to server');
-    
+client.connect(getPort(), '127.0.0.1', () => {
     const data = {
         "text": "print([n.name() for n in nuke.allNodes()])",
         "file": "path/to/file.py",
         "formatText": "0"
     };
-
-    // Stringify the object before sending
     client.write(JSON.stringify(data));
 });
 
-client.on('data', (data) => {
-    // Convert the data to string
-    let result = data.toString('utf-8');
-    
-    // Help JSON.parse by replacing single quotes with double quotes
-    result = result.replace(/'/g, '"');
-    
+// a long reply arrives in more than one chunk
+client.on('data', (chunk) => chunks.push(chunk));
+
+// the panel closes the connection after the reply
+client.on('end', () => {
+    // Python prints the list with single quotes; JSON needs double quotes
+    const result = Buffer.concat(chunks).toString('utf-8').replace(/'/g, '"');
     try {
-        const nodes = JSON.parse(result);
-        nodes.forEach(node => console.log(node));
+        JSON.parse(result).forEach(node => console.log(node));
     } catch (error) {
         console.error('Error parsing JSON:', error);
         console.log('Raw result:', result);
     }
-
-    client.destroy(); // Close the connection after receiving the response
-});
-
-client.on('close', () => {
-    console.log('Connection closed');
 });
 
 client.on('error', (error) => {
