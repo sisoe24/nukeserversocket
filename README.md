@@ -18,6 +18,8 @@
 - [1. nukeserversocket README](#1-nukeserversocket-readme)
   - [1.1. Client applications](#11-client-applications)
     - [1.1.1. Create a custom client](#111-create-a-custom-client)
+    - [1.1.2. MCP server (LLM clients)](#112-mcp-server-llm-clients)
+    - [1.1.3. Studio tools](#113-studio-tools)
   - [1.2. Installation](#12-installation)
     - [1.2.1. Nuke](#121-nuke)
       - [1.2.1.1. Using NukeTools (Recommended)](#1211-using-nuketools-recommended)
@@ -71,7 +73,9 @@ for node in nodes:
 
 The repository ships a small [MCP](https://modelcontextprotocol.io) server (`nss_mcp/server.py`) that lets MCP clients (Claude Desktop, Claude Code, etc.) execute Python inside a running Nuke session. It is a hand-rolled, dependency-free bridge: the client speaks JSON-RPC 2.0 over stdio, the server forwards the code to nukeserversocket over TCP.
 
-It exposes a single tool, `nuke_execute_code`. Nuke must be running with the nukeserversocket panel connected (default port `54321`; override with `--port`/`--host`/`--timeout` or `NSS_MCP_PORT`/`NSS_MCP_HOST`/`NSS_MCP_TIMEOUT`). Each request appears in the panel's Logs, marked `MCP`.
+It exposes `nuke_execute_code`, plus any [studio tools](#113-studio-tools) the Nuke setup declares. Nuke must be running with the nukeserversocket panel connected (default port `54321`; override with `--port`/`--host`/`--timeout` or `NSS_MCP_PORT`/`NSS_MCP_HOST`/`NSS_MCP_TIMEOUT`). Each request appears in the panel's Logs, marked `MCP`.
+
+The server asks Nuke for its tools each time the client lists them. If the client starts before Nuke, it sees only `nuke_execute_code` at first; when Nuke answers, the server tells the client to list the tools again.
 
 To reach Nuke on another machine, pass `--host` and turn on **Allow LAN Connections**. The server then runs code from any machine on your network with no authentication, so only do this on a network you trust.
 
@@ -93,6 +97,72 @@ Claude Desktop (`claude_desktop_config.json`):
   }
 }
 ```
+
+### 1.1.3. Studio tools
+
+By default any client can run any code in Nuke. A studio can instead give clients a fixed set of tools, such as "render this Write node", and turn arbitrary code off. Whoever sets up the plugin decides this, not the client.
+
+1. Write adapter functions in a Python module that Nuke can import (for example a folder on `NUKE_PATH`). See [examples/studio_tools.py](examples/studio_tools.py).
+2. Declare them in a JSON file. See [examples/nss_tools.json](examples/nss_tools.json).
+3. Set `NSS_TOOLS` to the path of the JSON file before Nuke starts.
+
+The tools load each time the panel connects, and the panel's Logs report how many loaded, which were skipped and why, and whether code execution is on. To pick up a change to the JSON file, disconnect and connect the panel. A change to the adapter module needs a Nuke restart, because Python keeps the module it imported.
+
+```json
+{
+    "allow_code": false,
+    "tools": [
+        {
+            "name": "render_write",
+            "description": "Render one Write node by name.",
+            "function": "studio_tools:render_write",
+            "timeout": 3600,
+            "inputSchema": {
+                "type": "object",
+                "properties": {"node": {"type": "string"}},
+                "required": ["node"]
+            }
+        }
+    ]
+}
+```
+
+| Field | Meaning |
+| --- | --- |
+| `allow_code` | `true` (default) keeps code execution on. `false` refuses every code request. |
+| `name` | Letters, digits, `_`, `-` or `.`, up to 128 characters. `execute_code` is reserved. |
+| `description` | What the tool does. LLM clients read it to decide when to call the tool. |
+| `function` | `module:function`, imported when the panel connects. Dots reach nested attributes, such as `module:Class.static_method`. |
+| `timeout` | Optional. Seconds the MCP server waits for this tool, instead of its `--timeout`. |
+| `inputSchema` | Optional for tools without arguments. A JSON Schema object whose properties match the function's parameters. Parameters without a default must be `required`. |
+
+An entry that cannot load (bad field, failed import, signature that does not match the schema) is skipped with the reason, and the other tools still load. If `NSS_TOOLS` is set but the file is missing or is not valid JSON, no tools load and code execution is off.
+
+Before calling a function, the server checks that required arguments are present, that no unknown arguments are sent (unless the function takes `**kwargs`), and each argument's `type` and `enum`. It does not check nested values or other schema keywords, so the adapter must check those itself. Arguments are passed as Python values and are never inserted into code.
+
+Write adapters for remote callers, not for artists:
+
+- Take names and plain values, never the current selection: the artist may change it while a request is running.
+- Never open a dialog. Nuke waits for someone to click it, and the client waits until it times out.
+- Raise an exception for any failure. The client receives the traceback as an error.
+- Return JSON values (`dict`, `list`, `str`, numbers). Anything else is sent as its `str()`.
+- Make tools safe to run twice, or say in the description when they are not. After a timeout the client cannot tell whether the tool ran.
+
+Tools run on Nuke's main thread, so Nuke's interface is busy until a tool returns.
+
+**What this protects against:** it limits what a remote client or an LLM agent can do through nukeserversocket. It does not stop people or code that already run as the same user: an artist can still use the Script Editor, and anyone who can edit `menu.py`, the adapter module or the JSON file can change the tools. There is no authentication, so with **Allow LAN Connections** on, anyone on the network can call the tools.
+
+Custom clients use two requests, each on its own connection like code requests. The reply is JSON:
+
+```py
+{"list_tools": true}
+# {"allow_code": false, "tools": [{"name", "description", "inputSchema", "timeout"}], "skipped": {"name": "reason"}}
+
+{"call_tool": "render_write", "arguments": {"node": "Write1"}}
+# {"ok": true, "output": "printed text, then the return value as JSON"}
+```
+
+When `allow_code` is `false`, a code request gets a reply starting with `NukeServerSocket error:`.
 
 ## 1.2. Installation
 

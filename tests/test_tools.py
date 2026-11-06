@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import sys
 import json
+import types
+import pathlib
 import textwrap
 
 import pytest
@@ -189,6 +191,19 @@ def test_non_list_tools_loads_nothing_but_keeps_policy(tool_file):
     """A malformed "tools" value loads nothing and still applies allow_code."""
     toolset = load_tools(tool_file({'allow_code': False, 'tools': {'publish_shot': {}}}))
     assert toolset == ToolSet(allow_code=False)
+
+
+def test_example_tool_file_loads_every_tool(monkeypatch):
+    """The documented example stays valid."""
+    examples = pathlib.Path(__file__).parents[1] / 'examples'
+    monkeypatch.setitem(sys.modules, 'nuke', types.ModuleType('nuke'))
+    monkeypatch.syspath_prepend(str(examples))
+    toolset = load_tools(str(examples / 'nss_tools.json'))
+    sys.modules.pop('studio_tools', None)
+
+    assert toolset.allow_code is False
+    assert list(toolset.tools) == ['script_info', 'list_writes', 'render_write']
+    assert toolset.skipped == {}
 
 
 @pytest.fixture()
