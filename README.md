@@ -56,10 +56,16 @@ The server accepts code only from your own machine by default.
 
 `nss_mcp/server.py` lets MCP clients, such as Claude Code, Codex and Gemini CLI, run Python in Nuke while the panel is connected.
 
-Claude Code:
+To let your agent set it up, paste this into Claude Code, Codex, Gemini CLI or another agent:
+
+```text
+Set up the nukeserversocket MCP server by following https://github.com/sisoe24/nukeserversocket/blob/main/docs/mcp-agent-setup.md
+```
+
+Or set it up yourself. Claude Code:
 
 ```sh
-claude mcp add nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
+claude mcp add -s user nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
 ```
 
 For Claude Desktop, Codex, Gemini CLI and other clients, see [docs/mcp.md](docs/mcp.md#install-in-a-client).
@@ -89,3 +95,4 @@ Works with PySide6 (Nuke 16 and newer) and PySide2 (Nuke 15 and older), on Pytho
 ## Contributing
 
 If you have suggestions, bug reports or questions, open an issue or a pull request. Occasionally I pick something from the [Projects](https://github.com/users/sisoe24/projects/4) tab, so feel free to check it out.
+****

@@ -6,12 +6,12 @@
 
 ## Install in a client
 
-Each client starts the server with `python /path/to/nukeserversocket/nss_mcp/server.py`. Use the absolute path to the file: some clients do not expand `~`. Add the [options](#options) after the path when the panel does not use the defaults.
+Each client starts the server with `python /path/to/nukeserversocket/nss_mcp/server.py`. Use the absolute path to the file: some clients do not expand `~`. The server needs Python 3: where `python` is missing or is Python 2, use `python3` or the interpreter's full path. Add the [options](#options) after the path when the panel does not use the defaults.
 
 **Claude Code:**
 
 ```sh
-claude mcp add nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
+claude mcp add -s user nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
 ```
 
 **Claude Desktop** (`claude_desktop_config.json`):
@@ -44,7 +44,7 @@ args = ["/path/to/nukeserversocket/nss_mcp/server.py"]
 **Gemini CLI:**
 
 ```sh
-gemini mcp add nuke python /path/to/nukeserversocket/nss_mcp/server.py
+gemini mcp add -s user nuke python /path/to/nukeserversocket/nss_mcp/server.py
 ```
 
 Or in `~/.gemini/settings.json`, with the same `mcpServers` entry as Claude Desktop.
