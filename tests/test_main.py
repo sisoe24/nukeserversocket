@@ -6,6 +6,7 @@ import pytest
 from pytestqt.qtbot import QtBot
 
 from nukeserversocket.main import MainView, MainModel, MainController
+from nukeserversocket.tools import Tool, ToolSet
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
@@ -45,6 +46,7 @@ class MockServer(QObject):
     def __init__(self, editor: MockEditorController, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.allow_lan = None
+        self.toolset = ToolSet()
 
     def try_connect(self, port: int, allow_lan: bool = False) -> bool:
         self.allow_lan = allow_lan
@@ -95,6 +97,28 @@ def test_main_controller_on_connect(controller: Controller, view: View):
     assert view.connect_btn.text() == 'Disconnect'
     assert view.port_input.isEnabled() is False
     assert controller._timer.isActive() is True
+
+
+def _tool(name: str) -> Tool:
+    return Tool(name, 'A tool.', {'type': 'object', 'properties': {}}, lambda: None)
+
+
+@pytest.mark.parametrize('toolset, text, tooltip', [
+    (ToolSet(), 'Any code', 'Tools: none'),
+    (ToolSet(tools={'a': _tool('a')}), 'Any code + 1 tool(s)', 'Tools: a'),
+    (ToolSet(allow_code=False, tools={'a': _tool('a'), 'b': _tool('b')},
+             skipped={'c': 'cannot load'}),
+     '2 tool(s) only, code off', 'Tools: a, b\nSkipped c: cannot load'),
+])
+def test_main_controller_shows_client_access_on_connect(
+        controller: Controller, view: View, server: MockServer, toolset, text, tooltip):
+    assert view.access_label.text() == '-'
+    server.toolset = toolset
+
+    controller._on_connect(True)
+
+    assert view.access_label.text() == text
+    assert view.access_label.toolTip() == tooltip
 
 
 def test_main_controller_on_disconnect(controller: Controller, view: View):

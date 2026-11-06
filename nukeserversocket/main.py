@@ -9,6 +9,7 @@ from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QFormLayout,
                   QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
+from .tools import ToolSet
 from .server import NssServer
 from .console import NssConsole
 from .toolbar import ToolBar
@@ -80,11 +81,15 @@ class MainView(QWidget):
         self.port_input = QSpinBox()
         self.port_input.setRange(49512, 65535)
 
+        # tools load on connect, so the access is unknown until then
+        self.access_label = QLabel('-')
+
         form_layout = QFormLayout()
         form_layout.setAlignment(Qt.AlignVCenter)
         form_layout.addRow('Status:', self.status_label)
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
+        form_layout.addRow('Clients:', self.access_label)
 
         top_layout = QHBoxLayout()
         top_layout.addLayout(form_layout, 1)
@@ -106,6 +111,21 @@ class MainView(QWidget):
 
     def set_disconnected(self):
         self._update_status_connection('Idle', 'color: orange', 'Connect')
+
+    def set_access(self, toolset: ToolSet):
+        tools = len(toolset.tools)
+        if not toolset.allow_code:
+            text, style = f'{tools} tool(s) only, code off', 'color: orange'
+        elif tools:
+            text, style = f'Any code + {tools} tool(s)', ''
+        else:
+            text, style = 'Any code', ''
+        self.access_label.setText(text)
+        self.access_label.setStyleSheet(style)
+
+        lines = [f'Tools: {", ".join(toolset.tools) or "none"}']
+        lines += [f'Skipped {name}: {reason}' for name, reason in toolset.skipped.items()]
+        self.access_label.setToolTip('\n'.join(lines))
 
 
 class MainController:
@@ -156,6 +176,7 @@ class MainController:
                 LOGGER.info('Listening on %s...', port)
 
                 self._view.ip_label.setText(self._model.get_ip())
+                self._view.set_access(self._server.toolset)
                 self._start_timer()
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()

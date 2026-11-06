@@ -5,7 +5,7 @@
 ### Added
 
 - MCP server (`nss_mcp`) so MCP clients can run code in Nuke.
-- Studio tools: `NSS_TOOLS` names a JSON file of functions clients may call, and can turn code execution off. The MCP server lists them next to `nuke_execute_code`.
+- Studio tools: `NSS_TOOLS` names a JSON file of functions clients may call, and can turn code execution off. The MCP server lists them next to `nuke_execute_code`, and the panel's Clients row shows what clients may run.
 - The panel's Logs show the client and the first line of the code for each request.
 
 ### Changed

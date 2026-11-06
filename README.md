@@ -106,7 +106,7 @@ By default any client can run any code in Nuke. A studio can instead give client
 2. Declare them in a JSON file. See [examples/nss_tools.json](examples/nss_tools.json).
 3. Set `NSS_TOOLS` to the path of the JSON file before Nuke starts.
 
-The tools load each time the panel connects, and the panel's Logs report how many loaded, which were skipped and why, and whether code execution is on. To pick up a change to the JSON file, disconnect and connect the panel. A change to the adapter module needs a Nuke restart, because Python keeps the module it imported.
+The tools load each time the panel connects. The panel's **Clients** row then shows what clients may run, for example `3 tool(s) only, code off`, and its tooltip names the tools and any skipped entries. The Logs report the same. To pick up a change to the JSON file, disconnect and connect the panel. A change to the adapter module needs a Nuke restart, because Python keeps the module it imported.
 
 ```json
 {
