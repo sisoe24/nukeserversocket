@@ -1,10 +1,36 @@
-# MCP server: tools file
+# MCP server
 
-> **Experimental.** The tools file format and the tool requests may change in a future release.
+> **Experimental.** The MCP server and the tools file may change in a future release, including the tools file format and the requests they send to the panel.
 
-A tools file declares the functions clients may call, and whether they may still run arbitrary code. The [MCP server](../README.md#112-mcp-server-llm-clients) lists these tools next to `nuke_execute_code`. To create a tools file and choose it, see [Tools file in the README](../README.md#1121-tools-file).
+`nss_mcp/server.py` is a small [MCP](https://modelcontextprotocol.io) server that lets MCP clients (Claude Desktop, Claude Code, etc.) run Python inside a running Nuke session. It has no dependencies: the client speaks JSON-RPC 2.0 over stdio, and the server forwards each request to the nukeserversocket panel over TCP. Each request appears in the panel's Logs, marked `(MCP)`.
 
-## Fields
+## Options
+
+| Option      | Environment variable | Default     | Meaning                                   |
+| ----------- | -------------------- | ----------- | ----------------------------------------- |
+| `--port`    | `NSS_MCP_PORT`       | `54321`     | Port of the nukeserversocket panel.       |
+| `--host`    | `NSS_MCP_HOST`       | `127.0.0.1` | Machine that runs Nuke.                   |
+| `--timeout` | `NSS_MCP_TIMEOUT`    | `60`        | Seconds to wait for Nuke to answer.       |
+
+To reach Nuke on another machine, pass `--host` and turn on **Allow LAN Connections** in the panel. The panel then runs code from any machine on your network with no authentication, so only do this on a network you trust.
+
+## Tools
+
+The server exposes `nuke_execute_code`, plus any tools the panel's tools file declares. It asks Nuke for its tools each time the client lists them. If the client starts before Nuke, it sees only `nuke_execute_code` at first; when Nuke answers, the server tells the client to list the tools again.
+
+## Tools file
+
+By default any client can run any code in Nuke. A studio can instead give clients a fixed set of tools, such as "render this Write node", and turn arbitrary code off. Whoever sets up the plugin decides this, not the client.
+
+1. In the panel, open **Settings** and click **Create sample...** next to **Tools file**. Choose a folder. The panel copies [nss_tools.json](../resources/sample/nss_tools.json) and its adapter module [nss_tools_example.py](../resources/sample/nss_tools_example.py) there, and sets **Tools file** to the new JSON file.
+2. Edit the adapter functions and declare them in the JSON file. Nuke can import any module in the JSON file's folder.
+3. To set the file for a whole studio, set `NSS_TOOLS` to its path before Nuke starts. `NSS_TOOLS` wins over the setting and makes the field read-only, so artists cannot change it from the panel.
+
+The tools load each time the panel connects, and the panel shows whether code is allowed and which tools loaded. To pick up a change to the JSON file, disconnect and connect the panel. A change to the adapter module needs a Nuke restart, because Python keeps the module it imported.
+
+Clients other than MCP can use the tools too: see [Tool requests](clients.md#tool-requests).
+
+### Fields
 
 ```json
 {
@@ -38,7 +64,7 @@ An entry that cannot load (bad field, failed import, signature that does not mat
 
 Before calling a function, the server checks that required arguments are present, that no unknown arguments are sent (unless the function takes `**kwargs`), and each argument's `type` and `enum`. It does not check nested values or other schema keywords, so the adapter must check those itself. Arguments are passed as Python values and are never inserted into code.
 
-## Writing adapters
+### Writing adapters
 
 Write adapters for remote callers, not for artists:
 
@@ -50,6 +76,6 @@ Write adapters for remote callers, not for artists:
 
 Tools run on Nuke's main thread, so Nuke's interface is busy until a tool returns.
 
-## Security
+## What the tools file protects against
 
 A tools file limits what a remote client or an LLM agent can do through nukeserversocket. It does not stop people or code that already run as the same user: an artist can still use the Script Editor, and anyone who can edit `menu.py`, the adapter module or the JSON file can change the tools. There is no authentication, so with **Allow LAN Connections** on, anyone on the network can call the tools.
