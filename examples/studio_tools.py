@@ -13,7 +13,8 @@ def script_info():
     """Describe the open script."""
     root = nuke.root()
     return {
-        'script': root.name(),
+        # root.name() is always 'Root'; the knob holds the path, empty while unsaved
+        'script': root['name'].value(),
         'first_frame': int(root['first_frame'].value()),
         'last_frame': int(root['last_frame'].value()),
         'fps': root['fps'].value(),
