@@ -71,9 +71,11 @@ for node in nodes:
 
 ### 1.1.2. MCP server (LLM clients)
 
+> **Experimental.** The MCP server and [studio tools](#113-studio-tools) may change in a future release, including the tools file format and the requests they send to the panel.
+
 The repository ships a small [MCP](https://modelcontextprotocol.io) server (`nss_mcp/server.py`) that lets MCP clients (Claude Desktop, Claude Code, etc.) execute Python inside a running Nuke session. It is a hand-rolled, dependency-free bridge: the client speaks JSON-RPC 2.0 over stdio, the server forwards the code to nukeserversocket over TCP.
 
-It exposes `nuke_execute_code`, plus any [studio tools](#113-studio-tools) the Nuke setup declares. Nuke must be running with the nukeserversocket panel connected (default port `54321`; override with `--port`/`--host`/`--timeout` or `NSS_MCP_PORT`/`NSS_MCP_HOST`/`NSS_MCP_TIMEOUT`). Each request appears in the panel's Logs, marked `MCP`.
+It exposes `nuke_execute_code`, plus any [studio tools](#113-studio-tools) the Nuke setup declares. Nuke must be running with the nukeserversocket panel connected (default port `54321`; override with `--port`/`--host`/`--timeout` or `NSS_MCP_PORT`/`NSS_MCP_HOST`/`NSS_MCP_TIMEOUT`). Each request appears in the panel's Logs, marked `(MCP)`.
 
 The server asks Nuke for its tools each time the client lists them. If the client starts before Nuke, it sees only `nuke_execute_code` at first; when Nuke answers, the server tells the client to list the tools again.
 
