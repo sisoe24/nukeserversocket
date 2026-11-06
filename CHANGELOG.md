@@ -4,7 +4,7 @@
 
 ### Added
 
-- MCP server (`nss_mcp`) so MCP clients can run code in Nuke.
+- MCP server (`nss_mcp`) so MCP clients can run code in Nuke. Experimental. Setup for Claude Code, Claude Desktop, Codex, Gemini CLI and other clients is in `docs/mcp.md`, and `docs/mcp-agent-setup.md` is a guide an agent can follow to set it up.
 - Tools file: a JSON file of functions clients may call, which can also turn code execution off. Choose it in Settings > Tools file, or set `NSS_TOOLS`, which takes priority. The MCP server lists the tools next to `nuke_execute_code`.
 - Settings > Tools file > **Create sample...** copies a sample tools file and its Python module into a folder. Modules next to the tools file import without a `NUKE_PATH` entry.
 - The panel shows whether code is allowed and the loaded tools.
@@ -14,6 +14,8 @@
 - The Logs show one line for each request, starting with the client in parentheses, such as `(MCP) render_write: ok`. Requests that take 1 second or more show the time. One bad request logs one warning instead of three lines.
 - The Logs show the address and the tools file when the panel starts listening, and why it stopped when the Server Timeout closes it.
 - Execution errors sent to clients always start with `NukeServerSocket error:`.
+- The README covers getting started only. Details move to `docs/`: the client protocol in `docs/clients.md` (moved from the wiki), the MCP server and tools file in `docs/mcp.md`, and Houdini setup in `docs/houdini.md`.
+- The client protocol docs no longer mention plain-string requests, which the server does not accept, and say that remote clients need **Allow LAN Connections**.
 
 ### Fixed
 
