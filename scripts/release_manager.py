@@ -12,7 +12,8 @@ ROOT = Path(__file__).parent.parent
 DIST = ROOT / 'dist'
 DIST.mkdir(exist_ok=True)
 
-PACKAGE = ROOT.name
+# not ROOT.name: a clone or worktree folder may have any name
+PACKAGE = 'nukeserversocket'
 
 
 def bump_version(version: str) -> None:
@@ -52,8 +53,17 @@ def make_release():
     files = sorted([f for f in DIST.iterdir() if not f.name.startswith('.')])
     index = input('[0]: Skip asset\n' + format_output(files) + '\n> ')
 
+    # gh tags the default branch unless told otherwise
+    branch = subprocess.run(
+        ['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd=ROOT, capture_output=True
+    ).stdout.decode().strip()
+
     version = f'v{version}'
-    cmd = ['gh', 'release', 'create', version, '--notes', f'Release: {version}']
+    cmd = ['gh', 'release', 'create', version, '--target', branch,
+           '--notes', f'Release: {version}']
+    # poetry writes pre-releases as 1.5.0a1, 1.5.0b1 or 1.5.0rc1
+    if any(c.isalpha() for c in version[1:]):
+        cmd.append('--prerelease')
     if index != '0':
         cmd.append(str(files[int(index)-1]))
 
