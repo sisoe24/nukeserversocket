@@ -54,7 +54,7 @@ The server accepts code only from your own machine by default.
 
 > **Experimental.** The MCP server and the tools file may change in a future release.
 
-`nss_mcp/server.py` lets MCP clients, such as Claude Code and Claude Desktop, run Python in Nuke while the panel is connected.
+`nss_mcp/server.py` lets MCP clients, such as Claude Code, Codex and Gemini CLI, run Python in Nuke while the panel is connected.
 
 Claude Code:
 
@@ -62,18 +62,7 @@ Claude Code:
 claude mcp add nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
 ```
 
-Claude Desktop (`claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "nuke": {
-      "command": "python",
-      "args": ["/path/to/nukeserversocket/nss_mcp/server.py"]
-    }
-  }
-}
-```
+For Claude Desktop, Codex, Gemini CLI and other clients, see [docs/mcp.md](docs/mcp.md#install-in-a-client).
 
 To give clients a fixed set of tools instead of arbitrary code, open **Settings** in the panel and click **Create sample...** next to **Tools file**. See [docs/mcp.md](docs/mcp.md) for the options, the tools file, and what it protects against.
 

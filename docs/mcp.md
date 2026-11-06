@@ -4,6 +4,53 @@
 
 `nss_mcp/server.py` is a small [MCP](https://modelcontextprotocol.io) server that lets MCP clients (Claude Desktop, Claude Code, etc.) run Python inside a running Nuke session. It has no dependencies: the client speaks JSON-RPC 2.0 over stdio, and the server forwards each request to the nukeserversocket panel over TCP. Each request appears in the panel's Logs, marked `(MCP)`.
 
+## Install in a client
+
+Each client starts the server with `python /path/to/nukeserversocket/nss_mcp/server.py`. Use the absolute path to the file: some clients do not expand `~`. Add the [options](#options) after the path when the panel does not use the defaults.
+
+**Claude Code:**
+
+```sh
+claude mcp add nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
+```
+
+**Claude Desktop** (`claude_desktop_config.json`):
+
+```json
+{
+  "mcpServers": {
+    "nuke": {
+      "command": "python",
+      "args": ["/path/to/nukeserversocket/nss_mcp/server.py"]
+    }
+  }
+}
+```
+
+**Codex:**
+
+```sh
+codex mcp add nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
+```
+
+Or in `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.nuke]
+command = "python"
+args = ["/path/to/nukeserversocket/nss_mcp/server.py"]
+```
+
+**Gemini CLI:**
+
+```sh
+gemini mcp add nuke python /path/to/nukeserversocket/nss_mcp/server.py
+```
+
+Or in `~/.gemini/settings.json`, with the same `mcpServers` entry as Claude Desktop.
+
+**Other clients:** add a stdio server with the command `python` and the arguments `/path/to/nukeserversocket/nss_mcp/server.py`. Most clients use the same `mcpServers` JSON as Claude Desktop.
+
 ## Options
 
 | Option      | Environment variable | Default     | Meaning                                   |
