@@ -58,11 +58,11 @@ def make_release():
         ['git', 'rev-parse', '--abbrev-ref', 'HEAD'], cwd=ROOT, capture_output=True
     ).stdout.decode().strip()
 
-    version = f'v{version}'
-    cmd = ['gh', 'release', 'create', version, '--target', branch,
-           '--notes', f'Release: {version}']
+    cmd = ['gh', 'release', 'create', f'v{version}', '--target', branch,
+           '--title', version, '--notes',
+           f'See [CHANGELOG](https://github.com/sisoe24/nukeserversocket/blob/v{version}/CHANGELOG.md).']
     # poetry writes pre-releases as 1.5.0a1, 1.5.0b1 or 1.5.0rc1
-    if any(c.isalpha() for c in version[1:]):
+    if any(c.isalpha() for c in version):
         cmd.append('--prerelease')
     if index != '0':
         cmd.append(str(files[int(index)-1]))
