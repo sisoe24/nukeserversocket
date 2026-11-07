@@ -2,7 +2,7 @@
 
 > **Experimental.** The MCP server and the tools file can change in a future release. This includes the tools file format and the requests sent to the panel.
 
-The MCP server lets an AI client, such as Claude Code or Claude Desktop, run Python in a running Nuke session. The server is the file `nss_mcp/server.py`. It needs only Python 3, with no other packages. The client starts the server and talks to it over stdio, with [MCP](https://modelcontextprotocol.io) (JSON-RPC 2.0). The server sends each request to the nukeserversocket panel over TCP. The panel's Logs mark each of these requests with `(MCP)`.
+The MCP server lets an agent in an MCP client, such as Claude Code or Claude Desktop, run Python in a running Nuke session. The server is the file `nss_mcp/server.py`. It needs only Python 3, with no other packages. The client starts the server and sends it [MCP](https://modelcontextprotocol.io) requests (JSON-RPC 2.0) over stdio. The server sends each request to the nukeserversocket panel over TCP. The panel's Logs mark each of these requests with `(MCP)`.
 
 The MCP server supports only Nuke for now, not [Houdini](houdini.md).
 
@@ -43,7 +43,7 @@ claude mcp add -s user nuke -- python /path/to/nukeserversocket/nss_mcp/server.p
 codex mcp add nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
 ```
 
-Or in `~/.codex/config.toml`:
+Or add this entry to `~/.codex/config.toml`:
 
 ```toml
 [mcp_servers.nuke]
@@ -57,9 +57,9 @@ args = ["/path/to/nukeserversocket/nss_mcp/server.py"]
 gemini mcp add -s user nuke python /path/to/nukeserversocket/nss_mcp/server.py
 ```
 
-Or in `~/.gemini/settings.json`, with the same `mcpServers` entry as Claude Desktop.
+Or add the same `mcpServers` entry as Claude Desktop to `~/.gemini/settings.json`.
 
-**Other clients:** add a stdio server. Set the command to `python` and the arguments to `/path/to/nukeserversocket/nss_mcp/server.py`. Most clients use the same `mcpServers` JSON as Claude Desktop.
+**Other clients:** add a stdio server. Set the command to `python`. Set the arguments to `/path/to/nukeserversocket/nss_mcp/server.py`. Most clients use the same `mcpServers` JSON as Claude Desktop.
 
 ## Options
 
@@ -75,26 +75,28 @@ To connect to Nuke on a different machine, set `--host` and turn on **Allow LAN 
 
 The server gives the client these tools:
 
-- `nuke_execute_code`, if the [tools file](#tools-file) allows code.
+- `nuke_execute_code`, if code is on in the [tools file](#tools-file).
 - Each tool that the tools file declares.
 
 The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again.
 
 ## Tools file
 
-By default, a client can run any code in Nuke. A tools file changes this: it gives clients a fixed set of tools, such as "render this Write node", and it can turn off code. The person who sets up the plugin controls the tools file. The client cannot change it.
+By default, a client can run any code in Nuke. A tools file changes this. It gives clients a fixed set of tools, such as "render this Write node". It can also turn code off, so that the panel refuses all code requests. The person who installs the plugin controls the tools file. The client cannot change it.
 
 Each tool calls a Python function, the adapter. The adapters are in a Python module, the adapter module, in the same folder as the JSON file. Nuke can import any module in that folder.
 
 To make a tools file:
 
-1. In the panel, open **Settings**. Next to **Tools file**, click **Create sample...** and choose a folder. The panel copies [nss_tools.json](../resources/sample/nss_tools.json) and its adapter module [nss_tools_example.py](../resources/sample/nss_tools_example.py) to that folder. It also sets **Tools file** to the new JSON file.
-2. Edit the adapters in the adapter module.
-3. Declare each adapter as a tool in the JSON file. See [Fields](#fields).
+1. In the panel, open **Settings**.
+2. Next to **Tools file**, click **Create sample...**.
+3. Choose a folder. The panel copies [nss_tools.json](../resources/sample/nss_tools.json) and its adapter module [nss_tools_example.py](../resources/sample/nss_tools_example.py) to that folder. It also sets **Tools file** to the new JSON file.
+4. Edit the adapters in the adapter module.
+5. Declare each adapter as a tool in the JSON file. See [Fields](#fields).
 
 To use one tools file for the whole studio, set `NSS_TOOLS` to its path before Nuke starts. `NSS_TOOLS` overrides the panel setting and makes the **Tools file** field read-only, so artists cannot change it in the panel.
 
-The panel loads the tools each time it connects. The panel shows if code is allowed and which tools loaded.
+The panel loads the tools each time it connects. The panel shows if code is on and which tools loaded.
 
 - After you change the JSON file, disconnect and connect the panel.
 - After you change the adapter module, restart Nuke. Python keeps the module that it imported first.
@@ -124,10 +126,10 @@ Clients other than MCP clients can also use the tools. See [Tool requests](clien
 
 | Field         | Meaning                                                                                                                                                                                                                       |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `allow_code`  | `true` (default): clients can run code. `false`: the panel refuses all code requests.                                                                                                                                         |
+| `allow_code`  | `true` (default): code is on. `false`: code is off, and the panel refuses all code requests.                                                                                                                                       |
 | `name`        | Letters, digits, `_`, `-` or `.`, up to 128 characters. `execute_code` is reserved.                                                                                                                                           |
-| `description` | What the tool does. The client's AI model reads it to decide when to call the tool.                                                                                                                                           |
-| `function`    | `module:function`. The panel imports it when it connects. Use dots for nested attributes, such as `module:Class.static_method`.                                                                                               |
+| `description` | What the tool does. The agent reads it to decide when to call the tool.                                                                                                                                           |
+| `function`    | `module:function`. The panel imports the function when you connect the panel. Use dots for nested attributes, such as `module:Class.static_method`.                                                                                               |
 | `timeout`     | Optional. Seconds the MCP server waits for this tool. It replaces `--timeout` for this tool only.                                                                                                                             |
 | `inputSchema` | Optional for tools without arguments. A JSON Schema object. Its properties must match the function's parameters. Each parameter without a default must be in `required`.                                                      |
 | `annotations` | Optional. MCP hints for the client: `title`, and `true` or `false` for `readOnlyHint`, `destructiveHint`, `idempotentHint` and `openWorldHint`. Codex and VS Code do not ask for approval before a `readOnlyHint` tool. Set `readOnlyHint` only on tools that change nothing. |
@@ -149,16 +151,16 @@ The panel does not check nested values or other schema keywords. The adapter mus
 Write adapters for remote callers, not for artists:
 
 - Take names and plain values as arguments, not the current selection. The artist can change the selection while a request runs.
-- Do not open a dialog. Nuke waits for a click, and the client waits until it times out.
+- Do not open a dialog. Nuke waits for a click, and the client waits until its timeout ends.
 - Raise an exception for each failure. The client gets the traceback as an error.
 - Return JSON values (`dict`, `list`, `str`, numbers). The panel sends any other value as its `str()`.
-- Make tools safe to run two times, or say in the description that they are not. After a timeout, the client cannot know if the tool ran.
+- Make tools safe to run two times. If a tool is not safe to run two times, say so in its description. After a timeout, the client cannot know if the tool ran.
 
 Tools run on Nuke's main thread. The Nuke interface is busy until the tool returns.
 
 ## What the tools file protects against
 
-A tools file limits what a remote client or an AI agent can do through nukeserversocket. It does not stop people or code that run as the same user:
+A tools file limits what a remote client or an agent can do through nukeserversocket. It does not stop people or code that already run as the same user as Nuke:
 
 - An artist can still use the Script Editor.
 - A person who can edit `menu.py`, the adapter module or the JSON file can change the tools.

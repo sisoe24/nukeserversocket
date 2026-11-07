@@ -1,10 +1,10 @@
 # Client applications
 
-A client sends code to the nukeserversocket panel over TCP and gets back the output. This page shows the request format, so you can write your own client.
+A client sends code to the nukeserversocket panel over TCP and receives the output. This page shows the request format, so you can write your own client.
 
 ## Send code
 
-Send one JSON object as a UTF-8 string. Each connection carries one request. The panel sends back the output and closes the connection.
+Send one JSON object as a UTF-8 string. Each connection carries one request. The panel returns the output and closes the connection.
 
 ```json
 {
@@ -27,7 +27,7 @@ Convert the object to a string before you send it, for example with `json.dumps(
 ### Host
 
 - On the same machine, use `127.0.0.1`. The panel listens on IPv4 only, so `localhost` fails if it resolves to `::1`.
-- From another machine, turn on **Allow LAN Connections** in the panel's Settings. Then use the IP address that the panel shows, for example `192.168.1.10`. There is no authentication, so use this only on a network that you trust.
+- From another machine, turn on **Allow LAN Connections** in the panel's Settings. Then use the IP address that the panel shows, for example `192.168.1.10`. There is no authentication, so turn on this setting only on a network that you trust.
 
 ### Port
 
@@ -35,7 +35,7 @@ The panel saves its port in `~/.nuke/nukeserversocket.json`. Your client can rea
 
 ## Tool requests
 
-When the panel has a [tools file](mcp.md#tools-file), clients can list and call its tools. Send each request on its own connection, as for code. The reply is JSON:
+When the panel has a [tools file](mcp.md#tools-file), clients can list and call its tools. Send each request on its own connection, as you do for a code request. The reply is JSON:
 
 ```py
 {"list_tools": true}
