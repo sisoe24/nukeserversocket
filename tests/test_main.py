@@ -217,3 +217,21 @@ def test_main_controller_auto_start(qtbot: QtBot, model: Model, view: View, serv
     controller = Controller(view, model, server)  # keep a reference so its slots stay connected
 
     qtbot.waitUntil(lambda: controller._timer.isActive())
+
+
+def test_main_controller_saves_console_options(controller: Controller, model: Model, view: View):
+    view.console.enable_debug.setChecked(True)
+    view.console.wrap_lines.setChecked(True)
+
+    assert model.get_enable_debug() is True
+    assert model.get_wrap_lines() is True
+
+
+def test_main_controller_restores_console_options(model: Model, view: View, server: MockServer):
+    model.set_enable_debug(True)
+    model.set_wrap_lines(True)
+
+    Controller(view, model, server)
+
+    assert view.console.enable_debug.isChecked()
+    assert view.console.wrap_lines.isChecked()

@@ -61,6 +61,18 @@ class MainModel:
     def get_tools_file(self):
         return self._settings.tools_file()
 
+    def get_enable_debug(self):
+        return self._settings.get('enable_debug')
+
+    def set_enable_debug(self, state: bool):
+        return self._settings.set('enable_debug', state)
+
+    def get_wrap_lines(self):
+        return self._settings.get('wrap_lines')
+
+    def set_wrap_lines(self, state: bool):
+        return self._settings.set('wrap_lines', state)
+
 
 class MainView(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
@@ -162,6 +174,12 @@ class MainController:
         self._view.port_input.valueChanged.connect(self._on_port_change)
         self._view.connect_btn.clicked.connect(self._on_connect)
 
+        console = self._view.console
+        console.enable_debug.setChecked(self._model.get_enable_debug())
+        console.wrap_lines.setChecked(self._model.get_wrap_lines())
+        console.enable_debug.toggled.connect(self._model.set_enable_debug)
+        console.wrap_lines.toggled.connect(self._model.set_wrap_lines)
+
         self._timer = QTimer()
         self._timer.timeout.connect(self._on_timeout)
         self._timer.setSingleShot(True)
@@ -248,6 +266,8 @@ class NukeServerSocket(QMainWindow):
         # I don't like this but anywheres else I put it, it creates problems with
         # the tests.
         LOGGER.console = ConsoleHandler(self.view.console)
+        # the saved Enable Debug state was applied before this handler existed
+        self.view.console.sync_log_level()
 
         self.settings_ui = NssSettingsUI(self.settings)
 

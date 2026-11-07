@@ -16,6 +16,8 @@ class _NssSettings:
         'allow_lan': False,
         'mirror_script_editor': False,
         'clear_output': True,
+        'enable_debug': False,
+        'wrap_lines': False,
         'format_output': '[%d NukeTools] %F%n%t',
         # NSS_TOOLS overrides it, see tools_file()
         'tools_file': '',

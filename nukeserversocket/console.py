@@ -38,11 +38,11 @@ class NssConsole(QGroupBox):
         self._console.setReadOnly(True)
         self._console.setLineWrapMode(QPlainTextEdit.NoWrap)
 
-        self._enable_debug = QCheckBox('Enable Debug')
-        self._enable_debug.stateChanged.connect(self._on_enable_debug)
+        self.enable_debug = QCheckBox('Enable Debug')
+        self.enable_debug.stateChanged.connect(self.sync_log_level)
 
-        self._wrap_lines = QCheckBox('Wrap Lines')
-        self._wrap_lines.stateChanged.connect(
+        self.wrap_lines = QCheckBox('Wrap Lines')
+        self.wrap_lines.stateChanged.connect(
             lambda state: self._console.setLineWrapMode(
                 QPlainTextEdit.WidgetWidth if state == 2 else QPlainTextEdit.NoWrap
             )
@@ -52,8 +52,8 @@ class NssConsole(QGroupBox):
         self.clear_logs_btn.clicked.connect(self._console.clear)
 
         top_layout = QHBoxLayout()
-        top_layout.addWidget(self._enable_debug)
-        top_layout.addWidget(self._wrap_lines)
+        top_layout.addWidget(self.enable_debug)
+        top_layout.addWidget(self.wrap_lines)
         top_layout.addStretch()
         top_layout.addWidget(self.clear_logs_btn)
 
@@ -63,9 +63,10 @@ class NssConsole(QGroupBox):
 
         self.setLayout(layout)
 
-    @Slot(int)
-    def _on_enable_debug(self, state: int) -> None:
-        LOGGER.console.setLevel(logging.DEBUG if state == 2 else logging.INFO)
+    @Slot()
+    def sync_log_level(self) -> None:
+        level = logging.DEBUG if self.enable_debug.isChecked() else logging.INFO
+        LOGGER.console.setLevel(level)
 
     def write(self, text: str, level_name: str = 'INFO') -> None:
         color = LOG_COLORS.get(level_name, 'white')
