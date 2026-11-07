@@ -24,12 +24,6 @@ if TYPE_CHECKING:
 LOGGER = get_logger()
 
 
-def _indented(text: str) -> QLabel:
-    label = QLabel(text)
-    label.setContentsMargins(12, 0, 0, 0)
-    return label
-
-
 def _describe_tools(toolset: ToolSet) -> str:
     # code execution is one more tool for MCP clients
     names = (['nuke_execute_code'] if toolset.allow_code else []) + list(toolset.tools)
@@ -111,8 +105,7 @@ class MainView(QWidget):
         form_layout.addRow('Status:', self.status_label)
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
-        form_layout.addRow(QLabel('MCP'))
-        form_layout.addRow(_indented('Tools:'), self.tools_label)
+        form_layout.addRow('MCP tools:', self.tools_label)
 
         top_layout = QHBoxLayout()
         top_layout.addLayout(form_layout, 1)

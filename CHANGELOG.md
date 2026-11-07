@@ -7,7 +7,7 @@
 - MCP server (`nss_mcp`) so MCP clients can run code in Nuke. Experimental. Setup for Claude Code, Claude Desktop, Codex, Gemini CLI and other clients is in `docs/mcp.md`, and `docs/mcp-agent-setup.md` is a guide an agent can follow to set it up.
 - Tools file: a JSON file of functions clients may call, which can also turn code execution off. Choose it in Settings > Tools file, or set `NSS_TOOLS`, which takes priority. The MCP server lists the tools next to `nuke_execute_code`.
 - Settings > Tools file > **Create sample...** copies a sample tools file and its Python module into a folder. Modules next to the tools file import without a `NUKE_PATH` entry.
-- The panel lists, under **MCP**, the tools that MCP clients see, with `nuke_execute_code` only when code is on.
+- The panel's **MCP tools** row lists the tools that MCP clients see, with `nuke_execute_code` only when code is on.
 
 ### Changed
 
