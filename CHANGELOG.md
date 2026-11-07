@@ -4,28 +4,26 @@
 
 ### Added
 
-- MCP server (`nss_mcp`) so MCP clients can run code in Nuke. Experimental. Setup for Claude Code, Claude Desktop, Codex, Gemini CLI and other clients is in `docs/mcp.md`, and `docs/mcp-agent-setup.md` is a guide an agent can follow to set it up.
-- Tools file: a JSON file of functions clients may call, which can also turn code execution off. Choose it in Settings > Tools file, or set `NSS_TOOLS`, which takes priority. The MCP server lists the tools next to `nuke_execute_code`.
-- Settings > Tools file > **Create sample...** copies a sample tools file and its Python module into a folder. Modules next to the tools file import without a `NUKE_PATH` entry.
-- The panel's **MCP tools** row lists the tools that MCP clients see, with `nuke_execute_code` only when code is on.
+- Experimental MCP server, so AI agents can run Python in Nuke. See `docs/mcp.md`.
+- Tools file: limit clients to a set of functions, and optionally block code. Settings > Tools file, or `NSS_TOOLS`.
+- **Create sample...** button for the tools file.
+- **MCP tools** row in the panel.
 
 ### Changed
 
-- The Logs show one line for each request, starting with the client in parentheses, such as `(MCP) render_write: ok`. Requests that take 1 second or more show the time. One bad request logs one warning instead of three lines.
-- The Logs show the address and the tools file when the panel starts listening, and why it stopped when the Server Timeout closes it.
-- Execution errors sent to clients always start with `NukeServerSocket error:`.
-- The README covers getting started only. Details move to `docs/`: the client protocol in `docs/clients.md` (moved from the wiki), the MCP server and tools file in `docs/mcp.md`, and Houdini setup in `docs/houdini.md`.
-- The client protocol docs no longer mention plain-string requests, which the server does not accept, and say that remote clients need **Allow LAN Connections**.
+- Logs show one line per request, with the client and the time.
+- Errors sent to clients start with `NukeServerSocket error:`.
+- Docs moved from the wiki and README to `docs/`.
 
 ### Fixed
 
-- The panel's Logs show `<` and `&` as text instead of reading them as HTML.
+- Logs show `<` and `&` as text.
 
 ## [1.4.1] - 2026-11-07
 
 ### Fixed
 
-- The Houdini panel no longer breaks when another Houdini package also ships a top-level `app` package. The package is renamed from `app` to `nukeserversocket_houdini`. Code that imports `app.main` directly must import `nukeserversocket_houdini.main`.
+- Houdini panel clash with other packages named `app`. The package is now `nukeserversocket_houdini`.
 
 ## [1.4.0] - 2026-11-02
 
