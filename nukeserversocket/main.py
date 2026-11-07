@@ -24,8 +24,16 @@ if TYPE_CHECKING:
 LOGGER = get_logger()
 
 
+def _indented(text: str) -> QLabel:
+    label = QLabel(text)
+    label.setContentsMargins(12, 0, 0, 0)
+    return label
+
+
 def _describe_tools(toolset: ToolSet) -> str:
-    text = ', '.join(toolset.tools) or 'None'
+    # code execution is one more tool for MCP clients
+    names = (['nuke_execute_code'] if toolset.allow_code else []) + list(toolset.tools)
+    text = ', '.join(names) or 'None'
     if toolset.skipped:
         text += f' ({len(toolset.skipped)} skipped, see Logs)'
     return text
@@ -93,7 +101,6 @@ class MainView(QWidget):
         self.port_input.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         # the tools file loads on connect, so these are unknown until then
-        self.code_label = QLabel('-')
         self.tools_label = QLabel('-')
         self.tools_label.setWordWrap(True)
 
@@ -104,8 +111,8 @@ class MainView(QWidget):
         form_layout.addRow('Status:', self.status_label)
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
-        form_layout.addRow('Code:', self.code_label)
-        form_layout.addRow('Tools:', self.tools_label)
+        form_layout.addRow(QLabel('MCP'))
+        form_layout.addRow(_indented('Tools:'), self.tools_label)
 
         top_layout = QHBoxLayout()
         top_layout.addLayout(form_layout, 1)
@@ -129,15 +136,12 @@ class MainView(QWidget):
         self._update_status_connection('Idle', 'color: orange', 'Connect')
 
     def set_tools(self, toolset: ToolSet, tools_file: str):
-        if toolset.allow_code:
-            self.code_label.setText('Allowed')
-            self.code_label.setStyleSheet('')
-        else:
-            self.code_label.setText('Off (tools file)')
-            self.code_label.setStyleSheet('color: orange')
-
         self.tools_label.setText(_describe_tools(toolset))
-        self.tools_label.setToolTip(tools_file)
+        tip = tools_file or 'No tools file'
+        if not toolset.allow_code:
+            # the tools file blocks code from every client, editors included
+            tip += '\nCode is blocked for all clients, editors included.'
+        self.tools_label.setToolTip(tip)
 
 
 class MainController:

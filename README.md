@@ -11,11 +11,14 @@
 
 ![x](https://img.shields.io/badge/Nuke-✅-success)
 ![x](https://img.shields.io/badge/Houdini-✅-success)
+[![MCP](https://img.shields.io/badge/MCP-experimental-orange)](docs/mcp.md)
 ![x](https://img.shields.io/badge/Python-3.*-success)
 
 [![NukeTools](https://img.shields.io/github/v/release/sisoe24/Nuke-Tools?label=NukeTools)](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools)
 
 A PySide plugin that runs Python and BlinkScript in Nuke, sent from your code editor, your own script or an MCP client. It also works in Houdini.
+
+**New, experimental:** an MCP server lets agents such as Claude Code, Codex and Gemini CLI run Python in Nuke. To set it up, see [MCP server](#mcp-server).
 
 ## Installation
 

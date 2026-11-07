@@ -107,32 +107,34 @@ def _tool(name: str) -> Tool:
     return Tool(name, 'A tool.', {'type': 'object', 'properties': {}}, lambda: None)
 
 
-@pytest.mark.parametrize('tools_file, toolset, code, tools, logs', [
-    ('', ToolSet(), 'Allowed', 'None', ['Listening on 127.0.0.1:54321']),
-    ('/studio/nss_tools.json', ToolSet(tools={'a': _tool('a')}), 'Allowed', 'a',
+@pytest.mark.parametrize('tools_file, toolset, tools, logs', [
+    ('', ToolSet(), 'nuke_execute_code', ['Listening on 127.0.0.1:54321']),
+    ('/studio/nss_tools.json', ToolSet(tools={'a': _tool('a')}), 'nuke_execute_code, a',
      ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 1 tool, code on']),
+    ('/studio/nss_tools.json', ToolSet(allow_code=False), 'None',
+     ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 0 tools, code off']),
     ('/studio/nss_tools.json',
      ToolSet(allow_code=False, tools={'a': _tool('a'), 'b': _tool('b')}, skipped={'c': 'x'}),
-     'Off (tools file)', 'a, b (1 skipped, see Logs)',
+     'a, b (1 skipped, see Logs)',
      ['Listening on 127.0.0.1:54321',
       'Tools file /studio/nss_tools.json: 2 tools, 1 skipped, code off']),
 ])
-def test_main_controller_shows_code_and_tools_on_connect(
+def test_main_controller_shows_mcp_tools_on_connect(
         controller: Controller, model: Model, view: View, server: MockServer, monkeypatch,
-        tools_file, toolset, code, tools, logs):
+        tools_file, toolset, tools, logs):
     monkeypatch.delenv('NSS_TOOLS', raising=False)
     model._settings.set('tools_file', tools_file)
     server.toolset = toolset
     logged = []
     monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
-    assert view.code_label.text() == view.tools_label.text() == '-'
+    assert view.tools_label.text() == '-'
 
     controller._on_connect(True)
 
     assert server.tools_file == tools_file
-    assert view.code_label.text() == code
     assert view.tools_label.text() == tools
-    assert view.tools_label.toolTip() == tools_file
+    assert view.tools_label.toolTip().startswith(tools_file or 'No tools file')
+    assert ('editors included' in view.tools_label.toolTip()) is not toolset.allow_code
     assert logged == logs
 
 
