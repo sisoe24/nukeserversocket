@@ -6,7 +6,7 @@
 
 - Experimental MCP server, so AI agents can run Python in Nuke. See `docs/mcp.md`.
 - Tools file: limit clients to a set of functions, and optionally block code. Settings > Tools file, or `NSS_TOOLS`.
-- **Create sample...** button for the tools file.
+- **Create sample...** and **Open folder** buttons for the tools file.
 - **MCP tools** list in the panel, with skipped tools greyed out.
 
 ### Changed
