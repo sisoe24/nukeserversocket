@@ -58,7 +58,10 @@ EXECUTE_TOOL = {
         '- Create nodes with nuke.nodes.<Class>() and connect them with setInput(), so the result '
         "does not depend on the artist's selection.\n"
         '- Pass the frame range the user asked for to nuke.execute(); without one it renders the '
-        'whole script.'
+        'whole script.\n'
+        '- When unsure of a Nuke API name, knob name or signature, look it up before running: use '
+        'a docs tool such as context7 if available, otherwise inspect the live session with '
+        'dir(), node.knobs() or help().'
     ),
     'inputSchema': {
         'type': 'object',
