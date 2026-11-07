@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+
+- Large requests that arrive in several pieces no longer fail. A malformed or incomplete request gets an error reply after 3 seconds with no new data.
+
 ## [1.4.1] - 2026-11-07
 
 ### Fixed
