@@ -1,5 +1,6 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
+default_install_hook_types: [pre-commit, pre-push]
 repos:
     - repo: https://github.com/pre-commit/pre-commit-hooks
       rev: v6.0.0
@@ -8,6 +9,9 @@ repos:
           - id: double-quote-string-fixer
           - id: end-of-file-fixer
           - id: check-ast
+          - id: no-commit-to-branch
+            args: [--branch, main]
+            stages: [pre-commit, pre-push]
     - repo: https://github.com/hhatto/autopep8
       rev: v2.3.2
       hooks:
@@ -19,3 +23,11 @@ repos:
       hooks:
           - id: isort
             name: isort (python)
+    - repo: local
+      hooks:
+          - id: pytest
+            name: pytest
+            entry: poetry run pytest -q -o addopts=''
+            language: system
+            pass_filenames: false
+            stages: [pre-push]
