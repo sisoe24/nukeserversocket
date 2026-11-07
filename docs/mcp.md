@@ -96,7 +96,7 @@ To make a tools file:
 
 To use one tools file for the whole studio, set `NSS_TOOLS` to its path before Nuke starts. `NSS_TOOLS` overrides the panel setting and makes the **Tools file** field read-only, so artists cannot change it in the panel.
 
-The panel loads the tools each time it connects. The panel's **MCP tools** row lists the tools that MCP clients see. It includes `nuke_execute_code` only when code is on.
+The panel loads the tools each time it connects. The panel's **MCP tools** list shows the tools that MCP clients see. It includes `nuke_execute_code` only when code is on. Skipped tools are greyed out at the end. Hover over a tool to see its description, or why it was skipped.
 
 - After you change the JSON file, disconnect and connect the panel.
 - After you change the adapter module, restart Nuke. Python keeps the module that it imported first.

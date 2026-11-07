@@ -4,9 +4,9 @@ from __future__ import annotations
 import socket
 from typing import TYPE_CHECKING, Optional
 
-from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QFormLayout,
-                  QHBoxLayout, QMainWindow, QPushButton, QSizePolicy,
-                  QVBoxLayout)
+from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QGroupBox,
+                  QFormLayout, QHBoxLayout, QMainWindow, QPushButton, QListWidget,
+                  QSizePolicy, QVBoxLayout, QListWidgetItem)
 
 from .logger import ConsoleHandler, get_logger
 from .tools import ToolSet
@@ -22,15 +22,6 @@ if TYPE_CHECKING:
     from .controllers.base import BaseController
 
 LOGGER = get_logger()
-
-
-def _describe_tools(toolset: ToolSet) -> str:
-    # code execution is one more tool for MCP clients
-    names = (['nuke_execute_code'] if toolset.allow_code else []) + list(toolset.tools)
-    text = ', '.join(names) or 'None'
-    if toolset.skipped:
-        text += f' ({len(toolset.skipped)} skipped, see Logs)'
-    return text
 
 
 class MainModel:
@@ -82,21 +73,17 @@ class MainView(QWidget):
         # Reserve width for the longer label, so the form does not shift on toggle.
         self.connect_btn.setMinimumWidth(
             self.connect_btn.fontMetrics().horizontalAdvance('Disconnect') + 24)
+        self.connect_btn.setMinimumHeight(40)
 
         self.console = NssConsole()
 
         self.status_label = QLabel('Idle')
-        self.set_disconnected()
 
         self.ip_label = QLabel()
 
         self.port_input = QSpinBox()
         self.port_input.setRange(49512, 65535)
         self.port_input.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
-
-        # the tools file loads on connect, so these are unknown until then
-        self.tools_label = QLabel('-')
-        self.tools_label.setWordWrap(True)
 
         form_layout = QFormLayout()
         # the macOS style keeps fields at their first size hint, which clips changed text
@@ -105,17 +92,33 @@ class MainView(QWidget):
         form_layout.addRow('Status:', self.status_label)
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
-        form_layout.addRow('MCP tools:', self.tools_label)
+        form_layout.addRow(self.connect_btn)
+
+        server_box = QGroupBox('Server')
+        server_box.setLayout(form_layout)
+
+        # the tools file loads on connect, so the list stays empty until then
+        self.tools_list = QListWidget()
+        # the Server box sets the row height; the list fills it and scrolls
+        self.tools_list.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Ignored)
+
+        mcp_layout = QVBoxLayout()
+        mcp_layout.addWidget(self.tools_list)
+
+        mcp_box = QGroupBox('MCP tools')
+        mcp_box.setLayout(mcp_layout)
 
         top_layout = QHBoxLayout()
-        top_layout.addLayout(form_layout, 1)
-        top_layout.addWidget(self.connect_btn)
+        top_layout.addWidget(server_box, 1)
+        top_layout.addWidget(mcp_box, 1)
 
         layout = QVBoxLayout()
         layout.addLayout(top_layout)
-        layout.addWidget(self.console)
+        layout.addWidget(self.console, 1)
 
         self.setLayout(layout)
+
+        self.set_disconnected()
 
     def _update_status_connection(self, label: str, style: str, button_txt: str):
         self.status_label.setText(label)
@@ -127,14 +130,22 @@ class MainView(QWidget):
 
     def set_disconnected(self):
         self._update_status_connection('Idle', 'color: orange', 'Connect')
+        # the tools load again on the next connect
+        self.tools_list.clear()
 
     def set_tools(self, toolset: ToolSet, tools_file: str):
-        self.tools_label.setText(_describe_tools(toolset))
-        tip = tools_file or 'No tools file'
-        if not toolset.allow_code:
-            # the tools file blocks code from every client, editors included
-            tip += '\nCode is blocked for all clients, editors included.'
-        self.tools_label.setToolTip(tip)
+        self.tools_list.clear()
+        if toolset.allow_code:
+            self.tools_list.addItem('nuke_execute_code')
+        for tool in toolset.tools.values():
+            item = QListWidgetItem(tool.name)
+            item.setToolTip(tool.description)
+            self.tools_list.addItem(item)
+        for name, reason in toolset.skipped.items():
+            item = QListWidgetItem(name)
+            item.setToolTip(f'Skipped: {reason}')
+            item.setFlags(Qt.NoItemFlags)
+            self.tools_list.addItem(item)
 
 
 class MainController:

@@ -108,14 +108,14 @@ def _tool(name: str) -> Tool:
 
 
 @pytest.mark.parametrize('tools_file, toolset, tools, logs', [
-    ('', ToolSet(), 'nuke_execute_code', ['Listening on 127.0.0.1:54321']),
-    ('/studio/nss_tools.json', ToolSet(tools={'a': _tool('a')}), 'nuke_execute_code, a',
+    ('', ToolSet(), ['nuke_execute_code'], ['Listening on 127.0.0.1:54321']),
+    ('/studio/nss_tools.json', ToolSet(tools={'a': _tool('a')}), ['nuke_execute_code', 'a'],
      ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 1 tool, code on']),
-    ('/studio/nss_tools.json', ToolSet(allow_code=False), 'None',
+    ('/studio/nss_tools.json', ToolSet(allow_code=False), [],
      ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 0 tools, code off']),
     ('/studio/nss_tools.json',
      ToolSet(allow_code=False, tools={'a': _tool('a'), 'b': _tool('b')}, skipped={'c': 'x'}),
-     'a, b (1 skipped, see Logs)',
+     ['a', 'b', 'c'],
      ['Listening on 127.0.0.1:54321',
       'Tools file /studio/nss_tools.json: 2 tools, 1 skipped, code off']),
 ])
@@ -127,14 +127,15 @@ def test_main_controller_shows_mcp_tools_on_connect(
     server.toolset = toolset
     logged = []
     monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
-    assert view.tools_label.text() == '-'
+    assert view.tools_list.count() == 0
 
     controller._on_connect(True)
 
     assert server.tools_file == tools_file
-    assert view.tools_label.text() == tools
-    assert view.tools_label.toolTip().startswith(tools_file or 'No tools file')
-    assert ('editors included' in view.tools_label.toolTip()) is not toolset.allow_code
+    items = [view.tools_list.item(i) for i in range(view.tools_list.count())]
+    assert [item.text() for item in items] == tools
+    assert [item.toolTip() for item in items if not item.flags()] == [
+        f'Skipped: {r}' for r in toolset.skipped.values()]
     assert logged == logs
 
 
@@ -166,11 +167,13 @@ def test_main_controller_on_disconnect(controller: Controller, view: View):
 
     view.connect_btn.click()
     assert view.connect_btn.text() == 'Disconnect'
+    assert view.tools_list.count() == 1
 
     controller._on_connect(False)
 
     assert view.connect_btn.isChecked() is False
     assert view.connect_btn.text() == 'Connect'
+    assert view.tools_list.count() == 0
     assert view.port_input.isEnabled() is True
     assert controller._timer.isActive() is False
 
