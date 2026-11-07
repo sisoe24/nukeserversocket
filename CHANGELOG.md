@@ -21,6 +21,12 @@
 
 - The panel's Logs show `<` and `&` as text instead of reading them as HTML.
 
+## [1.4.1] - 2026-11-07
+
+### Fixed
+
+- The Houdini panel no longer breaks when another Houdini package also ships a top-level `app` package. The package is renamed from `app` to `nukeserversocket_houdini`. Code that imports `app.main` directly must import `nukeserversocket_houdini.main`.
+
 ## [1.4.0] - 2026-11-02
 
 ### Added
