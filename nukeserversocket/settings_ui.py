@@ -9,10 +9,16 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, Optional
 from textwrap import dedent
 
-from ._qt import Slot, QWidget, QSpinBox, QCheckBox, QLineEdit, QFormLayout
+from ._qt import (Slot, QLabel, QWidget, QSpinBox, QCheckBox, QLineEdit, QFileDialog,
+                  QFormLayout, QHBoxLayout, QPushButton)
+
+from .tools import create_sample
+from .logger import get_logger
 
 if TYPE_CHECKING:
     from .settings import _NssSettings
+
+LOGGER = get_logger()
 
 
 class NssSettingsModel:
@@ -61,15 +67,55 @@ class NssSettingsView(QWidget):
         self.clear_output = QCheckBox()
         self.clear_output.setToolTip('Clear output before running script')
 
+        self.tools_file = QLineEdit()
+        self.tools_file.setPlaceholderText('None: clients can run any code')
+        self.tools_file.setToolTip(
+            'JSON file of the tools clients may call, and whether they may run code. '
+            'Applies the next time the server connects.'
+        )
+        self.tools_file_browse = QPushButton('Browse...')
+        self.tools_file_sample = QPushButton('Create sample...')
+        self.tools_file_sample.setToolTip(
+            'Write a sample tools file and its Python module into a folder, and use it.')
+        # buttons go under the field, so a narrow panel still shows the path
+        tools_layout = QHBoxLayout()
+        tools_layout.setContentsMargins(0, 0, 0, 0)
+        tools_layout.addWidget(self.tools_file_browse)
+        tools_layout.addWidget(self.tools_file_sample)
+        tools_layout.addStretch()
+        tools_buttons = QWidget()
+        tools_buttons.setLayout(tools_layout)
+        self.tools_file_note = QLabel('Set by the NSS_TOOLS environment variable.')
+        self.tools_file_note.setVisible(False)
+
         form_layout = QFormLayout()
+        form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         form_layout.addRow('Server Timeout (min):', self.timeout)
         form_layout.addRow('Auto start:', self.auto_start)
         form_layout.addRow('Allow LAN connections:', self.allow_lan)
         form_layout.addRow('Mirror script editor:', self.mirror_script_editor)
         form_layout.addRow('Format output:', self.format_output)
         form_layout.addRow('Clear output:', self.clear_output)
+        form_layout.addRow('Tools file:', self.tools_file)
+        form_layout.addRow('', tools_buttons)
+        form_layout.addRow('', self.tools_file_note)
 
         self.setLayout(form_layout)
+
+    def set_tools_file(self, path: str, from_env: bool):
+        self.tools_file.setText(path)
+        self.tools_file.setEnabled(not from_env)
+        self.tools_file_browse.setEnabled(not from_env)
+        self.tools_file_sample.setEnabled(not from_env)
+        self.tools_file_note.setVisible(from_env)
+
+    def browse_tools_file(self) -> str:
+        path, _ = QFileDialog.getOpenFileName(
+            self, 'Tools file', self.tools_file.text(), 'JSON (*.json)')
+        return path
+
+    def choose_sample_folder(self) -> str:
+        return QFileDialog.getExistingDirectory(self, 'Folder for the sample tools file')
 
 
 class NssSettingsController:
@@ -83,6 +129,34 @@ class NssSettingsController:
         self._view.format_output.textChanged.connect(self._on_format_output_changed)
         self._view.mirror_script_editor.stateChanged.connect(self._on_mirror_script_editor_changed)
         self._view.clear_output.stateChanged.connect(self._on_clear_output_changed)
+        self._view.tools_file.editingFinished.connect(self._on_tools_file_changed)
+        self._view.tools_file_browse.clicked.connect(self._on_tools_file_browse)
+        self._view.tools_file_sample.clicked.connect(self._on_create_sample)
+
+    @Slot()
+    def _on_create_sample(self):
+        folder = self._view.choose_sample_folder()
+        if not folder:
+            return
+        try:
+            path = create_sample(folder)
+        except OSError as e:
+            LOGGER.warning('Could not create the sample tools file: %s', e)
+            return
+        self._view.tools_file.setText(path)
+        self._on_tools_file_changed()
+        LOGGER.info('Created sample tools file %s. Edit it, then reconnect.', path)
+
+    @Slot()
+    def _on_tools_file_changed(self):
+        self._model.set('tools_file', self._view.tools_file.text().strip())
+
+    @Slot()
+    def _on_tools_file_browse(self):
+        path = self._view.browse_tools_file()
+        if path:
+            self._view.tools_file.setText(path)
+            self._on_tools_file_changed()
 
     @Slot(int)
     def _on_mirror_script_editor_changed(self, state: int):
@@ -124,6 +198,7 @@ class NssSettingsController:
 
         self._view.format_output.setText(self._model.get('format_output'))
         self._view.clear_output.setChecked(self._model.get('clear_output'))
+        self._view.set_tools_file(*self._model.settings.tools_file())
 
 
 class NssSettingsUI:

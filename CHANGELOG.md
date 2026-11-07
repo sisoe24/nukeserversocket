@@ -1,10 +1,29 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+
+- Experimental MCP server, so AI agents can run Python in Nuke. See `docs/mcp.md`.
+- Tools file: limit clients to a set of functions, and optionally block code. Settings > Tools file, or `NSS_TOOLS`.
+- **Create sample...** button for the tools file.
+- **MCP tools** row in the panel.
+
+### Changed
+
+- Logs show one line per request, with the client and the time.
+- Errors sent to clients start with `NukeServerSocket error:`.
+- Docs moved from the wiki and README to `docs/`.
+
+### Fixed
+
+- Logs show `<` and `&` as text.
+
 ## [1.4.1] - 2026-11-07
 
 ### Fixed
 
-- The Houdini panel no longer breaks when another Houdini package also ships a top-level `app` package. The package is renamed from `app` to `nukeserversocket_houdini`. Code that imports `app.main` directly must import `nukeserversocket_houdini.main`.
+- Houdini panel clash with other packages named `app`. The package is now `nukeserversocket_houdini`.
 
 ## [1.4.0] - 2026-11-02
 

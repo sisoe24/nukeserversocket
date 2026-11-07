@@ -6,6 +6,7 @@ import pytest
 from pytestqt.qtbot import QtBot
 
 from nukeserversocket.main import MainView, MainModel, MainController
+from nukeserversocket.tools import Tool, ToolSet
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
@@ -45,15 +46,20 @@ class MockServer(QObject):
     def __init__(self, editor: MockEditorController, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.allow_lan = None
+        self.tools_file = None
+        self.listening = False
+        self.toolset = ToolSet()
 
-    def try_connect(self, port: int, allow_lan: bool = False) -> bool:
+    def try_connect(self, port: int, allow_lan: bool = False, tools_file=None) -> bool:
         self.allow_lan = allow_lan
+        self.tools_file = tools_file
         return True
 
     def isListening(self) -> bool:
-        return False
+        return self.listening
 
-    def close(self): ...
+    def close(self):
+        self.listening = False
 
     def errorString(self) -> str:
         return 'error'
@@ -95,6 +101,65 @@ def test_main_controller_on_connect(controller: Controller, view: View):
     assert view.connect_btn.text() == 'Disconnect'
     assert view.port_input.isEnabled() is False
     assert controller._timer.isActive() is True
+
+
+def _tool(name: str) -> Tool:
+    return Tool(name, 'A tool.', {'type': 'object', 'properties': {}}, lambda: None)
+
+
+@pytest.mark.parametrize('tools_file, toolset, tools, logs', [
+    ('', ToolSet(), 'nuke_execute_code', ['Listening on 127.0.0.1:54321']),
+    ('/studio/nss_tools.json', ToolSet(tools={'a': _tool('a')}), 'nuke_execute_code, a',
+     ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 1 tool, code on']),
+    ('/studio/nss_tools.json', ToolSet(allow_code=False), 'None',
+     ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 0 tools, code off']),
+    ('/studio/nss_tools.json',
+     ToolSet(allow_code=False, tools={'a': _tool('a'), 'b': _tool('b')}, skipped={'c': 'x'}),
+     'a, b (1 skipped, see Logs)',
+     ['Listening on 127.0.0.1:54321',
+      'Tools file /studio/nss_tools.json: 2 tools, 1 skipped, code off']),
+])
+def test_main_controller_shows_mcp_tools_on_connect(
+        controller: Controller, model: Model, view: View, server: MockServer, monkeypatch,
+        tools_file, toolset, tools, logs):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    model._settings.set('tools_file', tools_file)
+    server.toolset = toolset
+    logged = []
+    monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
+    assert view.tools_label.text() == '-'
+
+    controller._on_connect(True)
+
+    assert server.tools_file == tools_file
+    assert view.tools_label.text() == tools
+    assert view.tools_label.toolTip().startswith(tools_file or 'No tools file')
+    assert ('editors included' in view.tools_label.toolTip()) is not toolset.allow_code
+    assert logged == logs
+
+
+def test_main_controller_prefers_nss_tools_over_settings(
+        controller: Controller, model: Model, server: MockServer, monkeypatch):
+    monkeypatch.setenv('NSS_TOOLS', '/studio/env_tools.json')
+    model._settings.set('tools_file', '/home/me/my_tools.json')
+    logged = []
+    monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
+
+    controller._on_connect(True)
+
+    assert server.tools_file == '/studio/env_tools.json'
+    assert logged[1] == 'Tools file /studio/env_tools.json (NSS_TOOLS): 0 tools, code on'
+
+
+def test_main_controller_logs_why_it_stopped(
+        controller: Controller, server: MockServer, monkeypatch):
+    logged = []
+    monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
+    server.listening = True
+
+    controller._on_timeout()
+
+    assert logged == ['Stopped listening: no request for 60 min (Server Timeout)']
 
 
 def test_main_controller_on_disconnect(controller: Controller, view: View):

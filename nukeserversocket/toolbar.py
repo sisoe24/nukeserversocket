@@ -47,8 +47,8 @@ class HelpWidget(QDialog):
         gitrepo = 'https://github.com/sisoe24/nukeserversocket'
         links = {
             'issues': f'{gitrepo}/issues',
-            'changelog': f'{gitrepo}/blob/master/CHANGELOG.md',
-            'readme': f'{gitrepo}/blob/master/README.md'
+            'changelog': f'{gitrepo}/blob/main/CHANGELOG.md',
+            'readme': f'{gitrepo}/blob/main/README.md'
         }
         webbrowser.open(links[link.lower()])
 

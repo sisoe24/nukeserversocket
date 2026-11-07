@@ -9,6 +9,7 @@ from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QFormLayout,
                   QVBoxLayout)
 
 from .logger import ConsoleHandler, get_logger
+from .tools import ToolSet
 from .server import NssServer
 from .console import NssConsole
 from .toolbar import ToolBar
@@ -21,6 +22,15 @@ if TYPE_CHECKING:
     from .controllers.base import BaseController
 
 LOGGER = get_logger()
+
+
+def _describe_tools(toolset: ToolSet) -> str:
+    # code execution is one more tool for MCP clients
+    names = (['nuke_execute_code'] if toolset.allow_code else []) + list(toolset.tools)
+    text = ', '.join(names) or 'None'
+    if toolset.skipped:
+        text += f' ({len(toolset.skipped)} skipped, see Logs)'
+    return text
 
 
 class MainModel:
@@ -57,6 +67,9 @@ class MainModel:
     def get_allow_lan(self):
         return self._settings.get('allow_lan')
 
+    def get_tools_file(self):
+        return self._settings.tools_file()
+
 
 class MainView(QWidget):
     def __init__(self, parent: Optional[QWidget] = None):
@@ -79,12 +92,20 @@ class MainView(QWidget):
 
         self.port_input = QSpinBox()
         self.port_input.setRange(49512, 65535)
+        self.port_input.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+
+        # the tools file loads on connect, so these are unknown until then
+        self.tools_label = QLabel('-')
+        self.tools_label.setWordWrap(True)
 
         form_layout = QFormLayout()
+        # the macOS style keeps fields at their first size hint, which clips changed text
+        form_layout.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
         form_layout.setAlignment(Qt.AlignVCenter)
         form_layout.addRow('Status:', self.status_label)
         form_layout.addRow('IP:', self.ip_label)
         form_layout.addRow('Port:', self.port_input)
+        form_layout.addRow('MCP tools:', self.tools_label)
 
         top_layout = QHBoxLayout()
         top_layout.addLayout(form_layout, 1)
@@ -106,6 +127,14 @@ class MainView(QWidget):
 
     def set_disconnected(self):
         self._update_status_connection('Idle', 'color: orange', 'Connect')
+
+    def set_tools(self, toolset: ToolSet, tools_file: str):
+        self.tools_label.setText(_describe_tools(toolset))
+        tip = tools_file or 'No tools file'
+        if not toolset.allow_code:
+            # the tools file blocks code from every client, editors included
+            tip += '\nCode is blocked for all clients, editors included.'
+        self.tools_label.setToolTip(tip)
 
 
 class MainController:
@@ -137,8 +166,8 @@ class MainController:
 
     @Slot()
     def _on_timeout(self):
-        LOGGER.debug('Server Timeout.')
-        self._close_connection()
+        minutes = self._model.get_server_timeout() // 60000
+        self._close_connection(f'no request for {minutes} min (Server Timeout)')
 
     @Slot()
     def _on_data_received(self):
@@ -152,10 +181,21 @@ class MainController:
     def _on_connect(self, should_connect: bool):
         port = self._view.port_input.value()
         if should_connect and not self._server.isListening():
-            if self._server.try_connect(port, self._model.get_allow_lan()):
-                LOGGER.info('Listening on %s...', port)
+            tools_file, from_env = self._model.get_tools_file()
+            if self._server.try_connect(port, self._model.get_allow_lan(), tools_file):
+                toolset = self._server.toolset
+                ip = self._model.get_ip()
+                LOGGER.info('Listening on %s:%s', ip, port)
+                if tools_file:
+                    count = len(toolset.tools)
+                    skipped = f', {len(toolset.skipped)} skipped' if toolset.skipped else ''
+                    LOGGER.info('Tools file %s%s: %s tool%s%s, code %s', tools_file,
+                                ' (NSS_TOOLS)' if from_env else '', count,
+                                '' if count == 1 else 's', skipped,
+                                'on' if toolset.allow_code else 'off')
 
-                self._view.ip_label.setText(self._model.get_ip())
+                self._view.ip_label.setText(ip)
+                self._view.set_tools(toolset, tools_file)
                 self._start_timer()
                 self._view.port_input.setEnabled(False)
                 self._view.set_connected()
@@ -166,13 +206,15 @@ class MainController:
         else:
             self._close_connection()
 
-    def _close_connection(self):
+    def _close_connection(self, reason: str = ''):
+        was_listening = self._server.isListening()
         self._server.close()
         self._view.set_disconnected()
         self._view.port_input.setEnabled(True)
         self._view.connect_btn.setChecked(False)
         self._timer.stop()
-        LOGGER.info('Closing connection...')
+        if was_listening:
+            LOGGER.info('Stopped listening%s', f': {reason}' if reason else '.')
 
 
 class NukeServerSocket(QMainWindow):
