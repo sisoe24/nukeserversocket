@@ -95,3 +95,13 @@ def test_create_sample_uses_the_new_file(controller: Controller, model: Model, v
     path = str(tmp_path / 'nss_tools.json')
     assert view.tools_file.text() == path
     assert model.settings.tools_file() == (path, False)
+
+
+def test_open_folder_opens_the_tools_file_folder(controller: Controller, view: View, monkeypatch):
+    opened = []
+    monkeypatch.setattr('nukeserversocket.settings_ui.QDesktopServices.openUrl', opened.append)
+    view.tools_file.setText('/studio/tools/nss_tools.json')
+
+    view.tools_file_open.click()
+
+    assert [url.toLocalFile() for url in opened] == ['/studio/tools']

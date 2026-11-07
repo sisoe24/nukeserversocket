@@ -6,11 +6,12 @@ This module is a wrapper around the settings module, and provides a UI for it.
 
 from __future__ import annotations
 
+import os
 from typing import TYPE_CHECKING, Any, Optional
 from textwrap import dedent
 
-from ._qt import (Slot, QLabel, QWidget, QSpinBox, QCheckBox, QLineEdit, QFileDialog,
-                  QFormLayout, QHBoxLayout, QPushButton)
+from ._qt import (QUrl, Slot, QLabel, QWidget, QSpinBox, QCheckBox, QLineEdit, QFileDialog,
+                  QFormLayout, QHBoxLayout, QPushButton, QDesktopServices)
 
 from .tools import create_sample
 from .logger import get_logger
@@ -77,11 +78,13 @@ class NssSettingsView(QWidget):
         self.tools_file_sample = QPushButton('Create sample...')
         self.tools_file_sample.setToolTip(
             'Write a sample tools file and its Python module into a folder, and use it.')
+        self.tools_file_open = QPushButton('Open folder')
         # buttons go under the field, so a narrow panel still shows the path
         tools_layout = QHBoxLayout()
         tools_layout.setContentsMargins(0, 0, 0, 0)
         tools_layout.addWidget(self.tools_file_browse)
         tools_layout.addWidget(self.tools_file_sample)
+        tools_layout.addWidget(self.tools_file_open)
         tools_layout.addStretch()
         tools_buttons = QWidget()
         tools_buttons.setLayout(tools_layout)
@@ -96,7 +99,7 @@ class NssSettingsView(QWidget):
         form_layout.addRow('Mirror script editor:', self.mirror_script_editor)
         form_layout.addRow('Format output:', self.format_output)
         form_layout.addRow('Clear output:', self.clear_output)
-        form_layout.addRow('Tools file:', self.tools_file)
+        form_layout.addRow('MCP Tools file:', self.tools_file)
         form_layout.addRow('', tools_buttons)
         form_layout.addRow('', self.tools_file_note)
 
@@ -132,6 +135,13 @@ class NssSettingsController:
         self._view.tools_file.editingFinished.connect(self._on_tools_file_changed)
         self._view.tools_file_browse.clicked.connect(self._on_tools_file_browse)
         self._view.tools_file_sample.clicked.connect(self._on_create_sample)
+        self._view.tools_file_open.clicked.connect(self._on_open_tools_folder)
+
+    @Slot()
+    def _on_open_tools_folder(self):
+        path = self._view.tools_file.text().strip()
+        if path:
+            QDesktopServices.openUrl(QUrl.fromLocalFile(os.path.dirname(path)))
 
     @Slot()
     def _on_create_sample(self):
