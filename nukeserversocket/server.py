@@ -83,9 +83,8 @@ class NssServer(QTcpServer):
                     'NukeServerSocket error: no code received. '
                     'Expected JSON with a non-empty "text" field.')
 
-        preview = data.text.strip().partition('\n')[0][:80]
         try:
-            return logging.INFO, f'code: {preview}', self._editor.execute(data)
+            return logging.INFO, 'code executed', self._editor.execute(data)
         except RuntimeError as err:
             # e.g. the Nuke Script Editor is not open; reply so the client does not hang
             return logging.ERROR, f'code: {err}', f'NukeServerSocket error: {err}'

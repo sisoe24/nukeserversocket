@@ -164,9 +164,8 @@ def test_server_logs_code_with_its_source(qtbot: QtBot, server: NssServer, monke
     monkeypatch.delenv('NSS_TOOLS', raising=False)
     server.try_connect(PORT)
 
-    code = f"print('{'x' * 100}')\nprint('second line')"
-    assert handled(qtbot, logged, {'text': code, 'file': file}) == (
-        logging.INFO, f'{source} code: {code[:80]}')
+    assert handled(qtbot, logged, {'text': "print('hi')", 'file': file}) == (
+        logging.INFO, f'{source} code executed')
 
 
 def test_server_logs_the_time_of_slow_requests(qtbot: QtBot, server: NssServer, monkeypatch,
@@ -178,7 +177,7 @@ def test_server_logs_the_time_of_slow_requests(qtbot: QtBot, server: NssServer, 
     monkeypatch.setattr(server._editor, 'execute', lambda data: 'done')
 
     assert handled(qtbot, logged, {'text': 'render()'}) == (
-        logging.INFO, '(127.0.0.1) code: render() (2.3 s)')
+        logging.INFO, '(127.0.0.1) code executed (2.3 s)')
 
 
 @pytest.mark.parametrize('payload, line', [
