@@ -7,7 +7,7 @@
  in a single file. -->
   <interface name="nukeserversocket" label="NukeServerSocket" help_url="">
     <script><![CDATA[
-from app import main
+from nukeserversocket_houdini import main
 def createInterface():
     return main.HoudiniEditor()
 ]]></script>
