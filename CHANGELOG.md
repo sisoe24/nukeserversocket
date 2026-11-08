@@ -20,6 +20,12 @@
 - Logs show `<` and `&` as text.
 - The reply to a code request holds only that run's output, not the Script Editor's earlier output.
 
+## [1.4.2] - 2026-11-08
+
+### Fixed
+
+- Large requests that arrive in several pieces no longer fail. A malformed or incomplete request gets an error reply after 3 seconds with no new data.
+
 ## [1.4.1] - 2026-11-07
 
 ### Fixed

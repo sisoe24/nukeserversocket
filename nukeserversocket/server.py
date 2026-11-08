@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+import json
 import time
 import logging
-from typing import TYPE_CHECKING, Tuple, Optional
+from typing import TYPE_CHECKING, Dict, Tuple, Optional
 
-from ._qt import Signal, QWidget, QTcpServer, QTcpSocket, QHostAddress
+from ._qt import QTimer, Signal, QWidget, QTcpServer, QTcpSocket, QHostAddress
 
 from .tools import ToolSet, load_tools, parse_tool_request, handle_tool_request
 from .logger import get_logger
@@ -37,20 +38,44 @@ class NssServer(QTcpServer):
     """
     on_data_received = Signal()
 
+    MAX_REQUEST_BYTES = 10 * 1024 * 1024
+    REQUEST_IDLE_MS = 3000
+
     def __init__(self, editor: BaseController, parent: Optional[QWidget] = None):
         super().__init__(parent)
 
         self._editor = editor
         self.toolset = ToolSet()
+        self._buffers: Dict[QTcpSocket, bytearray] = {}
 
         self.newConnection.connect(self._on_new_connection)
         self.acceptError.connect(lambda err: LOGGER.error('Server error: %s', self.errorString()))
 
-    def _on_socket_ready(self, socket: QTcpSocket):
+    def _is_incomplete(self, buffer: bytearray) -> bool:
+        try:
+            json.loads(bytes(buffer))
+        except (ValueError, RecursionError):
+            return buffer.lstrip()[:1] == b'{' and len(buffer) <= self.MAX_REQUEST_BYTES
+        return False
+
+    def _on_socket_ready(self, socket: QTcpSocket, idle_timer: QTimer):
         LOGGER.debug('Socket ready.')
 
+        # TCP can split a request across several reads
+        buffer = self._buffers.setdefault(socket, bytearray())
+        buffer.extend(socket.readAll().data())
+
+        if self._is_incomplete(buffer):
+            LOGGER.debug('Incomplete request (%s bytes). Waiting for more data.', len(buffer))
+            idle_timer.start()
+            return
+
+        idle_timer.stop()
+        self._handle_request(socket)
+
+    def _handle_request(self, socket: QTcpSocket):
         started = time.perf_counter()
-        raw = socket.readAll().data()
+        raw = bytes(self._buffers.pop(socket))
 
         request = parse_tool_request(raw)
         if request is not None:
@@ -105,11 +130,23 @@ class NssServer(QTcpServer):
             LOGGER.debug('Pending connection.')
             socket = self.nextPendingConnection()
             socket.errorOccurred.connect(lambda err: LOGGER.error('Socket error: %s', err))
+
+            # malformed JSON never completes, so stop waiting once the data stops
+            idle_timer = QTimer(socket)
+            idle_timer.setSingleShot(True)
+            idle_timer.setInterval(self.REQUEST_IDLE_MS)
+            idle_timer.timeout.connect(lambda socket=socket: self._handle_request(socket))
+
+            socket.disconnected.connect(idle_timer.stop)
+            socket.disconnected.connect(lambda socket=socket: self._buffers.pop(socket, None))
             socket.disconnected.connect(socket.deleteLater)
 
             LOGGER.debug('Socket connected.')
             # bind each socket to its own handler, so replies go to the right client
-            socket.readyRead.connect(lambda socket=socket: self._on_socket_ready(socket))
+            socket.readyRead.connect(
+                lambda socket=socket, idle_timer=idle_timer: self._on_socket_ready(
+                    socket, idle_timer)
+            )
 
     def try_connect(self, port: int, allow_lan: bool = False,
                     tools_file: Optional[str] = None) -> bool:
