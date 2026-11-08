@@ -53,6 +53,7 @@ class NukeScriptEditor:
 class NukeController(EditorController):
     def __init__(self, editor: Optional[NukeScriptEditor] = None):
         self._editor = editor
+        self._previous_output = ''
 
     @property
     def editor(self) -> NukeScriptEditor:
@@ -71,6 +72,7 @@ class NukeController(EditorController):
             return super().execute(data)
 
     def execute_code(self):
+        self._previous_output = self.editor.output_editor.toPlainText()
         self.editor.run_button.click()
 
     @property
@@ -84,6 +86,9 @@ class NukeController(EditorController):
     def get_output(self) -> str:
         """Override the base method to remove the '# Result:' prefix."""
         output = self.editor.output_editor.toPlainText()
+        # The pane keeps earlier runs: reply with this run's output only.
+        if output.startswith(self._previous_output):
+            output = output[len(self._previous_output):]
         index = output.find('# Result:')
         return output[index + 10:] if index != -1 else output
 

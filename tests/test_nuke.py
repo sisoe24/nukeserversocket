@@ -74,6 +74,19 @@ def test_nuke_get_output(qtbot: QtBot, output: str, expected: str):
     assert editor.get_output() == expected
 
 
+def test_nuke_get_output_skips_earlier_output(qtbot: QtBot):
+    editor = NukeController(MockNukeEditor())
+    editor.output_editor.setPlainText('# Result: old\nTraceback (most recent call last):')
+    editor.editor.run_button.clicked.disconnect()
+    editor.editor.run_button.clicked.connect(
+        lambda: editor.output_editor.append('code\n# Result: 42')
+    )
+
+    editor.execute_code()
+
+    assert editor.get_output() == '42'
+
+
 class StaleNukeEditor:
     """Stands in for a Script Editor whose widgets Nuke has deleted."""
 

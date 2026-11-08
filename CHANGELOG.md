@@ -18,6 +18,7 @@
 ### Fixed
 
 - Logs show `<` and `&` as text.
+- The reply to a code request holds only that run's output, not the Script Editor's earlier output.
 
 ## [1.4.1] - 2026-11-07
 
