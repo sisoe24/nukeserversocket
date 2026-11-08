@@ -14,6 +14,7 @@ class _NssSettings:
         'server_timeout': 3600000,
         'auto_start': False,
         'allow_lan': False,
+        'vision': True,
         'mirror_script_editor': False,
         'clear_output': True,
         'enable_debug': False,

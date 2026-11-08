@@ -4,13 +4,14 @@ from __future__ import annotations
 import os
 import json
 import logging
-from typing import Optional
+from typing import Dict, Optional
 from textwrap import dedent
 
 from .._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
                    QPlainTextEdit)
 
 from .base import EditorController
+from ..tools import Tool
 from ..main import NukeServerSocket
 from ..received_data import ReceivedData
 
@@ -70,6 +71,11 @@ class NukeController(EditorController):
             # which deletes the widgets we hold: look them up again once.
             self._editor = None
             return super().execute(data)
+
+    def builtin_tools(self) -> Dict[str, Tool]:
+        # imports nuke, which exists only inside Nuke
+        from .nuke_vision import VISION_TOOL
+        return {VISION_TOOL.name: VISION_TOOL}
 
     def execute_code(self):
         self._previous_output = self.editor.output_editor.toPlainText()

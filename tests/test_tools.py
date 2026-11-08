@@ -7,8 +7,8 @@ import textwrap
 
 import pytest
 
-from nukeserversocket.tools import (BUILTIN_TOOL, SAMPLE_DIR, ToolSet, call_tool, load_tools,
-                                    create_sample)
+from nukeserversocket.tools import (BUILTIN_TOOL, SAMPLE_DIR, Tool, Image, ToolSet, ToolError,
+                                    call_tool, list_tools, load_tools, create_sample)
 
 MODULE = 'nss_test_studio_tools'
 
@@ -290,6 +290,16 @@ def test_call_failure_reports_printed_output_and_traceback(toolset):
     assert 'RuntimeError: no write node' in result['output']
 
 
+def test_tool_error_reports_only_its_message():
+    """A ToolError gives ok False with what was printed and the message, no traceback."""
+    def refuse():
+        print('looking')
+        raise ToolError('No node named Read9.')
+
+    toolset = ToolSet(builtins={'refuse': Tool('refuse', 'Refuses.', {'type': 'object'}, refuse)})
+    assert call_tool(toolset, 'refuse') == {'ok': False, 'output': 'looking\nNo node named Read9.'}
+
+
 def test_call_restores_stdout_after_failure(toolset):
     """Output capture is undone even when the tool raises."""
     stdout = sys.stdout
@@ -360,3 +370,43 @@ def test_annotations_are_kept_as_written(tool_file):
     hints = {'title': 'Publish', 'readOnlyHint': False, 'destructiveHint': False}
     toolset = load_tools(tool_file({'tools': [_tool(annotations=hints)]}))
     assert toolset.tools['publish_shot'].annotations == hints
+
+
+def _snapshot(node=''):
+    print(f'rendered {node or "viewer"}')
+    return Image(b'\xff\xd8\xff')
+
+
+SNAPSHOT = Tool('nuke_viewer_snapshot', 'See the Viewer.',
+                {'type': 'object', 'properties': {'node': {'type': 'string'}}}, _snapshot)
+
+
+def test_image_result_goes_to_images_as_base64():
+    """An Image return value is sent as base64 next to what the tool printed."""
+    toolset = ToolSet(builtins={SNAPSHOT.name: SNAPSHOT})
+    assert call_tool(toolset, SNAPSHOT.name, {'node': 'Read1'}) == {
+        'ok': True, 'output': 'rendered Read1\n',
+        'images': [{'mimeType': 'image/jpeg', 'data': '/9j/'}]}
+
+
+def test_builtins_are_listed_and_called_while_code_is_on(tool_file):
+    """Built-in tools come before the tools file's and can be called."""
+    toolset = load_tools(tool_file({'tools': [_tool()]}), {SNAPSHOT.name: SNAPSHOT})
+    assert [t['name'] for t in list_tools(toolset)['tools']] == [SNAPSHOT.name, 'publish_shot']
+    assert call_tool(toolset, SNAPSHOT.name)['ok'] is True
+
+
+@pytest.mark.parametrize('content', [{'allow_code': False}, 'not json'])
+def test_builtins_stay_when_code_is_off(tool_file, content):
+    """Built-in tools have their own setting, so a locked-down tools file keeps them."""
+    toolset = load_tools(tool_file(content), {SNAPSHOT.name: SNAPSHOT})
+    assert [t['name'] for t in list_tools(toolset)['tools']] == [SNAPSHOT.name]
+    assert call_tool(toolset, SNAPSHOT.name)['ok'] is True
+
+
+def test_tools_file_cannot_replace_a_builtin(tool_file):
+    """A tools file entry named like a built-in tool is skipped."""
+    toolset = load_tools(tool_file({'tools': [_tool(name=SNAPSHOT.name)]}),
+                         {SNAPSHOT.name: SNAPSHOT})
+    assert 'already loaded' in toolset.skipped[SNAPSHOT.name]
+    assert toolset.builtins[SNAPSHOT.name] is SNAPSHOT

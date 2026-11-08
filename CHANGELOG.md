@@ -8,6 +8,8 @@
 - Tools file: limit clients to a set of functions, and optionally block code. Settings > Tools file, or `NSS_TOOLS`.
 - **Create sample...** and **Open folder** buttons for the tools file.
 - **MCP tools** list in the panel, with skipped tools greyed out.
+- `nuke_vision` MCP tool: the agent sees one frame of a node, with the Viewer's display transform. Settings > Vision, on by default.
+- Tools can return images, and can raise `ToolError` to fail without a traceback.
 
 ### Changed
 

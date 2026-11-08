@@ -23,7 +23,9 @@ Clients use the tools with two requests; the reply is JSON:
         -> {"allow_code": bool, "tools": [{"name", "description", "inputSchema", "timeout", "annotations"}],
             "skipped": {"name": "reason"}}
     {"call_tool": "publish_shot", "arguments": {"comment": "v2"}}
-        -> {"ok": bool, "output": str}
+        -> {"ok": bool, "output": str, "images": [{"mimeType": str, "data": base64 str}]}
+
+"images" is there only when the tool returns an Image.
 """
 from __future__ import annotations
 
@@ -31,6 +33,7 @@ import os
 import re
 import sys
 import json
+import base64
 import shutil
 import inspect
 import pathlib
@@ -63,9 +66,22 @@ class Tool:
 
 
 @dataclass
+class Image:
+    """Return this from a tool to send an image to the client."""
+    data: bytes
+    mime_type: str = 'image/jpeg'
+
+
+class ToolError(Exception):
+    """Raise from a tool to fail with this message only, without a traceback."""
+
+
+@dataclass
 class ToolSet:
     allow_code: bool = True
     tools: Dict[str, Tool] = field(default_factory=dict)
+    # the panel's own tools, e.g. nuke_vision; independent of allow_code
+    builtins: Dict[str, Tool] = field(default_factory=dict)
     # tool name (or entry position) -> why it was not loaded
     skipped: Dict[str, str] = field(default_factory=dict)
     # why code is off, naming the file, for logs and client errors
@@ -198,26 +214,29 @@ def _load_tool(entry: Any, loaded: Dict[str, Tool]) -> Tool:
     return Tool(name, description, schema, function, timeout, annotations)
 
 
-def load_tools(path: Optional[str] = None) -> ToolSet:
+def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] = None) -> ToolSet:
     """Load the tool file at `path`, or at NSS_TOOLS when `path` is None.
 
-    A tool file that is set but cannot be read turns code execution off: falling
-    back to the default would reopen arbitrary code on a locked-down install.
+    `builtins` are listed whatever the file says. A tool file that is set but
+    cannot be read turns code execution off: falling back to the default would
+    reopen arbitrary code on a locked-down install.
     """
+    builtins = dict(builtins or {})
     path = os.environ.get('NSS_TOOLS') if path is None else path
     if not path:
-        return ToolSet()
+        return ToolSet(builtins=builtins)
     name = pathlib.Path(path).name
 
     try:
         config = json.loads(pathlib.Path(path).read_text(encoding='utf-8'))
     except (OSError, ValueError) as e:
         LOGGER.error('Cannot read the tools file %s (%s). Code execution is off.', path, e)
-        return ToolSet(allow_code=False, code_off_reason=f'cannot read {name}')
+        return ToolSet(allow_code=False, builtins=builtins, code_off_reason=f'cannot read {name}')
 
     if not isinstance(config, dict):
         LOGGER.error('The tools file %s must hold a JSON object. Code execution is off.', path)
-        return ToolSet(allow_code=False, code_off_reason=f'{name} is not a JSON object')
+        return ToolSet(allow_code=False, builtins=builtins,
+                       code_off_reason=f'{name} is not a JSON object')
 
     allow_code = config.get('allow_code', True)
     reason = f'allow_code is false in {name}'
@@ -235,12 +254,13 @@ def load_tools(path: Optional[str] = None) -> ToolSet:
     if folder not in sys.path:
         sys.path.append(folder)
 
-    toolset = ToolSet(allow_code=allow_code, code_off_reason='' if allow_code else reason)
+    toolset = ToolSet(allow_code=allow_code, builtins=builtins,
+                      code_off_reason='' if allow_code else reason)
     for index, entry in enumerate(entries):
         label = entry.get('name') if isinstance(entry, dict) else None
         label = label if isinstance(label, str) and label else f'tools[{index}]'
         try:
-            tool = _load_tool(entry, toolset.tools)
+            tool = _load_tool(entry, {**toolset.builtins, **toolset.tools})
         except ValueError as e:
             LOGGER.warning('Skipped tool %s: %s', label, e)
             toolset.skipped[label] = str(e)
@@ -303,15 +323,18 @@ def _format_result(result: Any) -> str:
 def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, Any]:
     """Call a loaded tool and return {"ok": bool, "output": str}.
 
-    The output is what the tool printed, followed by its return value. A failure
-    returns ok False with the reason, so the caller never has to read the text.
+    The output is what the tool printed, followed by its return value. An Image
+    return value goes to "images" instead. A failure returns ok False with the
+    reason, so the caller never has to read the text: a ToolError gives its
+    message, any other exception its traceback.
     """
-    tool = toolset.tools.get(name)
+    tool = toolset.builtins.get(name) or toolset.tools.get(name)
     if tool is None:
         reason = toolset.skipped.get(name)
         if reason:
             return {'ok': False, 'output': f'Tool {name!r} was not loaded: {reason}'}
-        return {'ok': False, 'output': f'Unknown tool {name!r}. Available: {sorted(toolset.tools)}.'}
+        available = sorted({**toolset.builtins, **toolset.tools})
+        return {'ok': False, 'output': f'Unknown tool {name!r}. Available: {available}.'}
 
     arguments = {} if arguments is None else arguments
     if not isinstance(arguments, dict):
@@ -325,9 +348,14 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, A
     with stdoutIO() as printed:
         try:
             result = tool.function(**arguments)
+        except ToolError as e:
+            return {'ok': False, 'output': printed.getvalue() + str(e)}
         except Exception:
             return {'ok': False, 'output': printed.getvalue() + traceback.format_exc()}
 
+    if isinstance(result, Image):
+        image = {'mimeType': result.mime_type, 'data': base64.b64encode(result.data).decode('ascii')}
+        return {'ok': True, 'output': printed.getvalue(), 'images': [image]}
     return {'ok': True, 'output': printed.getvalue() + _format_result(result)}
 
 
@@ -338,7 +366,7 @@ def list_tools(toolset: ToolSet) -> Dict[str, Any]:
             {'name': t.name, 'description': t.description,
              'inputSchema': t.input_schema, 'timeout': t.timeout,
              'annotations': t.annotations}
-            for t in toolset.tools.values()
+            for t in [*toolset.builtins.values(), *toolset.tools.values()]
         ],
         'skipped': toolset.skipped,
     }

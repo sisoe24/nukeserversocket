@@ -10,6 +10,7 @@ import logging
 import pytest
 from pytestqt.qtbot import QtBot
 
+from nukeserversocket.tools import Tool
 from nukeserversocket.utils import exec_code
 from nukeserversocket.server import NssServer
 from nukeserversocket.console import NssConsole
@@ -404,3 +405,13 @@ def test_server_rejects_missing_code(qtbot: QtBot, server: NssServer, payload: b
     assert server._editor.output_editor.toPlainText() == 'initial output'
 
     client.close()
+
+
+@pytest.mark.parametrize('vision', [True, False])
+def test_server_loads_builtins_only_with_vision(server: NssServer, editor, monkeypatch, vision):
+    tool = Tool('nuke_vision', 'See.', {'type': 'object'}, lambda: None)
+    monkeypatch.setattr(editor, 'builtin_tools', lambda: {tool.name: tool})
+
+    server.try_connect(PORT, vision=vision)
+
+    assert list(server.toolset.builtins) == (['nuke_vision'] if vision else [])

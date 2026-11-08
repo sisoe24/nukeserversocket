@@ -149,11 +149,12 @@ class NssServer(QTcpServer):
             )
 
     def try_connect(self, port: int, allow_lan: bool = False,
-                    tools_file: Optional[str] = None) -> bool:
+                    tools_file: Optional[str] = None, vision: bool = True) -> bool:
         """Load `tools_file` (NSS_TOOLS when None) and listen on `port`."""
         LOGGER.debug('Trying to connect to port %s...', port)
         # reload on each connect, so a changed tool file applies without restarting Nuke
-        self.toolset = load_tools(tools_file)
+        builtins = self._editor.builtin_tools() if vision else {}
+        self.toolset = load_tools(tools_file, builtins)
         # no authentication
         address = QHostAddress.Any if allow_lan else QHostAddress.LocalHost
         return self.listen(address, port)

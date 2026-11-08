@@ -50,9 +50,11 @@ class MockServer(QObject):
         self.listening = False
         self.toolset = ToolSet()
 
-    def try_connect(self, port: int, allow_lan: bool = False, tools_file=None) -> bool:
+    def try_connect(self, port: int, allow_lan: bool = False, tools_file=None,
+                    vision: bool = True) -> bool:
         self.allow_lan = allow_lan
         self.tools_file = tools_file
+        self.vision = vision
         return True
 
     def isListening(self) -> bool:
@@ -209,6 +211,16 @@ def test_main_controller_allow_lan(controller: Controller, model: Model, view: V
 
     assert server.allow_lan is True
     assert view.ip_label.text() == model.get_ip()
+
+
+@pytest.mark.parametrize('vision', [True, False])
+def test_main_controller_passes_vision(controller: Controller, model: Model, server: MockServer,
+                                       vision):
+    model._settings.set('vision', vision)
+
+    controller._on_connect(True)
+
+    assert server.vision is vision
 
 
 def test_main_controller_auto_start(qtbot: QtBot, model: Model, view: View, server: MockServer):

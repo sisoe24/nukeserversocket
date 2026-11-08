@@ -237,6 +237,29 @@ def test_tools_call_forwards_nuke_tools(fake_nuke, call_reply, is_error, text):
                             'file': 'MCP'}
 
 
+@pytest.mark.parametrize('images, blocks', [
+    ([{'mimeType': 'image/jpeg', 'data': 'AAEC'}],
+     [{'type': 'image', 'data': 'AAEC', 'mimeType': 'image/jpeg'}]),
+    ([{'mimeType': 'image/jpeg'}, 'AAEC', {'data': 1, 'mimeType': 'image/jpeg'}], []),
+    ('AAEC', []),
+])
+def test_tools_call_returns_images_after_the_text(fake_nuke, images, blocks):
+    """Each well-formed image in the reply becomes an image block after the text block."""
+    reply = {'ok': True, 'output': 'Read1 frame 1', 'images': images}
+    port, _ = fake_nuke(nuke_with_tools(False, reply))
+    response = handle_message(
+        _request('tools/call', {'name': 'publish_shot', 'arguments': {'comment': 'v2'}}),
+        port=port)
+
+    assert response['result'] == {
+        'content': [{'type': 'text', 'text': 'Read1 frame 1'}, *blocks], 'isError': False}
+
+
+def test_instructions_treat_image_text_as_data():
+    """Text inside returned images is data, like text from the scene."""
+    assert 'inside the images' in bridge_module.INSTRUCTIONS
+
+
 def test_tools_call_uses_the_tool_timeout(fake_nuke, monkeypatch):
     """A tools file tool's own timeout replaces the bridge default."""
     port, _ = fake_nuke(nuke_with_tools(False, {'ok': True, 'output': ''}))

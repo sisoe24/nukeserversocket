@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import os
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Dict, List
 from datetime import datetime
 
 from .._qt import QTextEdit, QPlainTextEdit
 
+from ..tools import Tool
 from ..logger import get_logger
 from ..settings import _NssSettings
 from ..received_data import ReceivedData
@@ -59,6 +60,10 @@ class BaseController(ABC):
 
     @abstractmethod
     def execute(self, data: ReceivedData) -> str: ...
+
+    def builtin_tools(self) -> Dict[str, Tool]:
+        """Tools this app adds to the tools file's, when Vision is on."""
+        return {}
 
 
 class EditorController(BaseController):

@@ -58,6 +58,9 @@ class MainModel:
     def get_allow_lan(self):
         return self._settings.get('allow_lan')
 
+    def get_vision(self):
+        return self._settings.get('vision')
+
     def get_tools_file(self):
         return self._settings.tools_file()
 
@@ -149,7 +152,7 @@ class MainView(QWidget):
         self.tools_list.clear()
         if toolset.allow_code:
             self.tools_list.addItem('nuke_execute_code')
-        for tool in toolset.tools.values():
+        for tool in [*toolset.builtins.values(), *toolset.tools.values()]:
             item = QListWidgetItem(tool.name)
             item.setToolTip(tool.description)
             self.tools_list.addItem(item)
@@ -211,7 +214,8 @@ class MainController:
         port = self._view.port_input.value()
         if should_connect and not self._server.isListening():
             tools_file, from_env = self._model.get_tools_file()
-            if self._server.try_connect(port, self._model.get_allow_lan(), tools_file):
+            if self._server.try_connect(port, self._model.get_allow_lan(), tools_file,
+                                        self._model.get_vision()):
                 toolset = self._server.toolset
                 ip = self._model.get_ip()
                 LOGGER.info('Listening on %s:%s', ip, port)

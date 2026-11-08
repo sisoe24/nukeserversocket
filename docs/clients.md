@@ -35,7 +35,7 @@ The panel saves its port in `~/.nuke/nukeserversocket.json`. Your client can rea
 
 ## Tool requests
 
-When the panel has a [tools file](mcp.md#tools-file), clients can list and call its tools. Send each request on its own connection, as you do for a code request. The reply is JSON:
+Clients can list and call the panel's tools: `nuke_vision` and the tools of the [tools file](mcp.md#tools-file). Send each request on its own connection, as you do for a code request. The reply is JSON:
 
 ```py
 {"list_tools": true}
@@ -44,6 +44,8 @@ When the panel has a [tools file](mcp.md#tools-file), clients can list and call 
 {"call_tool": "render_write", "arguments": {"node": "Write1"}}
 # {"ok": true, "output": "printed text, then the return value as JSON"}
 ```
+
+When a tool returns an image, for example `nuke_vision`, the reply also has `"images": [{"mimeType": "image/jpeg", "data": "<base64>"}]`, and `output` holds only the printed text.
 
 When `allow_code` is `false`, the reply to a code request starts with `NukeServerSocket error:`.
 

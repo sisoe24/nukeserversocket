@@ -76,9 +76,32 @@ To connect to Nuke on a different machine, set `--host` and turn on **Allow LAN 
 The server gives the client these tools:
 
 - `nuke_execute_code`, if code is on in the [tools file](#tools-file).
+- `nuke_vision`, if **Vision** is on in the panel settings. See [Vision](#vision).
 - Each tool that the tools file declares.
 
 The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again.
+
+## Vision
+
+`nuke_vision` lets the agent see an image in Nuke, for example to check the result of a change. It renders one frame of a node to a JPEG and returns the image with JSON metadata. By default it renders the node that feeds the active Viewer input, at the current frame, with the long edge at most 768 pixels (about 440 tokens).
+
+- The image has the Viewer's display transform (OCIO display and view). It does not have the Viewer's gain, gamma, wipe or overlays.
+- Arguments, all optional: `node`, `frame`, `view`, `channels` (for example `alpha`, `depth`, `depth.Z`), `crop` (`[x, y, width, height]` in Nuke pixels, enlarged to show detail) and `size`.
+- The metadata has the format, the bounding box, a formula from image pixels to Nuke coordinates, and warnings, for example when the frame is outside the node's range or the image is one color.
+
+A temporary Write node renders the frame. The tool deletes the node and the file after the render, and turns undo off during the render, so the script and the undo history do not change. Nuke runs `onCreate`, `beforeRender` and `afterRender` callbacks for the temporary nodes too. If your pipeline adds callbacks to Write nodes, make sure that they ignore nodes whose names start with `_nss_vision_`.
+
+**Vision** is on by default. It is separate from code: with code off in the tools file, the agent can still see images. To turn it off, clear **Vision** in the panel settings, then disconnect and connect the panel.
+
+Code in Nuke can call the same function:
+
+```py
+from nukeserversocket.controllers.nuke_vision import vision
+
+image = vision('Grade1', frame=1001)
+with open('/tmp/grade1.jpg', 'wb') as f:
+    f.write(image.data)
+```
 
 ## Tools file
 
@@ -96,7 +119,7 @@ To make a tools file:
 
 To use one tools file for the whole studio, set `NSS_TOOLS` to its path before Nuke starts. `NSS_TOOLS` overrides the panel setting and makes the **Tools file** field read-only, so artists cannot change it in the panel.
 
-The panel loads the tools each time it connects. The panel's **MCP tools** list shows the tools that MCP clients see. It includes `nuke_execute_code` only when code is on. Skipped tools are greyed out at the end. Hover over a tool to see its description, or why it was skipped.
+The panel loads the tools each time it connects. The panel's **MCP tools** list shows the tools that MCP clients see. It includes `nuke_execute_code` only when code is on, and `nuke_vision` only when **Vision** is on. Skipped tools are greyed out at the end. Hover over a tool to see its description, or why it was skipped.
 
 - After you change the JSON file, disconnect and connect the panel.
 - After you change the adapter module, restart Nuke. Python keeps the module that it imported first.
@@ -152,8 +175,9 @@ Write adapters for remote callers, not for artists:
 
 - Take names and plain values as arguments, not the current selection. The artist can change the selection while a request runs.
 - Do not open a dialog. Nuke waits for a click, and the client waits until its timeout ends.
-- Raise an exception for each failure. The client gets the traceback as an error.
+- Raise an exception for each failure. The client gets the traceback as an error. To send only a message, without the traceback, raise `nukeserversocket.tools.ToolError`.
 - Return JSON values (`dict`, `list`, `str`, numbers). The panel sends any other value as its `str()`.
+- To return an image, return `nukeserversocket.tools.Image(data)`, where `data` is the JPEG bytes. MCP clients get the image after the printed text.
 - Make tools safe to run two times. If a tool is not safe to run two times, say so in its description. After a timeout, the client cannot know if the tool ran.
 
 Tools run on Nuke's main thread. The Nuke interface is busy until the tool returns.
