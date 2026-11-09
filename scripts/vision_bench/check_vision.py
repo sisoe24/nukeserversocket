@@ -12,7 +12,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 import nuke
 
 from nukeserversocket.tools import ToolError
-from nukeserversocket.controllers.nuke_vision import vision, _set_display
+from nukeserversocket.controllers.nuke.builtin.vision import vision, _set_display
 
 OUT = sys.argv[1]
 

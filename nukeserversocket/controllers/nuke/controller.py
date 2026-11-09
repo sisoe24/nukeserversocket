@@ -7,13 +7,13 @@ import logging
 from typing import Dict, Optional
 from textwrap import dedent
 
-from .._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
+from ..._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
                    QPlainTextEdit)
 
-from .base import EditorController
-from ..tools import Tool
-from ..main import NukeServerSocket
-from ..received_data import ReceivedData
+from ..base import EditorController
+from ...tools import Tool
+from ...main import NukeServerSocket
+from ...received_data import ReceivedData
 
 LOGGER = logging.getLogger('nukeserversocket')
 
@@ -74,8 +74,8 @@ class NukeController(EditorController):
 
     def builtin_tools(self) -> Dict[str, Tool]:
         # imports nuke, which exists only inside Nuke
-        from .nuke_vision import VISION_TOOL
-        return {VISION_TOOL.name: VISION_TOOL}
+        from .builtin import builtin_tools
+        return builtin_tools()
 
     def execute_code(self):
         self._previous_output = self.editor.output_editor.toPlainText()

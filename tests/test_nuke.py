@@ -7,7 +7,7 @@ import pytest
 from pytestqt.qtbot import QtBot
 
 from nukeserversocket.settings import _NssSettings
-from nukeserversocket.controllers import nuke as nuke_controller
+from nukeserversocket.controllers.nuke import controller as nuke_controller
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.nuke import NukeController, NukeScriptEditor
 

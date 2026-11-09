@@ -96,7 +96,7 @@ A temporary Write node renders the frame. The tool deletes the node and the file
 Code in Nuke can call the same function:
 
 ```py
-from nukeserversocket.controllers.nuke_vision import vision
+from nukeserversocket.controllers.nuke.builtin.vision import vision
 
 image = vision('Grade1', frame=1001)
 with open('/tmp/grade1.jpg', 'wb') as f:

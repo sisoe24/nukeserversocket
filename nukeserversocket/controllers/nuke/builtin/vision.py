@@ -2,7 +2,7 @@
 
 Built-in MCP tool nuke_vision. Code running in Nuke can call it too:
 
-    from nukeserversocket.controllers.nuke_vision import vision
+    from nukeserversocket.controllers.nuke.builtin.vision import vision
     image = vision('Grade1', frame=1001)
     with open('/tmp/grade1.jpg', 'wb') as f:
         f.write(image.data)
@@ -18,7 +18,7 @@ from typing import Any
 
 import nuke
 
-from ..tools import Tool, Image, ToolError
+from ....tools import Tool, Image, ToolError
 
 DEFAULT_SIZE = 768
 
