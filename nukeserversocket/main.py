@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import socket
+import textwrap
 from typing import TYPE_CHECKING, Optional
 
 from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QGroupBox,
@@ -154,7 +155,9 @@ class MainView(QWidget):
             self.tools_list.addItem(BUILTIN_TOOL)
         for tool in [*toolset.builtins.values(), *toolset.tools.values()]:
             item = QListWidgetItem(tool.name)
-            item.setToolTip(tool.description)
+            # the full description is a prompt for agents: show the first sentence
+            summary = tool.description.split('. ')[0].split('\n')[0]
+            item.setToolTip(textwrap.fill(summary, 60))
             self.tools_list.addItem(item)
         for name, reason in toolset.skipped.items():
             item = QListWidgetItem(name)
