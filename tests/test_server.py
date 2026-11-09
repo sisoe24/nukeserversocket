@@ -409,10 +409,12 @@ def test_server_rejects_missing_code(qtbot: QtBot, server: NssServer, payload: b
 
 
 @pytest.mark.parametrize('vision', [True, False])
-def test_server_loads_builtins_only_with_vision(server: NssServer, editor, monkeypatch, vision):
-    tool = Tool('nuke_vision', 'See.', {'type': 'object'}, lambda: None)
-    monkeypatch.setattr(editor, 'builtin_tools', lambda: {tool.name: tool})
+def test_vision_setting_gates_only_nuke_vision(server: NssServer, editor, monkeypatch, vision):
+    tools = [Tool(name, 'Tool.', {'type': 'object'}, lambda: None)
+             for name in ('nuke_vision', 'nuke_graph')]
+    monkeypatch.setattr(editor, 'builtin_tools', lambda: {t.name: t for t in tools})
 
     server.try_connect(PORT, vision=vision)
 
-    assert list(server.toolset.builtins) == (['nuke_vision'] if vision else [])
+    assert list(server.toolset.builtins) == (['nuke_vision', 'nuke_graph'] if vision
+                                             else ['nuke_graph'])
