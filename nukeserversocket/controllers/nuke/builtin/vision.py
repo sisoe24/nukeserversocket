@@ -163,29 +163,24 @@ def vision(node: str = '', frame: int | None = None, view: str = '', channels: s
     os.close(fd)
 
     try:
-        with temp_nodes('vision') as (name, created):
-            last = source
+        with temp_nodes('vision', source) as (name, last):
             if shown_channels != RGB:
-                last = copy_to_rgb(source, shown_channels, f'{name}_copy')
-                created.append(last)
+                last = copy_to_rgb(last, shown_channels, f'{name}_copy')
             shown = last
 
             if crop is not None:
                 last = nuke.nodes.Crop(name=f'{name}_crop', inputs=[last], reformat=True)
                 last['box'].setValue(region)
-                created.append(last)
 
             if scale != 1 or aspect != 1:
                 last = nuke.nodes.Reformat(name=f'{name}_reformat', inputs=[last], type='scale',
                                            filter='Impulse' if scale > 1 else 'Cubic')
                 last['scale'].setValue([scale * aspect, scale])
-                created.append(last)
 
             file = path.replace('\\', '/')
             # proxy: without it, a render in proxy mode fails
             write = nuke.nodes.Write(name=f'{name}_write', inputs=[last], file=file, proxy=file,
                                      file_type='jpeg', channels='rgb')
-            created.append(write)
             display = _set_display(write,
                                    viewer.node()['viewerProcess'].value() if viewer else None)
 

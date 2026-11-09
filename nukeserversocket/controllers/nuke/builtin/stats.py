@@ -47,21 +47,23 @@ def _pick_channels(source: nuke.Node, channels: str) -> List[str]:
     return picked
 
 
-def _channel_curves(source: nuke.Node, channel: str, region: List[int], over: Optional[float],
-                    name: str, created: List[nuke.Node]) -> Dict[str, nuke.Node]:
-    """Make the CurveTools that measure one channel. They run once per frame."""
+def _channel_curves(image: nuke.Node, channel: str, region: List[int], over: Optional[float],
+                    name: str) -> Dict[str, nuke.Node]:
+    """Make the CurveTools that measure one channel, in the current group."""
+    # pipelines ignore nodes named _nss_*, so every node keeps the prefix
+    prefix = f'{name}_{channel.replace(".", "_")}'
+    made = []
+
     def node(cls, **knobs):
-        new = getattr(nuke.nodes, cls)(name=f'{name}_{len(created)}', **knobs)
-        created.append(new)
-        return new
+        made.append(getattr(nuke.nodes, cls)(name=f'{prefix}_{len(made)}', **knobs))
+        return made[-1]
 
     def curve(image, operation):
         tool = node('CurveTool', inputs=[image], operation=operation)
         tool['ROI'].setValue(region)
         return tool
 
-    shown = copy_to_rgb(source, [channel] * 3, f'{name}_{len(created)}')
-    created.append(shown)
+    shown = copy_to_rgb(image, [channel] * 3, f'{prefix}_copy')
     # one pass: NaN in red, infinity in green, finite values (0 elsewhere) in blue
     counts = node('Expression', inputs=[shown], expr0='isnan(r)?1:0', expr1='isinf(r)?1:0',
                   expr2=f'{NOT_FINITE}?0:r')
@@ -81,39 +83,50 @@ def _channel_curves(source: nuke.Node, channel: str, region: List[int], over: Op
     return curves
 
 
-def _measure(curves: Dict[str, nuke.Node], pixels: int, frame: int,
-             view: str) -> Dict[str, Any]:
-    """Statistics of one channel at one frame."""
-    def run(key):
-        nuke.execute(curves[key], frame, frame, 1, views=[view])
-        return curves[key]
+def _measure(curves: Dict[str, nuke.Node], pixels: int, first: int, last: int,
+             view: str) -> Dict[int, Dict[str, Any]]:
+    """Statistics of one channel for each frame from first to last.
 
-    def at(curve, knob, size):
+    Each pass runs once over the whole range: in the GUI, every execute opens the progress
+    dialog and moves the timeline.
+    """
+    def run(key, start, end):
+        nuke.execute(curves[key], start, end, 1, views=[view])
+
+    def at(key, knob, frame, size):
         # a CurveTool run on several frames keys each one; in Nuke 17, value() reads the
         # current frame
-        return [curve[knob].getValueAt(frame, i) for i in range(size)]
+        return [curves[key][knob].getValueAt(frame, i) for i in range(size)]
 
-    average = at(run('counts'), 'intensitydata', 3)
-    nan, inf = round(average[0] * pixels), round(average[1] * pixels)
-    finite = pixels - nan - inf
-    result: Dict[str, Any] = {'min': None, 'min_at': None, 'max': None, 'max_at': None,
-                              'mean': average[2] * pixels / finite if finite else None,
-                              'nan': nan, 'inf': inf}
-    if 'over' in curves:
-        result['over'] = round(at(run('over'), 'intensitydata', 1)[0] * pixels)
-    if not finite:
-        return result
+    passes = ['counts', 'extremes'] + (['over'] if 'over' in curves else [])
+    for key in passes:
+        run(key, first, last)
 
-    # the extra passes only when there is something to push out
-    brightest = run('high' if nan or inf else 'extremes')
-    darkest = run('low') if nan or inf else brightest
-    result.update({
-        'max': at(brightest, 'maxlumapixvalue', 1)[0],
-        'max_at': [int(v) for v in at(brightest, 'maxlumapixdata', 2)],
-        'min': at(darkest, 'minlumapixvalue', 1)[0],
-        'min_at': [int(v) for v in at(darkest, 'minlumapixdata', 2)],
-    })
-    return result
+    results = {}
+    for frame in range(first, last + 1):
+        average = at('counts', 'intensitydata', frame, 3)
+        nan, inf = round(average[0] * pixels), round(average[1] * pixels)
+        finite = pixels - nan - inf
+        result: Dict[str, Any] = {'min': None, 'min_at': None, 'max': None, 'max_at': None,
+                                  'mean': average[2] * pixels / finite if finite else None,
+                                  'nan': nan, 'inf': inf}
+        if 'over' in curves:
+            result['over'] = round(at('over', 'intensitydata', frame, 1)[0] * pixels)
+        if finite:
+            high = low = 'extremes'
+            if nan or inf:
+                # Max Luma Pixel takes infinity as the maximum: measure again without it
+                high, low = 'high', 'low'
+                run(high, frame, frame)
+                run(low, frame, frame)
+            result.update({
+                'max': at(high, 'maxlumapixvalue', frame, 1)[0],
+                'max_at': [int(v) for v in at(high, 'maxlumapixdata', frame, 2)],
+                'min': at(low, 'minlumapixvalue', frame, 1)[0],
+                'min_at': [int(v) for v in at(low, 'minlumapixdata', frame, 2)],
+            })
+        results[frame] = result
+    return results
 
 
 def _combine(per_frame: Dict[int, Dict[str, Any]], pixels: int) -> Dict[str, Any]:
@@ -177,21 +190,30 @@ def stats(node: str = '', frame: Optional[int] = None, view: str = '', channels:
 
     start = time.monotonic()
     per_frame: Dict[str, Dict[int, Dict[str, Any]]] = {channel: {} for channel in picked}
-    with temp_nodes('stats') as (name, created):
-        curves = {channel: _channel_curves(source, channel, region, over, name, created)
+    def measure(first, end):
+        for channel in picked:
+            try:
+                per_frame[channel].update(_measure(curves[channel], pixels, first, end, view))
+            except RuntimeError as e:
+                raise ToolError(f'Cannot read {source.fullName()} at frames {first} to {end}: '
+                                f'{e}') from None
+
+    with temp_nodes('stats', source) as (name, image):
+        curves = {channel: _channel_curves(image, channel, region, over, name)
                   for channel in picked}
-        for current in range(frame, last + 1):
-            for channel in picked:
-                try:
-                    per_frame[channel][current] = _measure(curves[channel], pixels, current, view)
-                except RuntimeError as e:
-                    raise ToolError(f'Cannot read {source.fullName()} at frame {current}: '
-                                    f'{e}') from None
-            if current < last and time.monotonic() - start > TIME_LIMIT:
-                warnings.append(f'Stopped after frame {current} at the {TIME_LIMIT:g} s limit. '
-                                f'Call again with frame={current + 1} for the rest.')
-                last = current
-                break
+        # the first frame alone tells how many frames fit in the time limit
+        measure(frame, frame)
+        if last > frame:
+            spent = max(time.monotonic() - start, 0.001)
+            end = min(last, frame + max(0, int((TIME_LIMIT - spent) / spent)))
+            if end > frame:
+                measure(frame + 1, end)
+            if end < last:
+                warnings.append(f'Frames {frame} to {last} would take about '
+                                f'{spent * (last - frame + 1):.0f} s, over the {TIME_LIMIT:g} s '
+                                f'limit: measured to frame {end}. Call again with '
+                                f'frame={end + 1} for the rest.')
+                last = end
 
     bad = sorted({f for frames in per_frame.values() for f, r in frames.items()
                   if r['nan'] or r['inf']})

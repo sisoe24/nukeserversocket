@@ -48,6 +48,9 @@ assert 'rgba.alpha' not in no_alpha.channels(), no_alpha.channels()
 six = nuke.nodes.Constant(name='Six', format='nss64', first=1, last=6)
 nuke.nodes.Expression(name='Moving', inputs=[six], expr1='0.5', expr2='0.5',
                       expr0='(frame==3&&x==5&&y==5)?sqrt(-1):(frame==5&&x==12&&y==12)?9:0.5')
+with nuke.nodes.Group(name='Outer'):
+    deep = nuke.nodes.Constant(name='Deep', format='nss64')
+    deep['color'].setValue([2, 0, 0, 1])
 nodes_before = len(nuke.allNodes(recurseGroups=True))
 undo_before = nuke.Undo.disabled()
 nuke.root().setModified(False)
@@ -106,6 +109,8 @@ stopped = stats(node='Moving', frame=1, last=6)
 stats_module.TIME_LIMIT = 40.0
 assert stopped['last'] == 1 and 'frame=2' in stopped['warnings'][-1], stopped
 assert 'is before' in raises(node='Bad', frame=5, last=2)
+# a node inside a Group: the temporary Group reads across groups
+assert stats(node='Outer.Deep', frame=1)['channels']['rgba.red']['max'] == 2
 assert 'must be a number' in raises(node='Bad', frame=1, over='high')
 
 assert 'No node named' in raises(node='Nope')
@@ -117,6 +122,26 @@ assert 'No view' in raises(node='Bad', view='left')
 
 assert len(nuke.allNodes(recurseGroups=True)) == nodes_before
 assert not [n for n in nuke.allNodes(recurseGroups=True) if n.name().startswith('_nss')]
+# every temporary node, in its Group, is named _nss_*; pipelines rely on it. Each execute
+# opens a progress dialog in the GUI, so count them.
+executes, seen = [], set()
+real_execute = nuke.execute
+
+
+def counting_execute(node, *args, **kwargs):
+    executes.append((node.name(), args[:2]))
+    seen.update(n.fullName() for n in nuke.allNodes(recurseGroups=True)
+                if n.fullName().startswith('_nss'))
+    return real_execute(node, *args, **kwargs)
+
+
+nuke.execute = counting_execute
+stats(node='Moving', frame=1, last=6, over=1)
+nuke.execute = real_execute
+print('executes', len(executes))
+assert seen and all(n.split('.')[-1].startswith('_nss_stats_') for n in seen), seen
+# 3 channels x 3 passes, for the first frame and for frames 2 to 6, and 2 for the NaN
+assert len(executes) == 20, executes
 assert nuke.Undo.disabled() == undo_before
 
 # the hot pixel that a grid of samples misses, on a 2K frame

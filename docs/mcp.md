@@ -93,7 +93,7 @@ The server gets the tool list from Nuke each time the client asks for it. If the
 - Arguments, all optional: `node`, `frame`, `view`, `channels` (for example `alpha`, `depth`, `depth.Z`), `crop` (`[x, y, width, height]` in Nuke pixels, enlarged to show detail) and `size`.
 - The metadata has the format, the bounding box, a formula from image pixels to Nuke coordinates, and warnings, for example when the frame is outside the node's range or the image is one color.
 
-A temporary Write node renders the frame. The tool deletes the node and the file after the render, and turns undo off during the render, so the script and the undo history do not change. Nuke runs `onCreate`, `beforeRender` and `afterRender` callbacks for the temporary nodes too. If your pipeline adds callbacks to Write nodes, make sure that they ignore nodes whose names start with `_nss_`. Other built-in tools use the same prefix for their temporary nodes.
+A temporary Write node, inside a temporary Group, renders the frame. The tool deletes the node and the file after the render, and turns undo off during the render, so the script and the undo history do not change. Nuke runs `onCreate`, `beforeRender` and `afterRender` callbacks for the temporary nodes too. If your pipeline adds callbacks to Write nodes, make sure that they ignore nodes whose names start with `_nss_`. Other built-in tools use the same prefix for their temporary nodes.
 
 **Vision** is on by default. It is separate from code: with code off in the tools file, the agent can still see images. To turn it off, clear **Vision** in the panel settings, then disconnect and connect the panel. Turn it off when images of your footage must not go to the AI provider. It turns off only `nuke_vision`.
 
@@ -136,7 +136,7 @@ print(graph(group='Group1'))
 - Values are as stored in Nuke, before the display transform. The minimum, maximum and mean count only finite pixels.
 - When the bounding box of the node does not cover the region, the reply warns. Outside the bounding box, Nuke repeats the edge pixels, and they are in the numbers.
 
-Temporary nodes (`CurveTool`, `Copy` and `Expression`) do the work. As for `nuke_vision`, the tool deletes them and turns undo off, so the script and the undo history do not change. The reply has numbers only, no pixels, so **Vision** does not turn it off.
+Temporary nodes (`CurveTool`, `Copy` and `Expression`) do the work, inside one temporary Group. As for `nuke_vision`, the tool deletes them and turns undo off, so the script and the undo history do not change. Each measurement pass runs once over the whole frame range, so the progress dialog opens a few times per call, not once per frame. The reply has numbers only, no pixels, so **Vision** does not turn it off.
 
 Code in Nuke can call the same function:
 
