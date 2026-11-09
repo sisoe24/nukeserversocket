@@ -83,7 +83,7 @@ The server gives the client these tools:
 
 `nuke_vision`, `nuke_graph` and `nuke_stats` are built-in tools. They only read the script, and they work with code off in the tools file.
 
-The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again.
+The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again. If the tools change later, for example after you restart Nuke with a new tools file, the server tells the client after its next tool call. It checks at most every 30 seconds.
 
 ## Vision
 

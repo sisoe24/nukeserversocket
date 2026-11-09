@@ -87,6 +87,8 @@ EXECUTE_TOOL = {
 LIST_TIMEOUT = 5.0
 # seconds between attempts while Nuke has not answered yet
 POLL_INTERVAL = 5.0
+# seconds; after a tool call, ask Nuke for its tools at most this often (each ask is a log line)
+RECHECK_INTERVAL = 30.0
 
 _WRITE_LOCK = threading.Lock()
 
@@ -184,6 +186,7 @@ class Bridge:
         self._nuke_tools: dict[str, dict[str, Any]] | None = None
         # the list last sent to the client; None until the client asks
         self._served: list[dict[str, Any]] | None = None
+        self._refreshed_at = 0.0
 
     def refresh(self) -> bool:
         """Ask Nuke for its tools. Return False when Nuke cannot be reached."""
@@ -192,6 +195,7 @@ class Bridge:
                           min(LIST_TIMEOUT, self.timeout))
         except OSError:
             return False
+        self._refreshed_at = time.monotonic()
 
         try:
             listing = json.loads(reply)
@@ -232,6 +236,15 @@ class Bridge:
                 break
         LOGGER.info('Nuke answered with %s tool(s).', len(self._nuke_tools or {}))
         if self._served is not None and self._served != self.tools():
+            _write({'jsonrpc': '2.0', 'method': 'notifications/tools/list_changed'})
+
+    def recheck(self) -> None:
+        """Tell the client once if Nuke's tools changed, for example after a Nuke restart."""
+        if self._served is None or time.monotonic() - self._refreshed_at < RECHECK_INTERVAL:
+            return
+        if self.refresh() and self._served != self.tools():
+            # unknown until the client lists again, so it is told only once
+            self._served = None
             _write({'jsonrpc': '2.0', 'method': 'notifications/tools/list_changed'})
 
     def _tools_list(self, msg_id: Any) -> dict[str, Any]:
@@ -309,8 +322,12 @@ class Bridge:
 
         if method == 'tools/call':
             if params.get('name') == EXECUTE_TOOL['name']:
-                return self._execute_code(msg_id, params.get('arguments'))
-            return self._call_nuke_tool(msg_id, params.get('name'), params.get('arguments'))
+                response = self._execute_code(msg_id, params.get('arguments'))
+            else:
+                response = self._call_nuke_tool(msg_id, params.get('name'),
+                                                params.get('arguments'))
+            self.recheck()
+            return response
 
         if not isinstance(method, str):
             return _error(msg_id, INVALID_REQUEST, 'Missing method.')

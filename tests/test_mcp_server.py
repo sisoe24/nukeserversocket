@@ -300,6 +300,50 @@ def test_list_changed_is_not_sent_when_the_list_is_the_same(fake_nuke, monkeypat
     assert written == []
 
 
+def _nuke_listing(listing: dict):
+    """A reply function whose tool list the test can change, like a restarted Nuke."""
+    return lambda payload: listing if 'list_tools' in payload else b'done'
+
+
+def test_list_changed_is_sent_once_when_tools_change_after_a_call(fake_nuke, monkeypatch):
+    """A Nuke restarted with new tools: the client hears about it after its next call."""
+    written = []
+    monkeypatch.setattr(bridge_module, '_write', written.append)
+    monkeypatch.setattr(bridge_module, 'RECHECK_INTERVAL', 0)
+    listing = {'allow_arbitrary_code': True, 'tools': [], 'skipped': {}}
+    port, _ = fake_nuke(_nuke_listing(listing))
+    bridge = Bridge(port=port)
+    bridge.handle(_request('tools/list'))
+    call = _request('tools/call', {'name': 'nuke_execute_code', 'arguments': {'code': 'x'}})
+
+    bridge.handle(call)
+    assert written == []
+
+    listing['tools'] = [PUBLISH_TOOL]
+    assert bridge.handle(call)['result']['content'][0]['text'] == 'done'
+    assert written == [{'jsonrpc': '2.0', 'method': 'notifications/tools/list_changed'}]
+
+    # not again until the client lists
+    bridge.handle(call)
+    assert len(written) == 1
+    bridge.handle(_request('tools/list'))
+    listing['tools'] = []
+    bridge.handle(call)
+    assert len(written) == 2
+
+
+def test_recheck_asks_nuke_at_most_once_per_interval(fake_nuke):
+    port, received = fake_nuke(_nuke_listing({'allow_arbitrary_code': True, 'tools': []}))
+    bridge = Bridge(port=port)
+    bridge.handle(_request('tools/list'))
+    call = _request('tools/call', {'name': 'nuke_execute_code', 'arguments': {'code': 'x'}})
+
+    bridge.handle(call)
+    bridge.handle(call)
+
+    assert [('list_tools' in p) for p in received] == [True, False, False]
+
+
 def test_poll_does_not_ask_again_once_nuke_answered(fake_nuke):
     """The startup poll must not repeat the client's own tools/list request."""
     port, received = fake_nuke(nuke_with_tools(False))
