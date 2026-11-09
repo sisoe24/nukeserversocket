@@ -12,12 +12,12 @@ from __future__ import annotations
 import os
 import re
 import json
-import uuid
 import tempfile
 from typing import Any
 
 import nuke
 
+from ._temp import RGB, temp_nodes, copy_to_rgb
 from ....tools import Tool, Image, ToolError
 
 DEFAULT_SIZE = 768
@@ -67,7 +67,7 @@ def _pick_channels(source: nuke.Node, channels: str) -> list[str]:
     if not available:
         raise ToolError(f'{source.fullName()} has no image. Is its input connected?')
     if channels in ('rgb', 'rgba'):
-        return ['rgba.red', 'rgba.green', 'rgba.blue']
+        return list(RGB)
     if channels == 'alpha':
         channels = 'rgba.alpha'
     if channels in available:
@@ -102,8 +102,7 @@ def _set_display(write: nuke.Node, viewer_process: str | None) -> str:
     return f'colorspace {write["colorspace"].value()} (Write default, no Viewer transform found)'
 
 
-def _warnings(source: nuke.Node, shown: nuke.Node, frame: int, view: str,
-              region: list[float]) -> list[str]:
+def _source_warnings(source: nuke.Node, frame: int) -> list[str]:
     warnings = []
     if not source.firstFrame() <= frame <= source.lastFrame():
         warnings.append(f'Frame {frame} is outside the frame range of {source.fullName()} '
@@ -112,13 +111,19 @@ def _warnings(source: nuke.Node, shown: nuke.Node, frame: int, view: str,
         warnings.append(f'{source.fullName()} reports an error.')
     if nuke.root()['proxy'].value():
         warnings.append('Proxy mode is on: the image is rendered at proxy resolution.')
+    return warnings
+
+
+def _warnings(source: nuke.Node, shown: nuke.Node, frame: int, view: str,
+              region: list[float]) -> list[str]:
+    warnings = _source_warnings(source, frame)
 
     # the render warmed the cache, so these samples are free
     x, y, r, t = region
     points = [(x + (r - x) * (i + 0.5) / 5, y + (t - y) * (j + 0.5) / 5)
               for i in range(5) for j in range(5)]
     colors = {tuple(round(shown.sample(c, px, py, frame=frame), 4)
-                    for c in ('rgba.red', 'rgba.green', 'rgba.blue')) for px, py in points}
+                    for c in RGB) for px, py in points}
     if len(colors) == 1:
         warnings.append(f'The image looks like a single color {list(colors.pop())} '
                         f'({len(points)} samples, before the display transform).')
@@ -156,53 +161,45 @@ def vision(node: str = '', frame: int | None = None, view: str = '', channels: s
 
     fd, path = tempfile.mkstemp(prefix='nss_vision_', suffix='.jpg')
     os.close(fd)
-    name = f'_nss_vision_{uuid.uuid4().hex[:8]}'
 
-    temp_nodes = []
-    undo_was_on = not nuke.Undo.disabled()
-    nuke.Undo.disable()
     try:
-        last = source
-        if shown_channels != ['rgba.red', 'rgba.green', 'rgba.blue']:
-            last = nuke.nodes.Copy(name=f'{name}_copy', inputs=[source, source])
-            for index, channel in enumerate(shown_channels):
-                last[f'from{index}'].setValue(channel)
-                last[f'to{index}'].setValue(('rgba.red', 'rgba.green', 'rgba.blue')[index])
-            temp_nodes.append(last)
-        shown = last
+        with temp_nodes('vision') as (name, created):
+            last = source
+            if shown_channels != RGB:
+                last = copy_to_rgb(source, shown_channels, f'{name}_copy')
+                created.append(last)
+            shown = last
 
-        if crop is not None:
-            last = nuke.nodes.Crop(name=f'{name}_crop', inputs=[last], reformat=True)
-            last['box'].setValue(region)
-            temp_nodes.append(last)
+            if crop is not None:
+                last = nuke.nodes.Crop(name=f'{name}_crop', inputs=[last], reformat=True)
+                last['box'].setValue(region)
+                created.append(last)
 
-        if scale != 1 or aspect != 1:
-            last = nuke.nodes.Reformat(name=f'{name}_reformat', inputs=[last], type='scale',
-                                       filter='Impulse' if scale > 1 else 'Cubic')
-            last['scale'].setValue([scale * aspect, scale])
-            temp_nodes.append(last)
+            if scale != 1 or aspect != 1:
+                last = nuke.nodes.Reformat(name=f'{name}_reformat', inputs=[last], type='scale',
+                                           filter='Impulse' if scale > 1 else 'Cubic')
+                last['scale'].setValue([scale * aspect, scale])
+                created.append(last)
 
-        file = path.replace('\\', '/')
-        # proxy: without it, a render in proxy mode fails
-        write = nuke.nodes.Write(name=f'{name}_write', inputs=[last], file=file, proxy=file,
-                                 file_type='jpeg', channels='rgb')
-        temp_nodes.append(write)
-        display = _set_display(write, viewer.node()['viewerProcess'].value() if viewer else None)
+            file = path.replace('\\', '/')
+            # proxy: without it, a render in proxy mode fails
+            write = nuke.nodes.Write(name=f'{name}_write', inputs=[last], file=file, proxy=file,
+                                     file_type='jpeg', channels='rgb')
+            created.append(write)
+            display = _set_display(write,
+                                   viewer.node()['viewerProcess'].value() if viewer else None)
 
-        try:
-            nuke.execute(write, frame, frame, 1, views=[view])
-        except RuntimeError as e:
-            raise ToolError(f'Cannot render {source.fullName()} at frame {frame}: {e}') from None
-        with open(path, 'rb') as f:
-            data = f.read()
+            try:
+                nuke.execute(write, frame, frame, 1, views=[view])
+            except RuntimeError as e:
+                raise ToolError(f'Cannot render {source.fullName()} at frame {frame}: '
+                                f'{e}') from None
+            with open(path, 'rb') as f:
+                data = f.read()
 
-        warnings = _warnings(source, shown, frame, view, region)
+            warnings = _warnings(source, shown, frame, view, region)
     finally:
-        for temp_node in reversed(temp_nodes):
-            nuke.delete(temp_node)
         os.remove(path)
-        if undo_was_on:
-            nuke.Undo.enable()
 
     bbox = source.bbox()
     image_width, image_height = round(width * scale), round(height * scale)
@@ -244,8 +241,9 @@ VISION_TOOL = Tool(
         '"depth.Z", shown as rgb or greyscale.\n'
         "- The image has the Viewer's display transform, not its gain, gamma, wipe or "
         'overlays.\n'
-        '- For exact values, call node.sample() with nuke_execute_code right after: the '
-        'render warmed the cache, so it is instant.\n'
+        '- For min, max, mean or NaN counts, use nuke_stats. For the value at a few points, '
+        'call node.sample() with nuke_execute_code right after: the render warmed the cache, '
+        'so it is instant.\n'
         '- Nuke is busy until the render finishes. A temporary Write node renders the frame '
         'and is deleted; the scene, the Viewer and the undo history do not change.'
     ),

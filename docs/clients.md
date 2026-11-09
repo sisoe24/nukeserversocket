@@ -35,7 +35,7 @@ The panel saves its port in `~/.nuke/nukeserversocket.json`. Your client can rea
 
 ## Tool requests
 
-Clients can list and call the panel's tools: `nuke_vision`, `nuke_graph` and the tools of the [tools file](mcp.md#tools-file). Send each request on its own connection, as you do for a code request. The reply is JSON:
+Clients can list and call the panel's tools: `nuke_vision`, `nuke_graph`, `nuke_stats` and the tools of the [tools file](mcp.md#tools-file). Send each request on its own connection, as you do for a code request. The reply is JSON:
 
 ```py
 {"list_tools": true}

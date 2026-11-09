@@ -8,5 +8,6 @@ from ....tools import Tool
 
 def builtin_tools() -> Dict[str, Tool]:
     from .graph import GRAPH_TOOL
+    from .stats import STATS_TOOL
     from .vision import VISION_TOOL
-    return {t.name: t for t in (VISION_TOOL, GRAPH_TOOL)}
+    return {t.name: t for t in (VISION_TOOL, GRAPH_TOOL, STATS_TOOL)}

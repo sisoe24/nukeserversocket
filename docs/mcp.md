@@ -78,9 +78,10 @@ The server gives the client these tools:
 - `nuke_execute_code`, if code is on in the [tools file](#tools-file).
 - `nuke_vision`, if **Vision** is on in the panel settings. See [Vision](#vision).
 - `nuke_graph`, always. See [Graph](#graph).
+- `nuke_stats`, always. See [Stats](#stats).
 - Each tool that the tools file declares.
 
-`nuke_vision` and `nuke_graph` are built-in tools. They only read the script, and they work with code off in the tools file.
+`nuke_vision`, `nuke_graph` and `nuke_stats` are built-in tools. They only read the script, and they work with code off in the tools file.
 
 The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again.
 
@@ -122,6 +123,24 @@ Code in Nuke can call the same function:
 from nukeserversocket.controllers.nuke.builtin.graph import graph
 
 print(graph(group='Group1'))
+```
+
+## Stats
+
+`nuke_stats` lets the agent measure an image in Nuke, for example to check clipping or NaN pixels. For each channel of one frame of a node, it gives the minimum and maximum with their pixel positions, the mean, and the number of NaN and infinite pixels. It reads every pixel, so it finds a single bad pixel.
+
+- Arguments, all optional: `node`, `frame`, `view`, `channels` (`rgb` by default, or `rgba`, `alpha`, a layer, or one channel) and `crop` (`[x, y, width, height]` in Nuke pixels). By default it measures the node that feeds the active Viewer input, at the current frame, over the whole format.
+- Values are as stored in Nuke, before the display transform. The minimum, maximum and mean count only finite pixels.
+- When the bounding box of the node does not cover the region, the reply warns. Outside the bounding box, Nuke repeats the edge pixels, and they are in the numbers.
+
+Temporary nodes (`CurveTool`, `Copy` and `Expression`) do the work. As for `nuke_vision`, the tool deletes them and turns undo off, so the script and the undo history do not change. The reply has numbers only, no pixels, so **Vision** does not turn it off.
+
+Code in Nuke can call the same function:
+
+```py
+from nukeserversocket.controllers.nuke.builtin.stats import stats
+
+print(stats('Grade1', frame=1001, channels='rgba'))
 ```
 
 ## Tools file
