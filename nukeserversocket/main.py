@@ -9,7 +9,7 @@ from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QGroupBox,
                   QSizePolicy, QVBoxLayout, QListWidgetItem)
 
 from .logger import ConsoleHandler, get_logger
-from .tools import ToolSet
+from .tools import BUILTIN_TOOL, ToolSet
 from .server import NssServer
 from .console import NssConsole
 from .toolbar import ToolBar
@@ -151,7 +151,7 @@ class MainView(QWidget):
     def set_tools(self, toolset: ToolSet, tools_file: str):
         self.tools_list.clear()
         if toolset.allow_code:
-            self.tools_list.addItem('nuke_execute_code')
+            self.tools_list.addItem(BUILTIN_TOOL)
         for tool in [*toolset.builtins.values(), *toolset.tools.values()]:
             item = QListWidgetItem(tool.name)
             item.setToolTip(tool.description)
