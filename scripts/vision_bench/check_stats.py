@@ -40,6 +40,9 @@ depth['to0'].setValue('depth.Z')
 lonely = nuke.nodes.Grade(name='Lonely')
 small = nuke.nodes.Crop(name='Small', inputs=[base])
 small['box'].setValue([0, 0, 32, 32])
+no_alpha = nuke.nodes.Remove(name='NoAlpha', inputs=[base], operation='remove',
+                             channels='alpha')
+assert 'rgba.alpha' not in no_alpha.channels(), no_alpha.channels()
 nodes_before = len(nuke.allNodes(recurseGroups=True))
 undo_before = nuke.Undo.disabled()
 nuke.root().setModified(False)
@@ -75,6 +78,7 @@ assert 'does not cover' in stats(node='Small', frame=1)['warnings'][-1]
 
 assert 'No node named' in raises(node='Nope')
 assert 'no channel or layer' in raises(node='Bad', channels='nope')
+assert 'has no rgba.alpha' in raises(node='NoAlpha', channels='rgba')
 assert 'no image' in raises(node='Lonely')
 assert 'crop must be' in raises(node='Bad', crop=[0, 0, 0, 5])
 assert 'No view' in raises(node='Bad', view='left')

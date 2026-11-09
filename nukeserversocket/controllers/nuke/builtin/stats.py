@@ -31,7 +31,10 @@ def _pick_channels(source: nuke.Node, channels: str) -> List[str]:
         picked = [channels] if channels in available else [
             c for c in available if c.split('.')[0] == channels]
     missing = [c for c in picked if c not in available]
-    if not picked or missing:
+    if missing:
+        raise ToolError(f'{source.fullName()} has no {", ".join(missing)}. '
+                        f'Channels: {sorted(available)}.')
+    if not picked:
         layers = sorted({c.split('.')[0] for c in available})
         raise ToolError(f'{source.fullName()} has no channel or layer {channels!r}. '
                         f'Layers: {layers}.')
