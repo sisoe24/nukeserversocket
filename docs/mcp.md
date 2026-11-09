@@ -131,6 +131,8 @@ print(graph(group='Group1'))
 `nuke_stats` lets the agent measure an image in Nuke, for example to check clipping or NaN pixels. For each channel of one frame of a node, it gives the minimum and maximum with their pixel positions, the mean, and the number of NaN and infinite pixels. It reads every pixel, so it finds a single bad pixel.
 
 - Arguments, all optional: `node`, `frame`, `view`, `channels` (`rgb` by default, or `rgba`, `alpha`, a layer, or one channel) and `crop` (`[x, y, width, height]` in Nuke pixels). By default it measures the node that feeds the active Viewer input, at the current frame, over the whole format.
+- `last` measures every frame from `frame` to `last`. The reply gives the minimum and maximum of the range with their frames, and the first 10 frames with NaN or infinite pixels. After 40 seconds the tool stops and returns the frames it measured, so that the MCP client does not time out.
+- `over` also counts the pixels at or above a value, for example `1`, to tell a few hot pixels from real clipping.
 - Values are as stored in Nuke, before the display transform. The minimum, maximum and mean count only finite pixels.
 - When the bounding box of the node does not cover the region, the reply warns. Outside the bounding box, Nuke repeats the edge pixels, and they are in the numbers.
 

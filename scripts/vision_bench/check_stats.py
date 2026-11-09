@@ -43,6 +43,11 @@ small['box'].setValue([0, 0, 32, 32])
 no_alpha = nuke.nodes.Remove(name='NoAlpha', inputs=[base], operation='remove',
                              channels='alpha')
 assert 'rgba.alpha' not in no_alpha.channels(), no_alpha.channels()
+# red, frames 1 to 6: NaN at (5, 5) on frame 3 only, 9 at (12, 12) on frame 5 only
+# a Constant is frames 1 to 1; Nuke 17 holds frame 1 outside that
+six = nuke.nodes.Constant(name='Six', format='nss64', first=1, last=6)
+nuke.nodes.Expression(name='Moving', inputs=[six], expr1='0.5', expr2='0.5',
+                      expr0='(frame==3&&x==5&&y==5)?sqrt(-1):(frame==5&&x==12&&y==12)?9:0.5')
 nodes_before = len(nuke.allNodes(recurseGroups=True))
 undo_before = nuke.Undo.disabled()
 nuke.root().setModified(False)
@@ -75,6 +80,33 @@ assert cropped['channels']['rgba.red']['max_at'] == [40, 40]
 assert cropped['channels']['rgba.red']['nan'] == 0
 
 assert 'does not cover' in stats(node='Small', frame=1)['warnings'][-1]
+
+# a frame range, and a count over a value
+assert reply['last'] == 1 and reply['bad_frames'] == [1] and red['max_frame'] == 1
+assert stats(node='Bad', frame=1, over=1)['channels']['rgba.red']['over'] == 2  # 7 and +inf
+ranged = stats(node='Moving', frame=1, last=6, over=1)
+moving = ranged['channels']['rgba.red']
+print(json.dumps(ranged))
+assert ranged['last'] == 6 and ranged['bad_frames'] == [3], ranged
+assert moving['nan'] == 1 and moving['inf'] == 0, moving
+assert (moving['max'], moving['max_at'], moving['max_frame']) == (9, [12, 12], 5), moving
+assert moving['min'] == 0.5, moving
+assert close(moving['mean'], ((6 * 4096 - 2) * 0.5 + 9) / (6 * 4096 - 1)), moving
+assert (moving['over'], moving['over_frame']) == (1, 5), moving
+assert close(moving['over_fraction'], 1 / (6 * 4096)), moving
+assert ranged['channels']['rgba.green']['over'] == 0
+# a frame that is not the current frame
+assert nuke.frame() != 5, nuke.frame()
+single = stats(node='Moving', frame=5)['channels']['rgba.red']
+assert single['max'] == 9, single
+assert ranged['channels']['rgba.green']['over_frame'] is None
+stats_module = sys.modules[stats.__module__]
+stats_module.TIME_LIMIT = 0
+stopped = stats(node='Moving', frame=1, last=6)
+stats_module.TIME_LIMIT = 40.0
+assert stopped['last'] == 1 and 'frame=2' in stopped['warnings'][-1], stopped
+assert 'is before' in raises(node='Bad', frame=5, last=2)
+assert 'must be a number' in raises(node='Bad', frame=1, over='high')
 
 assert 'No node named' in raises(node='Nope')
 assert 'no channel or layer' in raises(node='Bad', channels='nope')
