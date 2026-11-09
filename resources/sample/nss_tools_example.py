@@ -2,7 +2,7 @@
 
 Clients call these by name. Keep them safe to call from a remote client:
 arguments are JSON values, nothing opens a dialog, nothing reads the user's
-selection, and every result is JSON. Set "allow_code" to false in
+selection, and every result is JSON. Set "allow_arbitrary_code" to false in
 nss_tools.json to allow only these tools.
 """
 from __future__ import annotations

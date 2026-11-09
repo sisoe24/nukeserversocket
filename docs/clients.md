@@ -39,7 +39,7 @@ Clients can list and call the panel's tools: `nuke_vision` and the tools of the 
 
 ```py
 {"list_tools": true}
-# {"allow_code": false, "tools": [{"name", "description", "inputSchema", "timeout", "annotations"}], "skipped": {"name": "reason"}}
+# {"allow_arbitrary_code": false, "tools": [{"name", "description", "inputSchema", "timeout", "annotations"}], "skipped": {"name": "reason"}}
 
 {"call_tool": "render_write", "arguments": {"node": "Write1"}}
 # {"ok": true, "output": "printed text, then the return value as JSON"}
@@ -47,7 +47,7 @@ Clients can list and call the panel's tools: `nuke_vision` and the tools of the 
 
 When a tool returns an image, for example `nuke_vision`, the reply also has `"images": [{"mimeType": "image/jpeg", "data": "<base64>"}]`, and `output` holds only the printed text.
 
-When `allow_code` is `false`, the reply to a code request starts with `NukeServerSocket error:`.
+When `allow_arbitrary_code` is `false`, the reply to a code request starts with `NukeServerSocket error:`.
 
 ## Code samples
 

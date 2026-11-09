@@ -96,7 +96,7 @@ class NssServer(QTcpServer):
 
     def _run_code(self, data: ReceivedData) -> Tuple[int, str, str]:
         """Return the log level, what to log, and the reply."""
-        if not self.toolset.allow_code:
+        if not self.toolset.allow_arbitrary_code:
             reason = self.toolset.code_off_reason
             return (logging.WARNING, f'code refused: {reason}',
                     f'NukeServerSocket error: code execution is off ({reason}). '

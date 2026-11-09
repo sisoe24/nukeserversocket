@@ -65,11 +65,12 @@ PUBLISH_TOOL = {
 }
 
 
-def nuke_with_tools(allow_code: bool, call_reply=None):
+def nuke_with_tools(allow_arbitrary_code: bool, call_reply=None):
     """A reply function for a nukeserversocket with a tool file."""
     def reply(payload):
         if 'list_tools' in payload:
-            return {'allow_code': allow_code, 'tools': [PUBLISH_TOOL], 'skipped': {}}
+            return {'allow_arbitrary_code': allow_arbitrary_code, 'tools': [PUBLISH_TOOL],
+                    'skipped': {}}
         return call_reply
     return reply
 
@@ -165,13 +166,13 @@ def test_tools_list_before_nuke_answers_offers_only_code(free_port):
     assert response['result']['tools'] == [EXECUTE_TOOL]
 
 
-@pytest.mark.parametrize('allow_code, names', [
+@pytest.mark.parametrize('allow_arbitrary_code, names', [
     (True, ['nuke_execute_code', 'publish_shot']),
     (False, ['publish_shot']),
 ])
-def test_tools_list_mirrors_nuke(fake_nuke, allow_code, names):
+def test_tools_list_mirrors_nuke(fake_nuke, allow_arbitrary_code, names):
     """The list holds Nuke's tools, and nuke_execute_code only when Nuke allows code."""
-    port, received = fake_nuke(nuke_with_tools(allow_code))
+    port, received = fake_nuke(nuke_with_tools(allow_arbitrary_code))
     tools = handle_message(_request('tools/list'), port=port)['result']['tools']
 
     assert [t['name'] for t in tools] == names
@@ -183,7 +184,7 @@ def test_tools_list_mirrors_nuke(fake_nuke, allow_code, names):
 def test_tools_list_passes_tool_annotations(fake_nuke):
     hints = {'readOnlyHint': True}
     tool = dict(PUBLISH_TOOL, annotations=hints)
-    port, _ = fake_nuke(lambda p: {'allow_code': False, 'tools': [tool], 'skipped': {}})
+    port, _ = fake_nuke(lambda p: {'allow_arbitrary_code': False, 'tools': [tool], 'skipped': {}})
     tools = handle_message(_request('tools/list'), port=port)['result']['tools']
     assert tools[0]['annotations'] == hints
 
@@ -215,7 +216,7 @@ def test_tools_list_with_old_nuke_offers_only_code(fake_nuke, reply):
 def test_nuke_tool_named_like_the_code_tool_is_ignored(fake_nuke):
     """A tools file tool cannot replace nuke_execute_code."""
     shadow = dict(PUBLISH_TOOL, name='nuke_execute_code')
-    port, _ = fake_nuke(lambda p: {'allow_code': False, 'tools': [shadow], 'skipped': {}})
+    port, _ = fake_nuke(lambda p: {'allow_arbitrary_code': False, 'tools': [shadow], 'skipped': {}})
     assert handle_message(_request('tools/list'), port=port)['result']['tools'] == []
 
 
@@ -291,7 +292,7 @@ def test_list_changed_is_sent_when_nuke_answers_late(fake_nuke, free_port, monke
 def test_list_changed_is_not_sent_when_the_list_is_the_same(fake_nuke, monkeypatch):
     written = []
     monkeypatch.setattr(bridge_module, '_write', written.append)
-    port, _ = fake_nuke(lambda payload: {'allow_code': True, 'tools': [], 'skipped': {}})
+    port, _ = fake_nuke(lambda payload: {'allow_arbitrary_code': True, 'tools': [], 'skipped': {}})
 
     bridge = Bridge(port=port)
     bridge.handle(_request('tools/list'))

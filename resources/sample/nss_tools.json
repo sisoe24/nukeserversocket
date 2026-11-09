@@ -1,5 +1,5 @@
 {
-    "allow_code": true,
+    "allow_arbitrary_code": true,
     "tools": [
         {
             "name": "script_info",

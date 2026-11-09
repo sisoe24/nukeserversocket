@@ -75,7 +75,7 @@ For each: did the agent get there, how many calls, did it need something `vision
 
 ### Plumbing (proven in the spike)
 
-A tool can return `Image`; the Nuke reply carries `images`; the bridge sends MCP image blocks after the text. Built-in tools follow the Vision setting, not `allow_code`.
+A tool can return `Image`; the Nuke reply carries `images`; the bridge sends MCP image blocks after the text. Built-in tools follow the Vision setting, not `allow_arbitrary_code`.
 
 ## Phase 0 results (2026-11-08)
 
@@ -161,7 +161,7 @@ Not checked: the 20 `onCreate` callbacks in this session also run for each tempo
 ## Decisions (2026-11-08)
 
 1. The tool is named `vision`.
-2. `vision` has its own setting, on by default, separate from `allow_code`. It only reads pixels and runs no agent code, so a studio that turns code off can still let the agent see.
+2. `vision` has its own setting, on by default, separate from `allow_arbitrary_code`. It only reads pixels and runs no agent code, so a studio that turns code off can still let the agent see.
 3. Tools from the tools file can return images (`Image`), through the same path as `vision`.
 
 ## Callbacks on the temporary nodes

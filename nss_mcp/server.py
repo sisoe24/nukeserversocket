@@ -179,7 +179,7 @@ class Bridge:
         self.port = port
         self.timeout = timeout
         self._lock = threading.Lock()
-        self._allow_code = True
+        self._allow_arbitrary_code = True
         # name -> tool as Nuke lists it; None until Nuke answers
         self._nuke_tools: dict[str, dict[str, Any]] | None = None
         # the list last sent to the client; None until the client asks
@@ -199,12 +199,12 @@ class Bridge:
             listing = None
         if not isinstance(listing, dict):
             # a nukeserversocket without tool support: code only
-            listing = {'allow_code': True, 'tools': []}
+            listing = {'allow_arbitrary_code': True, 'tools': []}
 
         tools = listing.get('tools')
         tools = tools if isinstance(tools, list) else []
         with self._lock:
-            self._allow_code = listing.get('allow_code') is True
+            self._allow_arbitrary_code = listing.get('allow_arbitrary_code') is True
             self._nuke_tools = {
                 t['name']: t for t in tools
                 if isinstance(t, dict) and isinstance(t.get('name'), str)
@@ -214,7 +214,7 @@ class Bridge:
 
     def tools(self) -> list[dict[str, Any]]:
         with self._lock:
-            tools = [EXECUTE_TOOL] if self._allow_code else []
+            tools = [EXECUTE_TOOL] if self._allow_arbitrary_code else []
             for tool in (self._nuke_tools or {}).values():
                 entry = {'name': tool['name'], 'description': tool.get('description', ''),
                          'inputSchema': tool.get('inputSchema') or {'type': 'object'}}

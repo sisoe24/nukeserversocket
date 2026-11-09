@@ -150,7 +150,7 @@ class MainView(QWidget):
 
     def set_tools(self, toolset: ToolSet, tools_file: str):
         self.tools_list.clear()
-        if toolset.allow_code:
+        if toolset.allow_arbitrary_code:
             self.tools_list.addItem(BUILTIN_TOOL)
         for tool in [*toolset.builtins.values(), *toolset.tools.values()]:
             item = QListWidgetItem(tool.name)
@@ -225,7 +225,7 @@ class MainController:
                     LOGGER.info('Tools file %s%s: %s tool%s%s, code %s', tools_file,
                                 ' (NSS_TOOLS)' if from_env else '', count,
                                 '' if count == 1 else 's', skipped,
-                                'on' if toolset.allow_code else 'off')
+                                'on' if toolset.allow_arbitrary_code else 'off')
 
                 self._view.ip_label.setText(ip)
                 self._view.set_tools(toolset, tools_file)

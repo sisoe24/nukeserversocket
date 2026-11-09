@@ -75,7 +75,7 @@ Ask Nuke for its tools. Replace `PYTHON` with the interpreter from step 2, and `
 PYTHON -c "import socket; s = socket.create_connection(('HOST', PORT), 5); s.sendall(b'{\"list_tools\": true}'); print(s.makefile().read())"
 ```
 
-- A JSON reply with `allow_code` and `tools`: the check passes.
+- A JSON reply with `allow_arbitrary_code` and `tools`: the check passes.
 - Connection refused: Nuke is closed or the panel is not connected. Ask the user to open the NukeServerSocket panel in Nuke and click **Connect**, then run the check again.
 
 Done when the check passes.
@@ -85,7 +85,7 @@ Done when the check passes.
 Tell the user:
 
 - the command you ran or the config file you changed, and the exact entry
-- whether clients may run code: `allow_code` true means `nuke_execute_code` works; false means only the listed tools do
+- whether clients may run code: `allow_arbitrary_code` true means `nuke_execute_code` works; false means only the listed tools do
 - the tools Nuke listed. An empty list is normal without a tools file
 - any entries in `skipped`, with their reasons
 - that they may need to restart the client, or start a new session, before the `nuke` tools appear

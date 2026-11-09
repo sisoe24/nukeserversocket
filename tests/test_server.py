@@ -284,7 +284,7 @@ def tool_server(server: NssServer, tmp_path, monkeypatch):
     (tmp_path / 'nss_test_server_tools.py').write_text(TOOLS_MODULE)
     monkeypatch.syspath_prepend(str(tmp_path))
     tool_file = tmp_path / 'nss_tools.json'
-    tool_file.write_text(json.dumps({'allow_code': False, 'tools': [{
+    tool_file.write_text(json.dumps({'allow_arbitrary_code': False, 'tools': [{
         'name': 'publish_shot',
         'description': 'Publish the open script.',
         'function': 'nss_test_server_tools:publish_shot',
@@ -311,7 +311,7 @@ def request(qtbot: QtBot, payload: dict) -> str:
 
 def test_server_lists_tools(qtbot: QtBot, tool_server: NssServer):
     assert json.loads(request(qtbot, {'list_tools': True})) == {
-        'allow_code': False,
+        'allow_arbitrary_code': False,
         'tools': [{
             'name': 'publish_shot',
             'description': 'Publish the open script.',
@@ -346,7 +346,7 @@ def test_server_reports_bad_tool_calls(qtbot: QtBot, tool_server: NssServer, pay
     ({'call_tool': 'publish_shot', 'arguments': {'comment': 1}, 'file': 'MCP'},
      (logging.WARNING, "(MCP) publish_shot: Invalid arguments: 'comment' must be string, got 1.")),
     ({'text': 'print(1)', 'file': 'MCP'},
-     (logging.WARNING, '(MCP) code refused: allow_code is false in nss_tools.json')),
+     (logging.WARNING, '(MCP) code refused: allow_arbitrary_code is false in nss_tools.json')),
 ])
 def test_server_logs_tool_requests(qtbot: QtBot, tool_server: NssServer, logged, payload, line):
     assert handled(qtbot, logged, payload) == line
@@ -377,7 +377,8 @@ def test_server_logs_the_tool_error(qtbot: QtBot, tool_server: NssServer, monkey
 def test_server_rejects_code_when_tool_file_turns_it_off(qtbot: QtBot, tool_server: NssServer):
     reply = request(qtbot, {'text': "print('hi')"})
     assert reply == ('NukeServerSocket error: code execution is off '
-                     '(allow_code is false in nss_tools.json). Use the tools it lists instead.')
+                     '(allow_arbitrary_code is false in nss_tools.json). '
+                     'Use the tools it lists instead.')
     assert tool_server._editor.input_editor.toPlainText() == 'initial input'
 
 
@@ -387,7 +388,7 @@ def test_server_without_tool_file_still_runs_code(qtbot: QtBot, server: NssServe
     server.try_connect(PORT)
     assert request(qtbot, {'text': "print('hi')"}).strip() == 'hi'
     assert json.loads(request(qtbot, {'list_tools': True})) == {
-        'allow_code': True, 'tools': [], 'skipped': {}}
+        'allow_arbitrary_code': True, 'tools': [], 'skipped': {}}
 
 
 @pytest.mark.parametrize('payload', (b'not json', b'{"text": ""}'))

@@ -85,14 +85,14 @@ def _tool(**overrides) -> dict:
 def test_no_tool_file_keeps_todays_behaviour(monkeypatch):
     """Without NSS_TOOLS, code runs as before and no tools are loaded."""
     monkeypatch.delenv('NSS_TOOLS', raising=False)
-    assert load_tools() == ToolSet(allow_code=True)
+    assert load_tools() == ToolSet(allow_arbitrary_code=True)
 
 
 def test_tool_file_is_read_from_env(tool_file, monkeypatch):
     """NSS_TOOLS names the tool file."""
-    monkeypatch.setenv('NSS_TOOLS', tool_file({'allow_code': False, 'tools': [_tool()]}))
+    monkeypatch.setenv('NSS_TOOLS', tool_file({'allow_arbitrary_code': False, 'tools': [_tool()]}))
     toolset = load_tools()
-    assert toolset.allow_code is False
+    assert toolset.allow_arbitrary_code is False
     assert list(toolset.tools) == ['publish_shot']
 
 
@@ -100,23 +100,23 @@ def test_tool_file_is_read_from_env(tool_file, monkeypatch):
 def test_unreadable_tool_file_turns_code_off(tool_file, content):
     """A tool file that is set but broken must not fall back to allowing code."""
     toolset = load_tools(tool_file(content))
-    assert toolset == ToolSet(allow_code=False)
+    assert toolset == ToolSet(allow_arbitrary_code=False)
 
 
 def test_missing_tool_file_turns_code_off(tmp_path):
     """A tool file that is set but missing must not fall back to allowing code."""
-    assert load_tools(str(tmp_path / 'missing.json')) == ToolSet(allow_code=False)
+    assert load_tools(str(tmp_path / 'missing.json')) == ToolSet(allow_arbitrary_code=False)
 
 
 @pytest.mark.parametrize('value', ['false', 0, None])
-def test_non_boolean_allow_code_turns_code_off(tool_file, value):
+def test_non_boolean_allow_arbitrary_code_turns_code_off(tool_file, value):
     """Only a real JSON true allows code; anything else is treated as off."""
-    assert load_tools(tool_file({'allow_code': value})).allow_code is False
+    assert load_tools(tool_file({'allow_arbitrary_code': value})).allow_arbitrary_code is False
 
 
-def test_allow_code_defaults_to_true_in_a_tool_file(tool_file):
+def test_allow_arbitrary_code_defaults_to_true_in_a_tool_file(tool_file):
     """A tool file that only adds tools keeps code execution on."""
-    assert load_tools(tool_file({'tools': [_tool()]})).allow_code is True
+    assert load_tools(tool_file({'tools': [_tool()]})).allow_arbitrary_code is True
 
 
 def test_valid_tool_is_loaded(tool_file):
@@ -198,16 +198,16 @@ def test_non_object_entries_are_skipped_by_position(tool_file):
 
 
 def test_non_list_tools_loads_nothing_but_keeps_policy(tool_file):
-    """A malformed "tools" value loads nothing and still applies allow_code."""
-    toolset = load_tools(tool_file({'allow_code': False, 'tools': {'publish_shot': {}}}))
-    assert toolset == ToolSet(allow_code=False)
+    """A malformed "tools" value loads nothing and still applies allow_arbitrary_code."""
+    toolset = load_tools(tool_file({'allow_arbitrary_code': False, 'tools': {'publish_shot': {}}}))
+    assert toolset == ToolSet(allow_arbitrary_code=False)
 
 
 @pytest.mark.parametrize('content, reason', [
     ('{not json', 'cannot read nss_tools.json'),
     ('[]', 'nss_tools.json is not a JSON object'),
-    ('{"allow_code": 0}', 'allow_code is not true or false in nss_tools.json'),
-    ('{"allow_code": false}', 'allow_code is false in nss_tools.json'),
+    ('{"allow_arbitrary_code": 0}', 'allow_arbitrary_code is not true or false in nss_tools.json'),
+    ('{"allow_arbitrary_code": false}', 'allow_arbitrary_code is false in nss_tools.json'),
     ('{}', ''),
 ])
 def test_code_off_reason_names_the_cause(tool_file, content, reason):
@@ -233,7 +233,7 @@ def test_sample_tool_file_loads_every_tool(monkeypatch):
     toolset = load_tools(str(SAMPLE_DIR / 'nss_tools.json'))
     sys.modules.pop('nss_tools_example', None)
 
-    assert toolset.allow_code is True
+    assert toolset.allow_arbitrary_code is True
     assert list(toolset.tools) == ['script_info', 'list_writes', 'render_write']
     assert toolset.skipped == {}
 
@@ -396,7 +396,7 @@ def test_builtins_are_listed_and_called_while_code_is_on(tool_file):
     assert call_tool(toolset, SNAPSHOT.name)['ok'] is True
 
 
-@pytest.mark.parametrize('content', [{'allow_code': False}, 'not json'])
+@pytest.mark.parametrize('content', [{'allow_arbitrary_code': False}, 'not json'])
 def test_builtins_stay_when_code_is_off(tool_file, content):
     """Built-in tools have their own setting, so a locked-down tools file keeps them."""
     toolset = load_tools(tool_file(content), {SNAPSHOT.name: SNAPSHOT})

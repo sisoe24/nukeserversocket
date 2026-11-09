@@ -1,7 +1,7 @@
 """Load the tools that clients may call, from a JSON tools file.
 
 {
-    "allow_code": false,
+    "allow_arbitrary_code": false,
     "tools": [
         {
             "name": "publish_shot",
@@ -20,7 +20,8 @@ Without a tools file, code runs as before and there are no tools.
 Clients use the tools with two requests; the reply is JSON:
 
     {"list_tools": true}
-        -> {"allow_code": bool, "tools": [{"name", "description", "inputSchema", "timeout", "annotations"}],
+        -> {"allow_arbitrary_code": bool,
+            "tools": [{"name", "description", "inputSchema", "timeout", "annotations"}],
             "skipped": {"name": "reason"}}
     {"call_tool": "publish_shot", "arguments": {"comment": "v2"}}
         -> {"ok": bool, "output": str, "images": [{"mimeType": str, "data": base64 str}]}
@@ -78,9 +79,9 @@ class ToolError(Exception):
 
 @dataclass
 class ToolSet:
-    allow_code: bool = True
+    allow_arbitrary_code: bool = True
     tools: Dict[str, Tool] = field(default_factory=dict)
-    # the panel's own tools, e.g. nuke_vision; independent of allow_code
+    # the panel's own tools, e.g. nuke_vision; independent of allow_arbitrary_code
     builtins: Dict[str, Tool] = field(default_factory=dict)
     # tool name (or entry position) -> why it was not loaded
     skipped: Dict[str, str] = field(default_factory=dict)
@@ -231,18 +232,20 @@ def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] =
         config = json.loads(pathlib.Path(path).read_text(encoding='utf-8'))
     except (OSError, ValueError) as e:
         LOGGER.error('Cannot read the tools file %s (%s). Code execution is off.', path, e)
-        return ToolSet(allow_code=False, builtins=builtins, code_off_reason=f'cannot read {name}')
+        return ToolSet(allow_arbitrary_code=False, builtins=builtins,
+                       code_off_reason=f'cannot read {name}')
 
     if not isinstance(config, dict):
         LOGGER.error('The tools file %s must hold a JSON object. Code execution is off.', path)
-        return ToolSet(allow_code=False, builtins=builtins,
+        return ToolSet(allow_arbitrary_code=False, builtins=builtins,
                        code_off_reason=f'{name} is not a JSON object')
 
-    allow_code = config.get('allow_code', True)
-    reason = f'allow_code is false in {name}'
-    if not isinstance(allow_code, bool):
-        LOGGER.error('"allow_code" in %s must be true or false. Code execution is off.', path)
-        allow_code, reason = False, f'allow_code is not true or false in {name}'
+    allow_arbitrary_code = config.get('allow_arbitrary_code', True)
+    reason = f'allow_arbitrary_code is false in {name}'
+    if not isinstance(allow_arbitrary_code, bool):
+        LOGGER.error('"allow_arbitrary_code" in %s must be true or false. '
+                     'Code execution is off.', path)
+        allow_arbitrary_code, reason = False, f'allow_arbitrary_code is not true or false in {name}'
 
     entries = config.get('tools', [])
     if not isinstance(entries, list):
@@ -254,8 +257,8 @@ def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] =
     if folder not in sys.path:
         sys.path.append(folder)
 
-    toolset = ToolSet(allow_code=allow_code, builtins=builtins,
-                      code_off_reason='' if allow_code else reason)
+    toolset = ToolSet(allow_arbitrary_code=allow_arbitrary_code, builtins=builtins,
+                      code_off_reason='' if allow_arbitrary_code else reason)
     for index, entry in enumerate(entries):
         label = entry.get('name') if isinstance(entry, dict) else None
         label = label if isinstance(label, str) and label else f'tools[{index}]'
@@ -270,7 +273,7 @@ def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] =
     # the panel logs the summary when it starts listening
     LOGGER.debug(
         'Loaded %s tool(s) from %s, %s skipped. Code execution is %s.',
-        len(toolset.tools), path, len(toolset.skipped), 'on' if allow_code else 'off',
+        len(toolset.tools), path, len(toolset.skipped), 'on' if allow_arbitrary_code else 'off',
     )
     return toolset
 
@@ -361,7 +364,7 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, A
 
 def list_tools(toolset: ToolSet) -> Dict[str, Any]:
     return {
-        'allow_code': toolset.allow_code,
+        'allow_arbitrary_code': toolset.allow_arbitrary_code,
         'tools': [
             {'name': t.name, 'description': t.description,
              'inputSchema': t.input_schema, 'timeout': t.timeout,

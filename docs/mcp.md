@@ -130,7 +130,7 @@ Clients other than MCP clients can also use the tools. See [Tool requests](clien
 
 ```json
 {
-    "allow_code": false,
+    "allow_arbitrary_code": false,
     "tools": [
         {
             "name": "render_write",
@@ -149,7 +149,7 @@ Clients other than MCP clients can also use the tools. See [Tool requests](clien
 
 | Field         | Meaning                                                                                                                                                                                                                       |
 | ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `allow_code`  | `true` (default): code is on. `false`: code is off, and the panel refuses all code requests.                                                                                                                                       |
+| `allow_arbitrary_code`  | `true` (default): clients can send any code. `false`: the panel refuses code requests, and only the listed tools run.                                                                                                                                       |
 | `name`        | Letters, digits, `_`, `-` or `.`, up to 128 characters. `nuke_execute_code` is reserved.                                                                                                                                           |
 | `description` | What the tool does. The agent reads it to decide when to call the tool.                                                                                                                                           |
 | `function`    | `module:function`. The panel imports the function when you connect the panel. Use dots for nested attributes, such as `module:Class.static_method`.                                                                                               |
