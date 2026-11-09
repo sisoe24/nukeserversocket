@@ -8,8 +8,8 @@ Built-in MCP tool nuke_graph. Code running in Nuke can call it too:
 from __future__ import annotations
 
 import uuid
-from typing import Any, Dict, List, Tuple
-from collections import OrderedDict
+from typing import Any, Dict, List, Tuple, Optional
+from collections import Counter, OrderedDict
 
 import nuke
 
@@ -95,10 +95,13 @@ def _script_info() -> Dict[str, Any]:
     return info
 
 
-def graph(group: str = '', max_nodes: int = MAX_NODES, since: str = '') -> Dict[str, Any]:
+def graph(group: str = '', max_nodes: int = MAX_NODES, since: str = '',
+          classes: Optional[List[str]] = None) -> Dict[str, Any]:
     """Describe the direct children of `group` (the root by default)."""
     if not 1 <= max_nodes <= 1000:
         raise ToolError(f'max_nodes must be 1 to 1000, got {max_nodes}.')
+    if classes is not None and not all(isinstance(c, str) for c in classes):
+        raise ToolError('classes must be a list of class names, for example ["Read"].')
 
     parent = _find_group(group)
     nodes = parent.nodes()
@@ -123,9 +126,14 @@ def graph(group: str = '', max_nodes: int = MAX_NODES, since: str = '') -> Dict[
             nodes = [n for n in nodes if old.get(n.fullName()) != fingerprints[n.fullName()]]
             reply['removed'] = [name for name in old if name not in fingerprints]
 
+    if classes:
+        nodes = [n for n in nodes if n.Class() in classes]
     reply['nodes'] = [_describe(n, errors[n.fullName()]) for n in nodes[:max_nodes]]
     if len(nodes) > max_nodes:
-        reply['truncated'] = f'{max_nodes} of {len(nodes)} nodes listed. Raise max_nodes.'
+        counts = Counter(n.Class() for n in nodes).most_common(10)
+        listed = ', '.join(f'{name} {count}' for name, count in counts)
+        reply['truncated'] = (f'{max_nodes} of {len(nodes)} nodes listed. Most common classes: '
+                              f'{listed}. Use classes to list only some, or raise max_nodes.')
 
     snapshot = uuid.uuid4().hex[:8]
     _snapshots[snapshot] = (reply['group'], fingerprints)
@@ -154,6 +162,8 @@ GRAPH_TOOL = Tool(
         '- since: pass the snapshot of an earlier reply to list only the nodes that changed, '
         'were added (nodes) or were deleted (removed) since then. A moved node counts as '
         'changed; a renamed node as removed and added.\n'
+        '- classes: list only nodes of these classes, for example ["Read", "Write"]. Use it '
+        'on a big script instead of raising max_nodes.\n'
         '- The selection tells you what the artist means by "this". Do not change it.'
     ),
     input_schema={
@@ -164,6 +174,8 @@ GRAPH_TOOL = Tool(
             'max_nodes': {'type': 'integer',
                           'description': f'1 to 1000. Default {MAX_NODES}.'},
             'since': {'type': 'string', 'description': 'snapshot from an earlier reply.'},
+            'classes': {'type': 'array', 'items': {'type': 'string'},
+                        'description': 'Node classes to list. Default: all.'},
         },
     },
     function=graph,

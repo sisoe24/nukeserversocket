@@ -111,7 +111,8 @@ with open('/tmp/grade1.jpg', 'wb') as f:
 
 `nuke_graph` lets the agent read the node graph in one call. It lists the nodes of one group (the root by default), each with its class, its inputs and its knobs that are not at the default value. The reply also has the script settings, the active Viewer and the selection.
 
-- Arguments, all optional: `group` (the full name of a Group), `max_nodes` (default 200) and `since`.
+- Arguments, all optional: `group` (the full name of a Group), `max_nodes` (default 200), `since` and `classes` (list only nodes of these classes, for example `["Read", "Write"]`).
+- When there are more nodes than `max_nodes`, the reply says how many nodes of each class there are, so that the agent can ask again with `classes`.
 - Each reply has a `snapshot` id. With `since` set to an earlier id, the reply lists only the nodes that changed or were added since then, and the names of deleted nodes. The panel keeps the last 4 snapshots, in memory only.
 - A knob value over 1000 characters, for example the curves of a Roto node, is cut. The agent reads it with code if it needs it.
 

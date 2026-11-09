@@ -70,8 +70,14 @@ inner = graph(group='Grp')
 assert inner['group'] == 'Grp' and set(by_name(inner)) == {'Grp.Input1', 'Grp.Inner', 'Grp.Output1'}
 assert by_name(inner)['Grp.Inner']['inputs'] == ['Grp.Input1']
 
+only = graph(classes=['Read', 'Blur'])
+assert set(by_name(only)) == {'Missing', 'Blur1'}, set(by_name(only))
+assert graph(classes=['Nope'])['nodes'] == []
+assert 'classes must be' in raises(classes=[1])
+
 capped = graph(max_nodes=2)
 assert len(capped['nodes']) == 2 and capped['truncated'].startswith('2 of 7')
+assert 'Blur 1' in capped['truncated'] and 'Use classes' in capped['truncated'], capped['truncated']
 
 # since: knob change, new input, move, new node, deleted node
 snap = graph()['snapshot']
