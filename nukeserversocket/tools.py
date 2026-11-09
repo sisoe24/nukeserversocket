@@ -44,7 +44,7 @@ from .logger import get_logger
 
 LOGGER = get_logger()
 
-BUILTIN_TOOL = 'execute_code'
+BUILTIN_TOOL = 'nuke_execute_code'
 
 _NAME = re.compile(r'^[A-Za-z0-9_.-]{1,128}$')
 
