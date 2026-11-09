@@ -100,6 +100,15 @@ assert 'No node named' in raises(group='Nope')
 assert 'not a Group' in raises(group='Blur1')
 assert 'max_nodes' in raises(max_nodes=0)
 
+# UI state is left out: hidden knobs, toolbar settings, Viewer knobs
+paint = nuke.nodes.RotoPaint(name='Paint')
+viewer = nuke.nodes.Viewer(name='View', inputs=[blur])
+ui = by_name(graph())
+assert 'old_message' not in ui['Long']['knobs'] and 'message' in ui['Long']['knobs']
+assert not [k for k in ui['Long']['knobs'] if 'toolbar' in k], ui['Long']['knobs']
+assert 'toolbox' not in ui['Paint']['knobs'] and 'curves' in ui['Paint']['knobs']
+assert ui['View']['knobs'] == {} and ui['View']['inputs'] == ['Blur1']
+
 with nuke.nodes.Group(name='Big'):
     for i in range(200):
         nuke.nodes.Grade(name=f'G{i}', white=1 + i / 100)

@@ -53,9 +53,18 @@ def _fingerprint(node: nuke.Node) -> int:
     return hash((tuple(_knob_values(node).items()), tuple(_inputs(node))))
 
 
+def _shown(node: nuke.Node, name: str) -> bool:
+    # UI state, not the comp: position, hidden knobs, the Viewer toolbar; read others with code
+    knob = node[name]
+    return not (name in ('xpos', 'ypos') or 'toolbar' in name or 'toolbox' in name
+                or knob.getFlag(nuke.INVISIBLE) or not knob.visible())
+
+
 def _describe(node: nuke.Node, error: bool) -> Dict[str, Any]:
+    # the reply's viewer field already has what matters of a Viewer
+    values = {} if node.Class() == 'Viewer' else _knob_values(node)
     knobs = {name: value if len(value) <= MAX_KNOB else f'<cut: {len(value)} characters>'
-             for name, value in _knob_values(node).items() if name not in ('xpos', 'ypos')}
+             for name, value in values.items() if _shown(node, name)}
     entry = {'name': node.fullName(), 'class': node.Class(), 'inputs': _inputs(node),
              'knobs': knobs}
     if error:
@@ -137,8 +146,9 @@ GRAPH_TOOL = Tool(
         'changed.\n\n'
         '- inputs: input node names in order; null is an empty input. For a Merge2, the '
         'order is B, A, mask.\n'
-        '- knobs: values in .nk syntax. A value over 1000 characters shows as '
-        '"<cut: N characters>"; read it with code if you need it.\n'
+        '- knobs: values in .nk syntax. Hidden knobs, toolbar settings and Viewer knobs are '
+        'left out. A value over 1000 characters shows as "<cut: N characters>". Read '
+        'anything left out with code if you need it.\n'
         '- error appears only when the node has an error. children is the node count of a '
         'Group; call again with group set to its name to look inside.\n'
         '- since: pass the snapshot of an earlier reply to list only the nodes that changed, '
