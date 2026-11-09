@@ -77,7 +77,10 @@ The server gives the client these tools:
 
 - `nuke_execute_code`, if code is on in the [tools file](#tools-file).
 - `nuke_vision`, if **Vision** is on in the panel settings. See [Vision](#vision).
+- `nuke_graph`, always. See [Graph](#graph).
 - Each tool that the tools file declares.
+
+`nuke_vision` and `nuke_graph` are built-in tools. They only read the script, and they work with code off in the tools file.
 
 The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again.
 
@@ -91,7 +94,7 @@ The server gets the tool list from Nuke each time the client asks for it. If the
 
 A temporary Write node renders the frame. The tool deletes the node and the file after the render, and turns undo off during the render, so the script and the undo history do not change. Nuke runs `onCreate`, `beforeRender` and `afterRender` callbacks for the temporary nodes too. If your pipeline adds callbacks to Write nodes, make sure that they ignore nodes whose names start with `_nss_`. Other built-in tools use the same prefix for their temporary nodes.
 
-**Vision** is on by default. It is separate from code: with code off in the tools file, the agent can still see images. To turn it off, clear **Vision** in the panel settings, then disconnect and connect the panel.
+**Vision** is on by default. It is separate from code: with code off in the tools file, the agent can still see images. To turn it off, clear **Vision** in the panel settings, then disconnect and connect the panel. Turn it off when images of your footage must not go to the AI provider. It turns off only `nuke_vision`.
 
 Code in Nuke can call the same function:
 
@@ -101,6 +104,24 @@ from nukeserversocket.controllers.nuke.builtin.vision import vision
 image = vision('Grade1', frame=1001)
 with open('/tmp/grade1.jpg', 'wb') as f:
     f.write(image.data)
+```
+
+## Graph
+
+`nuke_graph` lets the agent read the node graph in one call. It lists the nodes of one group (the root by default), each with its class, its inputs and its knobs that are not at the default value. The reply also has the script settings, the active Viewer and the selection.
+
+- Arguments, all optional: `group` (the full name of a Group), `max_nodes` (default 200) and `since`.
+- Each reply has a `snapshot` id. With `since` set to an earlier id, the reply lists only the nodes that changed or were added since then, and the names of deleted nodes. The panel keeps the last 4 snapshots, in memory only.
+- A knob value over 1000 characters, for example the curves of a Roto node, is cut. The agent reads it with code if it needs it.
+
+`nuke_graph` creates no nodes and does not change the script. It sends node names, knob values and file paths to the AI provider, as `nuke_execute_code` can. To stop that, disconnect the panel.
+
+Code in Nuke can call the same function:
+
+```py
+from nukeserversocket.controllers.nuke.builtin.graph import graph
+
+print(graph(group='Group1'))
 ```
 
 ## Tools file
