@@ -88,6 +88,20 @@ def find_source(node: str, viewer: nuke.ViewerWindow | None) -> nuke.Node:
     return found
 
 
+def pick_view(view: str, viewer: nuke.ViewerWindow | None) -> str:
+    """Return `view`, or the Viewer's view, or the first view of the script."""
+    view = view or (viewer.view() if viewer else nuke.views()[0])
+    if view not in nuke.views():
+        raise ToolError(f'No view {view!r}. Views: {nuke.views()}.')
+    return view
+
+
+def bbox(node: nuke.Node) -> list[int]:
+    """Return the bounding box of `node` as [x, y, right, top]."""
+    box = node.bbox()
+    return [box.x(), box.y(), box.x() + box.w(), box.y() + box.h()]
+
+
 def pick_channels(source: nuke.Node, channels: str) -> list[str]:
     """Return the channels that `channels` names: rgb, rgba, alpha, a layer or one channel."""
     available = source.channels()

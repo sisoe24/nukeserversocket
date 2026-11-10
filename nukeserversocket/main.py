@@ -10,7 +10,7 @@ from ._qt import (Qt, Slot, QLabel, QTimer, QWidget, QSpinBox, QGroupBox,
                   QSizePolicy, QVBoxLayout, QListWidgetItem)
 
 from .logger import ConsoleHandler, get_logger
-from .tools import BUILTIN_TOOL, ToolSet
+from .tools import CODE_TOOL, ToolSet
 from .server import NssServer
 from .console import NssConsole
 from .toolbar import ToolBar
@@ -161,10 +161,10 @@ class MainView(QWidget):
         # the tools load again on the next connect
         self.tools_list.clear()
 
-    def set_tools(self, toolset: ToolSet, tools_file: str):
+    def set_tools(self, toolset: ToolSet):
         self.tools_list.clear()
         if toolset.allow_arbitrary_code:
-            self.tools_list.addItem(BUILTIN_TOOL)
+            self.tools_list.addItem(CODE_TOOL)
         for tool in toolset.available.values():
             item = QListWidgetItem(tool.name)
             # the full description is a prompt for agents: show the first sentence
@@ -250,7 +250,7 @@ class MainController:
             LOGGER.info('%s', _tools_summary(toolset, tools_file, from_env))
 
         self._view.ip_label.setText(ip)
-        self._view.set_tools(toolset, tools_file)
+        self._view.set_tools(toolset)
         self._start_timer()
         self._view.port_input.setEnabled(False)
         self._view.set_connected()

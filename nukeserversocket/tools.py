@@ -48,7 +48,7 @@ from .logger import get_logger
 
 LOGGER = get_logger()
 
-BUILTIN_TOOL = 'nuke_execute_code'
+CODE_TOOL = 'nuke_execute_code'
 
 _NAME = re.compile(r'^[A-Za-z0-9_.-]{1,128}$')
 
@@ -199,8 +199,8 @@ def _load_tool(entry: Any, loaded: dict[str, Tool]) -> Tool:
     name = entry.get('name')
     if not isinstance(name, str) or not _NAME.match(name):
         raise ValueError('"name" must be 1-128 characters of letters, digits, "_", "-" or ".".')
-    if name == BUILTIN_TOOL:
-        raise ValueError(f'"{BUILTIN_TOOL}" is reserved for the built-in tool.')
+    if name == CODE_TOOL:
+        raise ValueError(f'"{CODE_TOOL}" is reserved for the built-in tool.')
     if name in loaded:
         raise ValueError('a tool with this name is already loaded.')
 
@@ -418,7 +418,7 @@ def parse_tool_request(raw: bytes) -> dict[str, Any] | None:
     """Return the request when it is a tool request, else None for the code path."""
     try:
         request = json.loads(raw)
-    except ValueError:
+    except (ValueError, RecursionError):
         return None
     if isinstance(request, dict) and ('list_tools' in request or 'call_tool' in request):
         return request

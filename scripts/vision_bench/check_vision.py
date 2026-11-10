@@ -4,6 +4,7 @@ from __future__ import annotations
 import os
 import sys
 import glob
+import json
 import tempfile
 import traceback
 
@@ -67,15 +68,35 @@ case('empty_input', node='Lonely')
 case('bad_size', node='Label', size=10)
 nuke.root()['proxy'].setValue(True)
 case('proxy', node='Label')
+# in proxy mode the JPEG is smaller: the metadata must give its real size
+proxied = vision(node='Label')
+proxy_path = os.path.join(OUT, f'{nuke.NUKE_VERSION_STRING}_proxy_size.jpg')
+with open(proxy_path, 'wb') as f:
+    f.write(proxied.data)
 nuke.root()['proxy'].setValue(False)
+proxy_meta = json.loads(proxied.text)
+proxy_read = nuke.nodes.Read(file=proxy_path)
+jpeg = [proxy_read.width(), proxy_read.height()]
+nuke.delete(proxy_read)
+scale = jpeg[0] / 1920
+print('PROXY image', proxy_meta['image'], 'jpeg', jpeg, proxy_meta['to_nuke'])
+assert proxy_meta['image'] == jpeg, (proxy_meta['image'], jpeg)
+assert f'image_x / {scale:g}' in proxy_meta['to_nuke'], proxy_meta['to_nuke']
 
 print('LEFTOVER nodes', nodes_fixture, len(nuke.allNodes(recurseGroups=True)),
       [n.name() for n in nuke.allNodes(recurseGroups=True) if n.name().startswith('_nss')])
 print('LEFTOVER files', glob.glob(os.path.join(tempfile.gettempdir(), 'nss_vision_*')))
 print('UNDO disabled', nuke.Undo.disabled())
 
-# display transform parsing against an OCIO config
 root = nuke.root()
+# Nuke color management: Viewer processes with another name on the Write
+root['colorManagement'].setValue('Nuke')
+for process, colorspace in (('None', 'linear'), ('rec1886', 'BT1886'), ('sRGB', 'sRGB')):
+    shown = _set_display(nuke.nodes.Write(), process)
+    print('ALIAS', process, shown)
+    assert shown == f'colorspace {colorspace}', shown
+
+# display transform parsing against an OCIO config
 root['colorManagement'].setValue('OCIO')
 configs = root['OCIO_config'].values()
 aces = next((c for c in configs if 'aces' in c.lower() or 'cg-config' in c.lower()), None)

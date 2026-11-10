@@ -159,6 +159,7 @@ def test_server_accepts_chunked_payload(qtbot: QtBot, server: NssServer):
     b'{"text": "x",}',
     b'{"text": "x"}{"text": "y"}',
     b'{"text": "x',
+    pytest.param(b'{"text": ' + b'[' * 5000 + b']' * 5000 + b'}', id='too deep'),
 ))
 def test_server_replies_to_malformed_object(qtbot: QtBot, server: NssServer, payload: bytes):
     server.REQUEST_IDLE_MS = 50

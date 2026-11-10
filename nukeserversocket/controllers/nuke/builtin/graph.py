@@ -173,6 +173,9 @@ def graph(
 
     parent = _find_group(group)
     nodes = parent.nodes()
+    # selectedNodes() reads the current group
+    with parent:
+        selected = [n.fullName() for n in nuke.selectedNodes()]
     # first: hasError validates a new node, and validation can fill knobs (Read, Text2)
     errors = {n.fullName(): n.hasError() for n in nodes}
     fingerprints = {n.fullName(): _fingerprint(n) for n in nodes}
@@ -180,7 +183,7 @@ def graph(
     reply: dict[str, Any] = {
         'script': _script_info(),
         'viewer': viewer_info(nuke.activeViewer()),
-        'selected': [n.fullName() for n in nuke.selectedNodes()],
+        'selected': selected,
         'group': parent.fullName() if group else 'root',
     }
 
@@ -226,7 +229,8 @@ DESCRIPTION = inspect.cleandoc(f"""
       renamed node as removed and added.
     - classes: list only nodes of these classes, for example ["Read", "Write"]. Use it on a
       big script instead of raising max_nodes.
-    - The selection tells you what the artist means by "this". Do not change it.
+    - selected: the selected nodes of the listed group. The selection tells you what the
+      artist means by "this". Do not change it.
 """)
 
 GRAPH_TOOL = Tool(

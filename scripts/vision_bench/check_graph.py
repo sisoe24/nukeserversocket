@@ -11,7 +11,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'
 import nuke
 
 from nukeserversocket.tools import ToolError
-from nukeserversocket.controllers.nuke.builtin import builtin_tools
+from nukeserversocket.controllers.nuke.builtin.registry import builtin_tools
 from nukeserversocket.controllers.nuke.builtin.graph import graph
 
 
@@ -68,6 +68,11 @@ unchanged = graph(since=reply['snapshot'])['nodes']
 assert unchanged == [], unchanged
 assert graph()['selected'] == ['Blur1']
 blur.setSelected(False)
+# the selection of the listed group
+inner = nuke.toNode('Grp.Inner')
+inner.setSelected(True)
+assert graph(group='Grp')['selected'] == ['Grp.Inner'], graph(group='Grp')['selected']
+inner.setSelected(False)
 assert reply['script']['views'] == nuke.views() and reply['viewer'] is None
 assert 'truncated' not in reply and 'removed' not in reply
 

@@ -48,6 +48,11 @@ assert 'rgba.alpha' not in no_alpha.channels(), no_alpha.channels()
 six = nuke.nodes.Constant(name='Six', format='nss64', first=1, last=6)
 nuke.nodes.Expression(name='Moving', inputs=[six], expr1='0.5', expr2='0.5',
                       expr0='(frame==3&&x==5&&y==5)?sqrt(-1):(frame==5&&x==12&&y==12)?9:0.5')
+# Max Luma Pixel starts min and max at 0: all-negative and all-over-1 images
+nuke.nodes.Expression(name='Negative', inputs=[base], expr0='-1-x-y*64', expr1='-0.37',
+                      expr2='-0.37')
+nuke.nodes.Expression(name='Clipped', inputs=[base], expr0='x<32?1:0.37', expr1='0.18',
+                      expr2='0.18')
 with nuke.nodes.Group(name='Outer'):
     deep = nuke.nodes.Constant(name='Deep', format='nss64')
     deep['color'].setValue([2, 0, 0, 1])
@@ -82,7 +87,26 @@ assert cropped['region'] == [35, 35, 45, 45] and cropped['pixels'] == 100
 assert cropped['channels']['rgba.red']['max_at'] == [40, 40]
 assert cropped['channels']['rgba.red']['nan'] == 0
 
-assert 'does not cover' in stats(node='Small', frame=1)['warnings'][-1]
+# outside the bounding box the pixels are 0, and they count
+small_reply = stats(node='Small', frame=1)
+small_red = small_reply['channels']['rgba.red']
+assert 'does not cover' in small_reply['warnings'][-1]
+assert (small_red['min'], small_red['max']) == (0, 0.5), small_red
+assert close(small_red['mean'], 0.125), small_red
+
+negative = stats(node='Negative', frame=1)['channels']
+assert (negative['rgba.red']['max'], negative['rgba.red']['max_at']) == (-1, [0, 0]), negative
+assert (negative['rgba.red']['min'], negative['rgba.red']['min_at']) == (-4096, [63, 63])
+assert close(negative['rgba.green']['max'], -0.37) and close(negative['rgba.green']['min'], -0.37)
+clipped = stats(node='Clipped', frame=1)['channels']
+print(json.dumps(clipped))
+# exact: a clipping check compares with 1
+assert clipped['rgba.red']['max'] == 1 and close(clipped['rgba.red']['min'], 0.37), clipped
+assert close(clipped['rgba.green']['min'], 0.18) and close(clipped['rgba.green']['max'], 0.18)
+
+nuke.root()['proxy'].setValue(True)
+assert 'Proxy mode' in raises(node='Bad', frame=1)
+nuke.root()['proxy'].setValue(False)
 
 # a frame range, and a count over a value
 assert reply['last'] == 1 and reply['bad_frames'] == [1] and red['max_frame'] == 1
@@ -111,7 +135,8 @@ assert stopped['last'] == 1 and 'frame=2' in stopped['warnings'][-1], stopped
 assert 'is before' in raises(node='Bad', frame=5, last=2)
 assert stats_module.STATS_TOOL.timeout > stats_module.TIME_LIMIT
 # a node inside a Group: the temporary Group reads across groups
-assert stats(node='Outer.Deep', frame=1)['channels']['rgba.red']['max'] == 2
+deep_red = stats(node='Outer.Deep', frame=1)['channels']['rgba.red']
+assert deep_red['min'] == deep_red['max'] == 2, deep_red
 assert 'must be a number' in raises(node='Bad', frame=1, over='high')
 
 assert 'No node named' in raises(node='Nope')

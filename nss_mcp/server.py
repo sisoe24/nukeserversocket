@@ -26,6 +26,9 @@ DEFAULT_HOST = '127.0.0.1'
 DEFAULT_PORT = 54321
 DEFAULT_TIMEOUT = 60.0
 
+# the "file" of every request, so the panel logs show the client
+CLIENT = 'MCP'
+
 PARSE_ERROR = -32700
 INVALID_REQUEST = -32600
 METHOD_NOT_FOUND = -32601
@@ -126,7 +129,7 @@ def _send(payload: dict[str, Any], host: str, port: int, timeout: float) -> str:
 
 def send_to_nuke(code: str, host: str, port: int, timeout: float = DEFAULT_TIMEOUT) -> str:
     """Send code to nukeserversocket and return its output."""
-    return _send({'text': code, 'file': 'MCP', 'formatText': '0'}, host, port, timeout)
+    return _send({'text': code, 'file': CLIENT, 'formatText': '0'}, host, port, timeout)
 
 
 def _result(msg_id: Any, result: dict[str, Any]) -> dict[str, Any]:
@@ -209,7 +212,7 @@ class Bridge:
     def refresh(self) -> bool:
         """Ask Nuke for its tools. Return False when Nuke cannot be reached."""
         try:
-            reply = _send({'list_tools': True, 'file': 'MCP'}, self.host, self.port,
+            reply = _send({'list_tools': True, 'file': CLIENT}, self.host, self.port,
                           min(LIST_TIMEOUT, self.timeout))
         except OSError:
             return False
@@ -294,14 +297,18 @@ class Bridge:
         return _result(msg_id, {'content': content, 'isError': _is_error(output)})
 
     def _call_nuke_tool(self, msg_id: Any, name: Any, arguments: Any) -> dict[str, Any]:
-        tool = (self._nuke_tools or {}).get(name) if isinstance(name, str) else None
-        if tool is None and isinstance(name, str) and self.refresh():
+        if not isinstance(name, str):
+            return _error(msg_id, INVALID_PARAMS, f'Unknown tool: {name!r}')
+
+        tool = (self._nuke_tools or {}).get(name)
+        # the tools can change in Nuke: look again in a fresh list
+        if tool is None and self.refresh():
             tool = (self._nuke_tools or {}).get(name)
         if tool is None:
             return _error(msg_id, INVALID_PARAMS, f'Unknown tool: {name!r}')
 
         timeout = tool.get('timeout') or self.timeout
-        payload = {'call_tool': name, 'arguments': arguments, 'file': 'MCP'}
+        payload = {'call_tool': name, 'arguments': arguments, 'file': CLIENT}
         try:
             reply = _send(payload, self.host, self.port, timeout)
         except OSError as e:

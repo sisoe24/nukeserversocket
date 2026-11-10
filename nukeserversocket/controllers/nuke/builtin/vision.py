@@ -19,8 +19,8 @@ from typing import Any
 
 import nuke
 
-from ._shared import (RGB, temp_nodes, viewer_info, copy_to_rgb, find_source,
-                      pick_channels, source_warnings)
+from ._shared import (RGB, bbox, pick_view, temp_nodes, viewer_info, copy_to_rgb,
+                      find_source, pick_channels, source_warnings)
 from ....tools import Tool, Image, ToolError
 
 DEFAULT_SIZE = 768
@@ -28,9 +28,15 @@ DEFAULT_SIZE = 768
 # the samples that tell a single-color image: a grid of GRID x GRID points
 GRID = 5
 
+# Viewer processes of Nuke color management with another name on the Write
+DISPLAY_ALIASES = {'None': 'linear', 'rec1886': 'BT1886'}
+
 
 def _region(fmt: nuke.Format, crop: list[float] | None) -> list[float]:
-    """Return the region to render as [x, y, right, top]: the crop, or the whole format."""
+    """Return the region to render as [x, y, right, top]: the crop, or the whole format.
+
+    Unlike nuke_stats, fractions stay: a crop can zoom past one pixel.
+    """
     if crop is None:
         return [0, 0, fmt.width(), fmt.height()]
 
@@ -55,12 +61,27 @@ def _set_display(write: nuke.Node, viewer_process: str | None) -> str:
 
     # values read "name\tfamily/name" with OCIO
     names = [value.split('\t')[0] for value in write['colorspace'].values()]
-    if viewer_process in names:
-        write['colorspace'].setValue(viewer_process)
-        return f'colorspace {viewer_process}'
+    colorspace = DISPLAY_ALIASES.get(viewer_process or '', viewer_process)
+    if colorspace in names:
+        write['colorspace'].setValue(colorspace)
+        return f'colorspace {colorspace}'
 
     default = write['colorspace'].value()
     return f'colorspace {default} (Write default, no Viewer transform found)'
+
+
+def _jpeg_size(data: bytes) -> tuple[int, int]:
+    """Return the width and height of a JPEG, from its start-of-frame segment."""
+    i = 2
+    while i + 9 <= len(data):
+        marker, length = data[i + 1], int.from_bytes(data[i + 2:i + 4], 'big')
+        # SOF0 to SOF15, except DHT (C4), JPG (C8) and DAC (CC)
+        if 0xC0 <= marker <= 0xCF and marker not in (0xC4, 0xC8, 0xCC):
+            height = int.from_bytes(data[i + 5:i + 7], 'big')
+            width = int.from_bytes(data[i + 7:i + 9], 'big')
+            return width, height
+        i += 2 + length
+    raise ToolError('The rendered JPEG has no size.')
 
 
 def _single_color(shown: nuke.Node, frame: int, region: list[float]) -> str | None:
@@ -99,9 +120,7 @@ def vision(
     source = find_source(node, viewer)
     frame = nuke.frame() if frame is None else frame
 
-    view = view or (viewer.view() if viewer else nuke.views()[0])
-    if view not in nuke.views():
-        raise ToolError(f'No view {view!r}. Views: {nuke.views()}.')
+    view = pick_view(view, viewer)
 
     # three channels to show as red, green and blue; a two-channel layer, such as motion
     # vectors, shows its second channel twice
@@ -170,8 +189,10 @@ def vision(
     finally:
         os.remove(path)
 
-    box = source.bbox()
-    scale_x, scale_y = scale * aspect, scale
+    # in proxy mode the JPEG is smaller than the scale asks: measure it
+    image_width, image_height = _jpeg_size(data)
+    scale_x = image_width / (region[2] - region[0])
+    scale_y = image_height / (region[3] - region[1])
     metadata: dict[str, Any] = {
         'node': source.fullName(),
         'class': source.Class(),
@@ -185,9 +206,9 @@ def vision(
             'height': fmt.height(),
             'pixel_aspect': aspect,
         },
-        'bbox': [box.x(), box.y(), box.x() + box.w(), box.y() + box.h()],
+        'bbox': bbox(source),
         'region': region,
-        'image': [round(width * scale), round(height * scale)],
+        'image': [image_width, image_height],
         # Nuke puts y = 0 at the bottom, the image at the top
         'to_nuke': (f'nuke_x = {region[0]:g} + image_x / {scale_x:g}; '
                     f'nuke_y = {region[3]:g} - image_y / {scale_y:g}'),

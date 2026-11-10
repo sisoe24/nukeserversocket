@@ -16,7 +16,8 @@ from typing import Any
 
 import nuke
 
-from ._shared import temp_nodes, copy_to_rgb, find_source, pick_channels, source_warnings
+from ._shared import (bbox, pick_view, temp_nodes, copy_to_rgb, find_source, pick_channels,
+                      source_warnings)
 from ....tools import Tool, ToolError
 
 MAX_CHANNELS = 8
@@ -27,20 +28,29 @@ NOT_FINITE = 'isnan(r)||isinf(r)'
 TIME_LIMIT = 40.0
 TIMEOUT = 60.0
 
+# 2**-64: scaling by a power of two keeps every value exact
+SCALE = 2.0 ** -64
+
 # the passes over each frame: (CurveTool operation, [red, green, blue] Expression)
 PASSES = {
     # NaN in red, infinity in green, finite values (0 elsewhere) in blue
     'counts': ('Avg Intensities', ['isnan(r)?1:0', 'isinf(r)?1:0', f'{NOT_FINITE}?0:r']),
-    # Max Luma Pixel skips NaN but takes infinity as the maximum: push non-finite values out
-    'high': ('Max Luma Pixel', [f'{NOT_FINITE}?-1e30:r'] * 3),
-    'low': ('Max Luma Pixel', [f'{NOT_FINITE}?1e30:r'] * 3),
+    # Max Luma Pixel finds a min only below 1 and a max only above 0, so both passes read the
+    # min of values scaled below 1: high reads -r. It skips NaN but not infinity: push
+    # non-finite values out.
+    # shortcut: a value under 2e-19 loses precision; frames with all values over 1.8e19 fail
+    'high': ('Max Luma Pixel', [f'{NOT_FINITE}?1e30:-r*{SCALE!r}'] * 3),
+    'low': ('Max Luma Pixel', [f'{NOT_FINITE}?1e30:r*{SCALE!r}'] * 3),
 }
 
 PerFrame = dict[int, dict[str, Any]]
 
 
 def _region(fmt: nuke.Format, crop: list[float] | None) -> list[int]:
-    """Return the region to measure as [x, y, right, top]: the crop, or the whole format."""
+    """Return the region to measure as [x, y, right, top]: the crop, or the whole format.
+
+    Unlike nuke_vision, whole pixels only: the pixel count must be exact.
+    """
     if crop is None:
         return [0, 0, fmt.width(), fmt.height()]
 
@@ -127,9 +137,9 @@ def _measure(
         if 'over' in curves:
             result['over'] = round(at('over', 'intensitydata', frame, 1)[0] * pixels)
         if finite:
-            result['max'] = at('high', 'maxlumapixvalue', frame, 1)[0]
-            result['max_at'] = [int(v) for v in at('high', 'maxlumapixdata', frame, 2)]
-            result['min'] = at('low', 'minlumapixvalue', frame, 1)[0]
+            result['max'] = -at('high', 'minlumapixvalue', frame, 1)[0] / SCALE
+            result['max_at'] = [int(v) for v in at('high', 'minlumapixdata', frame, 2)]
+            result['min'] = at('low', 'minlumapixvalue', frame, 1)[0] / SCALE
             result['min_at'] = [int(v) for v in at('low', 'minlumapixdata', frame, 2)]
 
         results[frame] = result
@@ -220,9 +230,10 @@ def stats(
     if over is not None and not isinstance(over, (int, float)):
         raise ToolError(f'over must be a number, got {over!r}.')
 
-    view = view or (viewer.view() if viewer else nuke.views()[0])
-    if view not in nuke.views():
-        raise ToolError(f'No view {view!r}. Views: {nuke.views()}.')
+    if nuke.root()['proxy'].value():
+        raise ToolError('Proxy mode is on: turn it off to measure the full-resolution image.')
+
+    view = pick_view(view, viewer)
 
     picked = pick_channels(source, channels)
     if len(picked) > MAX_CHANNELS:
@@ -237,6 +248,10 @@ def stats(
 
     start = time.monotonic()
     with temp_nodes('stats', source) as (name, image):
+        # with crop off, the bounding box becomes the region: CurveTool reads only inside
+        # the bounding box
+        image = nuke.nodes.Crop(name=f'{name}_fit', inputs=[image], crop=False)
+        image['box'].setValue(region)
         curves = {
             channel: _channel_curves(image, channel, region, over, name) for channel in picked
         }
@@ -264,13 +279,12 @@ def stats(
     for frames in per_frame.values():
         bad_frames.update(f for f, result in frames.items() if result['nan'] or result['inf'])
 
-    box = source.bbox()
-    bbox = [box.x(), box.y(), box.x() + box.w(), box.y() + box.h()]
-    covered = (bbox[0] <= region[0] and bbox[1] <= region[1]
-               and bbox[2] >= region[2] and bbox[3] >= region[3])
+    box = bbox(source)
+    covered = (box[0] <= region[0] and box[1] <= region[1]
+               and box[2] >= region[2] and box[3] >= region[3])
     if not covered:
-        warnings.append(f'The bounding box {bbox} does not cover the region. Outside it, Nuke '
-                        'repeats the edge pixels, and they are in these numbers.')
+        warnings.append(f'The bounding box {box} does not cover the region. The pixels '
+                        'outside it count as 0.')
 
     return {
         'node': source.fullName(),
@@ -305,6 +319,7 @@ DESCRIPTION = inspect.cleandoc(f"""
     - over: also count the pixels at or above this value (over, over_fraction, and
       over_frame, the frame with the most). Use it to tell a few hot pixels from real
       clipping.
+    - It refuses to run in proxy mode.
     - Nuke is busy while it computes. Temporary nodes do the work and are deleted; the scene
       and the undo history do not change.
 """)

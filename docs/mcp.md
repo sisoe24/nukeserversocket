@@ -109,7 +109,7 @@ with open('/tmp/grade1.jpg', 'wb') as f:
 
 ## Graph
 
-`nuke_graph` lets the agent read the node graph in one call. It lists the nodes of one group (the root by default), each with its class, its inputs and its knobs that are not at the default value. The reply also has the script settings, the active Viewer and the selection.
+`nuke_graph` lets the agent read the node graph in one call. It lists the nodes of one group (the root by default), each with its class, its inputs and its knobs that are not at the default value. The reply also has the script settings, the active Viewer and the selected nodes of that group.
 
 - Arguments, all optional: `group` (the full name of a Group), `max_nodes` (default 200), `since` and `classes` (list only nodes of these classes, for example `["Read", "Write"]`).
 - When there are more nodes than `max_nodes`, the reply says how many nodes of each class there are, so that the agent can ask again with `classes`.
@@ -135,9 +135,10 @@ print(graph(group='Group1'))
 - `last` measures every frame from `frame` to `last`. The reply gives the minimum and maximum of the range with their frames, and the first 10 frames with NaN or infinite pixels. After 40 seconds the tool stops and returns the frames it measured, so that the MCP client does not time out.
 - `over` also counts the pixels at or above a value, for example `1`, to tell a few hot pixels from real clipping.
 - Values are as stored in Nuke, before the display transform. The minimum, maximum and mean count only finite pixels.
-- When the bounding box of the node does not cover the region, the reply warns. Outside the bounding box, Nuke repeats the edge pixels, and they are in the numbers.
+- When the bounding box of the node does not cover the region, the reply warns. The pixels outside the bounding box count as 0.
+- The tool refuses to run in proxy mode, because the numbers would be for the proxy image.
 
-Temporary nodes (`CurveTool`, `Copy` and `Expression`) do the work, inside one temporary Group. As for `nuke_vision`, the tool deletes them and turns undo off, so the script and the undo history do not change. Each measurement pass runs once over the whole frame range, so the progress dialog opens a few times per call, not once per frame. The reply has numbers only, no pixels, so **Vision** does not turn it off.
+Temporary nodes (`CurveTool`, `Copy`, `Crop` and `Expression`) do the work, inside one temporary Group. As for `nuke_vision`, the tool deletes them and turns undo off, so the script and the undo history do not change. Each measurement pass runs once over the whole frame range, so the progress dialog opens a few times per call, not once per frame. The reply has numbers only, no pixels, so **Vision** does not turn it off.
 
 Code in Nuke can call the same function:
 

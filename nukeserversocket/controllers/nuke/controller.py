@@ -77,7 +77,7 @@ class NukeController(EditorController):
 
     def builtin_tools(self, vision: bool) -> Dict[str, Tool]:
         # imports nuke, which exists only inside Nuke
-        from .builtin import builtin_tools
+        from .builtin.registry import builtin_tools
         return builtin_tools(vision)
 
     def execute_code(self):

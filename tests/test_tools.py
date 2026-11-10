@@ -7,7 +7,7 @@ import textwrap
 
 import pytest
 
-from nukeserversocket.tools import (BUILTIN_TOOL, SAMPLE_DIR, Tool, Image, ToolSet, ToolError,
+from nukeserversocket.tools import (CODE_TOOL, SAMPLE_DIR, Tool, Image, ToolSet, ToolError,
                                     call_tool, list_tools, load_tools, create_sample,
                                     handle_tool_request)
 
@@ -156,7 +156,7 @@ def test_kwargs_function_accepts_extra_properties(tool_file):
     ({'function': 'no_colon'}, 'module:function'),
     ({'function': 42}, 'module:function'),
     ({'name': 'bad name'}, '"name"'),
-    ({'name': BUILTIN_TOOL}, 'reserved'),
+    ({'name': CODE_TOOL}, 'reserved'),
     ({'description': ' '}, '"description"'),
     ({'timeout': 0}, '"timeout"'),
     ({'timeout': True}, '"timeout"'),
