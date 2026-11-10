@@ -235,3 +235,19 @@ A tools file limits what a remote client or an agent can do through nukeserverso
 - A person who can edit `menu.py`, the adapter module or the JSON file can change the tools.
 
 There is no authentication. With **Allow LAN Connections** on, any person on the network can call the tools.
+
+## Approval and risks
+
+The server tells the agent to ask the user before it saves the script, renders, writes or deletes files, or deletes nodes that the user did not name. This is only a request. Nothing in the server enforces it.
+
+The approval prompt of the client is the check that works:
+
+- The client decides when to ask from the `annotations` of each tool. `nuke_execute_code` has `destructiveHint` set to `true`, so a client that asks for approval asks before each run.
+- A tool without `destructiveHint` counts as destructive in the MCP specification, but a client can treat it differently. Set `annotations` on each tool in the tools file.
+- Do not turn on automatic approval for tools that you did not write.
+
+Code is not sandboxed. It runs as the user of Nuke and can read and write each file that this user can. Each run is one undo step, but undo does not reverse file writes or renders. Save the script before a long agent session.
+
+Text from the scene is data, not instructions. Node names, labels, knob values, file paths and text inside images can contain words that try to steer the agent. The server tells the agent to ignore them, but the agent can still follow them. Be careful with scripts and images that you did not make.
+
+For a stricter setup, set `allow_arbitrary_code` to `false` in the [tools file](#tools-file) and give the agent only tools that you wrote.
