@@ -108,3 +108,22 @@ def test_nuke_execute_looks_up_rebuilt_script_editor(
 
     assert isinstance(editor.editor, MockNukeEditor)
     assert 'hello' in out
+
+
+def test_nuke_execute_never_runs_the_code_twice(
+    qtbot: QtBot, mock_settings: _NssSettings, monkeypatch: pytest.MonkeyPatch
+):
+    """A widget deleted while the code runs fails the request instead of running it again."""
+    mock = MockNukeEditor()
+    clicks = []
+    mock.run_button.clicked.connect(lambda: clicks.append(1))
+    editor = NukeController(mock)
+    editor.settings = mock_settings
+
+    def deleted():
+        raise RuntimeError('Internal C++ object already deleted.')
+
+    monkeypatch.setattr(editor, 'get_output', deleted)
+    with pytest.raises(RuntimeError):
+        editor.execute(ReceivedData(json.dumps({'text': 'print("hello")'})))
+    assert clicks == [1]

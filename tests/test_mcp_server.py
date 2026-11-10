@@ -426,8 +426,8 @@ def test_is_error_recognizes_failed_replies(output, expected):
 
 
 @pytest.mark.parametrize('error', [BrokenPipeError('pipe'), ConnectionResetError('reset')])
-def test_tools_call_dropped_connection_suggests_smaller_code(monkeypatch, error):
-    """A connection dropped mid-request blames the code size, not a missing Nuke."""
+def test_tools_call_dropped_connection_says_to_check_before_retrying(monkeypatch, error):
+    """A connection dropped mid-request may have run the code: check before retrying."""
     def _raise(*_):
         raise error
 
@@ -435,7 +435,7 @@ def test_tools_call_dropped_connection_suggests_smaller_code(monkeypatch, error)
     response = handle_message(
         _request('tools/call', {'name': 'nuke_execute_code', 'arguments': {'code': 'x'}}))
     assert response['result']['isError'] is True
-    assert 'smaller pieces' in response['result']['content'][0]['text']
+    assert 'check both before retrying' in response['result']['content'][0]['text']
 
 
 def test_tools_call_unreachable_nuke_returns_is_error(free_port):

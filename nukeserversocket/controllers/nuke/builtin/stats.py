@@ -21,8 +21,9 @@ from ....tools import Tool, ToolError
 
 MAX_CHANNELS = 8
 NOT_FINITE = 'isnan(r)||isinf(r)'
-# under the 60 s default timeout of the MCP bridge
+# seconds; the bridge waits TIMEOUT for nuke_stats, whatever its --timeout
 TIME_LIMIT = 40.0
+TIMEOUT = 60.0
 MAX_BAD_FRAMES = 10
 
 
@@ -73,7 +74,6 @@ def _channel_curves(image: nuke.Node, channel: str, region: List[int], over: Opt
     low = node('Expression', inputs=[shown], **{f'expr{i}': f'{NOT_FINITE}?1e30:r'
                                                 for i in range(3)})
     curves = {'counts': curve(counts, 'Avg Intensities'),
-              'extremes': curve(shown, 'Max Luma Pixel'),
               'high': curve(high, 'Max Luma Pixel'),
               'low': curve(low, 'Max Luma Pixel')}
     if over is not None:
@@ -88,19 +88,16 @@ def _measure(curves: Dict[str, nuke.Node], pixels: int, first: int, last: int,
     """Statistics of one channel for each frame from first to last.
 
     Each pass runs once over the whole range: in the GUI, every execute opens the progress
-    dialog and moves the timeline.
+    dialog and moves the timeline. Every frame costs the same, so the first frame tells how
+    many fit in the time limit.
     """
-    def run(key, start, end):
-        nuke.execute(curves[key], start, end, 1, views=[view])
-
     def at(key, knob, frame, size):
         # a CurveTool run on several frames keys each one; in Nuke 17, value() reads the
         # current frame
         return [curves[key][knob].getValueAt(frame, i) for i in range(size)]
 
-    passes = ['counts', 'extremes'] + (['over'] if 'over' in curves else [])
-    for key in passes:
-        run(key, first, last)
+    for curve in curves.values():
+        nuke.execute(curve, first, last, 1, views=[view])
 
     results = {}
     for frame in range(first, last + 1):
@@ -113,17 +110,11 @@ def _measure(curves: Dict[str, nuke.Node], pixels: int, first: int, last: int,
         if 'over' in curves:
             result['over'] = round(at('over', 'intensitydata', frame, 1)[0] * pixels)
         if finite:
-            high = low = 'extremes'
-            if nan or inf:
-                # Max Luma Pixel takes infinity as the maximum: measure again without it
-                high, low = 'high', 'low'
-                run(high, frame, frame)
-                run(low, frame, frame)
             result.update({
-                'max': at(high, 'maxlumapixvalue', frame, 1)[0],
-                'max_at': [int(v) for v in at(high, 'maxlumapixdata', frame, 2)],
-                'min': at(low, 'minlumapixvalue', frame, 1)[0],
-                'min_at': [int(v) for v in at(low, 'minlumapixdata', frame, 2)],
+                'max': at('high', 'maxlumapixvalue', frame, 1)[0],
+                'max_at': [int(v) for v in at('high', 'maxlumapixdata', frame, 2)],
+                'min': at('low', 'minlumapixvalue', frame, 1)[0],
+                'min_at': [int(v) for v in at('low', 'minlumapixdata', frame, 2)],
             })
         results[frame] = result
     return results
@@ -283,6 +274,7 @@ STATS_TOOL = Tool(
         },
     },
     function=stats,
+    timeout=TIMEOUT,
     annotations={'title': 'Measure an image in Nuke', 'readOnlyHint': True,
                  'destructiveHint': False, 'idempotentHint': True, 'openWorldHint': False},
 )

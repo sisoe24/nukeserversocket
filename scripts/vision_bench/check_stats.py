@@ -109,6 +109,7 @@ stopped = stats(node='Moving', frame=1, last=6)
 stats_module.TIME_LIMIT = 40.0
 assert stopped['last'] == 1 and 'frame=2' in stopped['warnings'][-1], stopped
 assert 'is before' in raises(node='Bad', frame=5, last=2)
+assert stats_module.STATS_TOOL.timeout > stats_module.TIME_LIMIT
 # a node inside a Group: the temporary Group reads across groups
 assert stats(node='Outer.Deep', frame=1)['channels']['rgba.red']['max'] == 2
 assert 'must be a number' in raises(node='Bad', frame=1, over='high')
@@ -140,8 +141,8 @@ stats(node='Moving', frame=1, last=6, over=1)
 nuke.execute = real_execute
 print('executes', len(executes))
 assert seen and all(n.split('.')[-1].startswith('_nss_stats_') for n in seen), seen
-# 3 channels x 3 passes, for the first frame and for frames 2 to 6, and 2 for the NaN
-assert len(executes) == 20, executes
+# 3 channels x 4 passes, for the first frame and for frames 2 to 6; a NaN adds none
+assert len(executes) == 24, executes
 assert nuke.Undo.disabled() == undo_before
 
 # the hot pixel that a grid of samples misses, on a 2K frame

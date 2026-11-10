@@ -8,7 +8,8 @@ import textwrap
 import pytest
 
 from nukeserversocket.tools import (BUILTIN_TOOL, SAMPLE_DIR, Tool, Image, ToolSet, ToolError,
-                                    call_tool, list_tools, load_tools, create_sample)
+                                    call_tool, list_tools, load_tools, create_sample,
+                                    handle_tool_request)
 
 MODULE = 'nss_test_studio_tools'
 
@@ -166,6 +167,7 @@ def test_kwargs_function_accepts_extra_properties(tool_file):
     ({'inputSchema': {'type': 'array'}}, 'object schema'),
     ({'inputSchema': {'type': 'object', 'properties': [], 'required': []}}, 'properties'),
     ({'inputSchema': {'type': 'object', 'properties': {}, 'required': ['ghost']}}, 'do not exist'),
+    ({'inputSchema': {'type': 'object', 'properties': {'comment': True}}}, 'each property'),
     ({'inputSchema': {'type': 'object', 'properties': {'comment': {}, 'shot': {}},
                       'required': ['comment']}}, 'missing from the function signature'),
     ({'inputSchema': {'type': 'object', 'properties': {'comment': {}}}}, 'must be "required"'),
@@ -288,6 +290,14 @@ def test_call_failure_reports_printed_output_and_traceback(toolset):
     assert result['ok'] is False
     assert result['output'].startswith('started\nTraceback (most recent call last):')
     assert 'RuntimeError: no write node' in result['output']
+
+
+def test_unexpected_error_still_gets_a_reply():
+    """A failure outside the tool, here an unreadable type, replies ok False instead of raising."""
+    schema = {'type': 'object', 'properties': {'node': {'type': [{}]}}}
+    toolset = ToolSet(builtins={'odd': Tool('odd', 'Odd schema.', schema, lambda node: node)})
+    output, ok, _ = handle_tool_request(toolset, {'call_tool': 'odd', 'arguments': {'node': 'x'}})
+    assert ok is False and 'TypeError' in json.loads(output)['output']
 
 
 def test_tool_error_reports_only_its_message():

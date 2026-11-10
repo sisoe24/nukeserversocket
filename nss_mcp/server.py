@@ -98,8 +98,6 @@ def _send(payload: dict[str, Any], host: str, port: int, timeout: float) -> str:
 
     The server closes the socket after replying, so the reply is read until EOF.
     """
-    # shortcut: the server parses only its first read, so a request over about 100 KB or split
-    # across TCP segments fails; add server framing when remote Nuke or large code is in use.
     with socket.create_connection((host, port), timeout=timeout) as sock:
         sock.sendall(json.dumps(payload).encode('utf-8'))
 
@@ -160,8 +158,8 @@ def _connection_error(e: OSError, host: str, port: int, timeout: float, timeout_
                 f'still be running, so check before retrying. {timeout_hint}')
     if isinstance(e, (BrokenPipeError, ConnectionResetError)):
         LOGGER.error('Connection to nukeserversocket dropped: %s', e)
-        return (f'Connection to nukeserversocket dropped ({e}). '
-                'A request over about 100 KB can cause this, so send smaller pieces.')
+        return (f'Connection to nukeserversocket dropped ({e}). The panel may have '
+                'disconnected, and the tool may have run, so check both before retrying.')
     LOGGER.error('Could not reach nukeserversocket: %s', e)
     return (f'Could not reach nukeserversocket at {host}:{port} ({e}). '
             'Is Nuke running with the nukeserversocket panel connected on that port? '

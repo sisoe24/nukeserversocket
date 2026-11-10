@@ -65,12 +65,15 @@ class NukeController(EditorController):
 
     def execute(self, data: ReceivedData) -> str:
         try:
-            return super().execute(data)
+            for widget in (self.editor.input_editor, self.editor.output_editor,
+                           self.editor.run_button):
+                widget.objectName()
         except RuntimeError:
-            # Nuke can rebuild the Script Editor (e.g. on a workspace switch),
-            # which deletes the widgets we hold: look them up again once.
+            # Nuke can rebuild the Script Editor (e.g. on a workspace switch), which deletes
+            # the widgets we hold. Look them up before the code runs: a retry after would run
+            # it twice.
             self._editor = None
-            return super().execute(data)
+        return super().execute(data)
 
     def builtin_tools(self) -> Dict[str, Tool]:
         # imports nuke, which exists only inside Nuke

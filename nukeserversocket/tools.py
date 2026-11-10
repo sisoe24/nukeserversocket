@@ -141,6 +141,8 @@ def _check_schema(schema: Any) -> None:
     required = schema.get('required', [])
     if not isinstance(properties, dict):
         raise ValueError('"inputSchema.properties" must be an object.')
+    if not all(isinstance(spec, dict) for spec in properties.values()):
+        raise ValueError('each property in "inputSchema.properties" must be an object.')
     if not isinstance(required, list) or not all(isinstance(key, str) for key in required):
         raise ValueError('"inputSchema.required" must be a list of names.')
 
@@ -399,7 +401,11 @@ def handle_tool_request(toolset: ToolSet, request: Dict[str, Any]) -> Tuple[str,
 
     name = request['call_tool']
     if isinstance(name, str):
-        reply = call_tool(toolset, name, request.get('arguments'))
+        try:
+            reply = call_tool(toolset, name, request.get('arguments'))
+        except Exception:
+            # e.g. a schema the argument check cannot read; the client must get a reply
+            reply = {'ok': False, 'output': traceback.format_exc()}
     else:
         name = repr(name)
         reply = {'ok': False, 'output': '"call_tool" must be a tool name.'}
