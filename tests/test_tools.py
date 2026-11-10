@@ -430,3 +430,24 @@ def test_tools_file_cannot_replace_a_builtin(tool_file):
                          {SNAPSHOT.name: SNAPSHOT})
     assert 'already loaded' in toolset.skipped[SNAPSHOT.name]
     assert toolset.builtins[SNAPSHOT.name] is SNAPSHOT
+
+
+def test_disabled_tool_is_not_listed_and_refuses_calls():
+    """A tool turned off in the panel stays loaded but clients cannot see or call it."""
+    toolset = ToolSet(builtins={SNAPSHOT.name: SNAPSHOT}, disabled={SNAPSHOT.name})
+    assert list_tools(toolset)['tools'] == []
+    assert call_tool(toolset, SNAPSHOT.name) == {
+        'ok': False,
+        'output': f"Tool '{SNAPSHOT.name}' is turned off in the NukeServerSocket panel."}
+
+
+@pytest.mark.parametrize('allow, disabled, client, expected', [
+    (True, set(), 'MCP', True),
+    (True, {CODE_TOOL}, 'MCP', False),
+    (True, {CODE_TOOL}, 'main.py', True),
+    (False, set(), 'main.py', False),
+])
+def test_code_allowed(allow, disabled, client, expected):
+    """The panel can turn code off only for MCP clients, and never back on."""
+    toolset = ToolSet(allow_arbitrary_code=allow, disabled=disabled)
+    assert toolset.code_allowed(client) is expected

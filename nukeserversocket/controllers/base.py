@@ -61,8 +61,8 @@ class BaseController(ABC):
     @abstractmethod
     def execute(self, data: ReceivedData) -> str: ...
 
-    def builtin_tools(self, vision: bool) -> Dict[str, Tool]:
-        """Tools this app adds to the tools file's; `vision` allows tools that send images."""
+    def builtin_tools(self) -> Dict[str, Tool]:
+        """Tools this app adds to the tools file's."""
         return {}
 
 

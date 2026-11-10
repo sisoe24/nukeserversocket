@@ -71,8 +71,12 @@ class MainModel:
     def get_allow_lan(self):
         return self._settings.get('allow_lan')
 
-    def get_vision(self):
-        return self._settings.get('vision')
+    def get_disabled_tools(self) -> list:
+        return self._settings.get('disabled_tools')
+
+    def set_tool_enabled(self, name: str, enabled: bool):
+        disabled = [n for n in self.get_disabled_tools() if n != name]
+        self._settings.set('disabled_tools', disabled if enabled else [*disabled, name])
 
     def get_tools_file(self):
         return self._settings.tools_file()
@@ -161,16 +165,30 @@ class MainView(QWidget):
         # the tools load again on the next connect
         self.tools_list.clear()
 
+    def _add_tool(self, name: str, tooltip: str, on: bool, enabled: bool = True):
+        # set everything before addItem: a change after it emits itemChanged
+        item = QListWidgetItem(name)
+        item.setToolTip(tooltip)
+        flags = Qt.ItemIsUserCheckable
+        if enabled:
+            flags |= Qt.ItemIsEnabled
+        item.setFlags(flags)
+        item.setCheckState(Qt.Checked if on else Qt.Unchecked)
+        self.tools_list.addItem(item)
+
     def set_tools(self, toolset: ToolSet):
         self.tools_list.clear()
         if toolset.allow_arbitrary_code:
-            self.tools_list.addItem(CODE_TOOL)
+            self._add_tool(CODE_TOOL, 'Run any Python code. Clear to refuse code from MCP clients.',
+                           CODE_TOOL not in toolset.disabled)
+        else:
+            # the tools file turned code off; the panel cannot turn it back on
+            self._add_tool(CODE_TOOL, f'Code is off: {toolset.code_off_reason}.', False,
+                           enabled=False)
         for tool in toolset.available.values():
-            item = QListWidgetItem(tool.name)
             # the full description is a prompt for agents: show the first sentence
             summary = tool.description.split('. ')[0].split('\n')[0]
-            item.setToolTip(textwrap.fill(summary, 60))
-            self.tools_list.addItem(item)
+            self._add_tool(tool.name, textwrap.fill(summary, 60), tool.name not in toolset.disabled)
         for name, reason in toolset.skipped.items():
             item = QListWidgetItem(name)
             item.setToolTip(f'Skipped: {reason}')
@@ -191,6 +209,7 @@ class MainController:
         self._view.port_input.setValue(self._model.get_port())
         self._view.port_input.valueChanged.connect(self._on_port_change)
         self._view.connect_btn.clicked.connect(self._on_connect)
+        self._view.tools_list.itemChanged.connect(self._on_tool_toggled)
 
         console = self._view.console
         console.enable_debug.setChecked(self._model.get_enable_debug())
@@ -220,6 +239,23 @@ class MainController:
     def _on_data_received(self):
         self._start_timer()
 
+    @Slot(QListWidgetItem)
+    def _on_tool_toggled(self, item: QListWidgetItem):
+        if not item.flags() & Qt.ItemIsEnabled:
+            # a skipped tool, or code that the tools file turned off
+            return
+        name = item.text()
+        enabled = item.checkState() == Qt.Checked
+        disabled = self._server.toolset.disabled
+        if enabled == (name not in disabled):
+            return
+        if enabled:
+            disabled.discard(name)
+        else:
+            disabled.add(name)
+        self._model.set_tool_enabled(name, enabled)
+        LOGGER.info('%s %s.', 'Turned on' if enabled else 'Turned off', name)
+
     @Slot()
     def _on_port_change(self):
         self._model.set_port(self._view.port_input.value())
@@ -236,7 +272,7 @@ class MainController:
             port,
             allow_lan=self._model.get_allow_lan(),
             tools_file=tools_file,
-            vision=self._model.get_vision(),
+            disabled_tools=self._model.get_disabled_tools(),
         )
         if not listening:
             LOGGER.error('Failed to establish connection. %s.', self._server.errorString())

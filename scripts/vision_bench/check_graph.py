@@ -133,7 +133,6 @@ big = graph(group='Big')
 print(f'200 nodes: {time.time() - start:.4f} s, {len(json.dumps(big))} characters')
 
 # only nuke_vision sends pixels, so only it follows the Vision setting
-assert list(builtin_tools(True)) == ['nuke_vision', 'nuke_graph', 'nuke_stats']
-assert list(builtin_tools(False)) == ['nuke_graph', 'nuke_stats']
+assert list(builtin_tools()) == ['nuke_vision', 'nuke_graph', 'nuke_stats']
 
 print('OK', nuke.NUKE_VERSION_STRING)

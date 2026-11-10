@@ -3,11 +3,12 @@ from __future__ import annotations
 import json
 import time
 import logging
-from typing import TYPE_CHECKING, Dict, Tuple, Optional
+from typing import TYPE_CHECKING, Dict, Tuple, Iterable, Optional
 
 from ._qt import QTimer, Signal, QWidget, QTcpServer, QTcpSocket, QHostAddress
 
-from .tools import ToolSet, load_tools, parse_tool_request, handle_tool_request
+from .tools import (CODE_TOOL, MCP_CLIENT, ToolSet, load_tools, parse_tool_request,
+                     handle_tool_request)
 from .logger import get_logger
 from .received_data import ReceivedData
 
@@ -15,9 +16,6 @@ if TYPE_CHECKING:
     from .controllers.base import BaseController
 
 LOGGER = get_logger()
-
-# the mark the MCP bridge sends as its "file"
-MCP_CLIENT = 'MCP'
 
 
 def _source(address: QHostAddress, file: str) -> str:
@@ -97,8 +95,8 @@ class NssServer(QTcpServer):
 
     def _run_code(self, data: ReceivedData) -> Tuple[int, str, str]:
         """Return the log level, what to log, and the reply."""
-        if not self.toolset.allow_arbitrary_code:
-            reason = self.toolset.code_off_reason
+        if not self.toolset.code_allowed(data.file):
+            reason = self.toolset.code_off_reason or f'{CODE_TOOL} is turned off in the panel'
             return (logging.WARNING, f'code refused: {reason}',
                     f'NukeServerSocket error: code execution is off ({reason}). '
                     'Use the tools it lists instead.')
@@ -154,13 +152,17 @@ class NssServer(QTcpServer):
         port: int,
         allow_lan: bool = False,
         tools_file: Optional[str] = None,
-        vision: bool = True,
+        disabled_tools: Iterable[str] = (),
     ) -> bool:
-        """Load `tools_file` (NSS_TOOLS when None) and listen on `port`."""
+        """Load `tools_file` (NSS_TOOLS when None) and listen on `port`.
+
+        `disabled_tools` are the names turned off in the panel.
+        """
         LOGGER.debug('Trying to connect to port %s...', port)
         # reload on each connect, so a changed tools file applies without restarting Nuke;
         # Python keeps the adapter module it imported first
-        self.toolset = load_tools(tools_file, self._editor.builtin_tools(vision))
+        self.toolset = load_tools(tools_file, self._editor.builtin_tools())
+        self.toolset.disabled = set(disabled_tools)
         # no authentication
         address = QHostAddress.Any if allow_lan else QHostAddress.LocalHost
         return self.listen(address, port)

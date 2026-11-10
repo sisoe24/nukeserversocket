@@ -409,14 +409,26 @@ def test_server_rejects_missing_code(qtbot: QtBot, server: NssServer, payload: b
     client.close()
 
 
-@pytest.mark.parametrize('vision', [True, False])
-def test_vision_setting_reaches_the_builtin_tools(server: NssServer, editor, monkeypatch, vision):
-    """The editor decides which built-ins the Vision setting allows."""
+def test_disabled_tools_reach_the_toolset(server: NssServer, editor, monkeypatch):
+    """Built-ins always load; the panel's turned-off names only hide them."""
     graph = Tool('nuke_graph', 'Tool.', {'type': 'object'}, lambda: None)
-    asked = []
-    monkeypatch.setattr(editor, 'builtin_tools',
-                        lambda allow: asked.append(allow) or {graph.name: graph})
+    monkeypatch.setattr(editor, 'builtin_tools', lambda: {graph.name: graph})
 
-    server.try_connect(PORT, vision=vision)
+    server.try_connect(PORT, disabled_tools=['nuke_graph'])
 
-    assert asked == [vision] and list(server.toolset.builtins) == ['nuke_graph']
+    assert list(server.toolset.builtins) == ['nuke_graph']
+    assert server.toolset.disabled == {'nuke_graph'} and server.toolset.enabled == {}
+
+
+def test_code_turned_off_in_panel_refuses_only_mcp(qtbot: QtBot, server: NssServer, monkeypatch):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    server._editor.settings.set('mirror_script_editor', False)
+    server.try_connect(PORT, disabled_tools=['nuke_execute_code'])
+
+    assert request(qtbot, {'text': "print('hi')", 'file': 'MCP'}) == (
+        'NukeServerSocket error: code execution is off '
+        '(nuke_execute_code is turned off in the panel). Use the tools it lists instead.')
+    assert request(qtbot, {'text': "print('hi')", 'file': 'main.py'}).strip() == 'hi'
+    assert json.loads(request(qtbot, {'list_tools': True, 'file': 'MCP'}))[
+        'allow_arbitrary_code'] is False
+    assert json.loads(request(qtbot, {'list_tools': True}))['allow_arbitrary_code'] is True

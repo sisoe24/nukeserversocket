@@ -7,8 +7,8 @@
 - Experimental MCP server, so AI agents can run Python in Nuke. See `docs/mcp.md`.
 - Tools file: limit clients to a set of functions, and optionally block code. Settings > Tools file, or `NSS_TOOLS`.
 - **Create sample...** and **Open folder** buttons for the tools file.
-- **MCP tools** list in the panel, with skipped tools greyed out.
-- `nuke_vision` MCP tool: the agent sees one frame of a node, with the Viewer's display transform. Settings > Vision, on by default.
+- **MCP tools** list in the panel. A checkbox turns each tool off or on at once. Skipped tools are greyed out.
+- `nuke_vision` MCP tool: the agent sees one frame of a node, with the Viewer's display transform.
 - `nuke_graph` MCP tool: the agent reads one group of the node graph, with inputs and non-default knobs, or only what changed since an earlier call.
 - `nuke_stats` MCP tool: exact min, max (with positions), mean, NaN and infinity counts per channel of a node, over one frame or a frame range, and an optional count of pixels over a value.
 - Tools can return images, and can raise `ToolError` to fail without a traceback.

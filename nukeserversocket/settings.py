@@ -14,7 +14,8 @@ class _NssSettings:
         'server_timeout': 3600000,
         'auto_start': False,
         'allow_lan': False,
-        'vision': True,
+        # tool names turned off in the MCP tools list
+        'disabled_tools': [],
         'mirror_script_editor': False,
         'clear_output': True,
         'enable_debug': False,
@@ -27,6 +28,10 @@ class _NssSettings:
     def __init__(self, settings_file: pathlib.Path):
         self.path = settings_file
         self.data = self.load(settings_file)
+
+        # the old Vision checkbox is now an item of the MCP tools list
+        if self.data.pop('vision', True) is False:
+            self.data.setdefault('disabled_tools', ['nuke_vision'])
 
         for key, value in self.defaults.items():
             self.data.setdefault(key, value)

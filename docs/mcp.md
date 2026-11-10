@@ -76,14 +76,19 @@ To connect to Nuke on a different machine, set `--host` and turn on **Allow LAN 
 The server gives the client these tools:
 
 - `nuke_execute_code`, if code is on in the [tools file](#tools-file).
-- `nuke_vision`, if **Vision** is on in the panel settings. See [Vision](#vision).
-- `nuke_graph`, always. See [Graph](#graph).
-- `nuke_stats`, always. See [Stats](#stats).
+- `nuke_vision`. See [Vision](#vision).
+- `nuke_graph`. See [Graph](#graph).
+- `nuke_stats`. See [Stats](#stats).
 - Each tool that the tools file declares.
 
 `nuke_vision`, `nuke_graph` and `nuke_stats` are built-in tools. They only read the script, and they work with code off in the tools file.
 
-The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again. If the tools change later, for example after you restart Nuke with a new tools file, the server tells the client after its next tool call. It checks at most every 30 seconds.
+Each tool has a checkbox in the panel's **MCP tools** list. Clear it to turn the tool off, select it to turn the tool on. The change applies at once, and the panel keeps it after you disconnect. A call to a tool that is off gets an error.
+
+- The `nuke_execute_code` checkbox refuses code only from MCP clients. Editors that send code to the panel still work.
+- When the tools file turns code off, `nuke_execute_code` is greyed out. You cannot turn it on in the panel.
+
+The server gets the tool list from Nuke each time the client asks for it. If the client starts before Nuke, the client sees only `nuke_execute_code`. When Nuke answers, the server tells the client to get the tool list again. If the tools change later, for example after you turn a tool off or restart Nuke with a new tools file, the server tells the client after its next tool call. It checks at most every 30 seconds.
 
 ## Vision
 
@@ -95,7 +100,7 @@ The server gets the tool list from Nuke each time the client asks for it. If the
 
 A temporary Write node, inside a temporary Group, renders the frame. The tool deletes the node and the file after the render, and turns undo off during the render, so the script and the undo history do not change. Nuke runs `onCreate`, `beforeRender` and `afterRender` callbacks for the temporary nodes too. If your pipeline adds callbacks to Write nodes, make sure that they ignore nodes whose names start with `_nss_`. Other built-in tools use the same prefix for their temporary nodes.
 
-**Vision** is on by default. It is separate from code: with code off in the tools file, the agent can still see images. To turn it off, clear **Vision** in the panel settings, then disconnect and connect the panel. Turn it off when images of your footage must not go to the AI provider. It turns off only `nuke_vision`.
+`nuke_vision` is on by default. It is separate from code: with code off in the tools file, the agent can still see images. Turn it off in the **MCP tools** list when images of your footage must not go to the AI provider.
 
 Code in Nuke can call the same function:
 
@@ -138,7 +143,7 @@ print(graph(group='Group1'))
 - When the bounding box of the node does not cover the region, the reply warns. The pixels outside the bounding box count as 0.
 - The tool refuses to run in proxy mode, because the numbers would be for the proxy image.
 
-Temporary nodes (`CurveTool`, `Copy`, `Crop` and `Expression`) do the work, inside one temporary Group. As for `nuke_vision`, the tool deletes them and turns undo off, so the script and the undo history do not change. Each measurement pass runs once over the whole frame range, so the progress dialog opens a few times per call, not once per frame. The reply has numbers only, no pixels, so **Vision** does not turn it off.
+Temporary nodes (`CurveTool`, `Copy`, `Crop` and `Expression`) do the work, inside one temporary Group. As for `nuke_vision`, the tool deletes them and turns undo off, so the script and the undo history do not change. Each measurement pass runs once over the whole frame range, so the progress dialog opens a few times per call, not once per frame. The reply has numbers only, no pixels.
 
 Code in Nuke can call the same function:
 
@@ -164,7 +169,7 @@ To make a tools file:
 
 To use one tools file for the whole studio, set `NSS_TOOLS` to its path before Nuke starts. `NSS_TOOLS` overrides the panel setting and makes the **Tools file** field read-only, so artists cannot change it in the panel.
 
-The panel loads the tools each time it connects. The panel's **MCP tools** list shows the tools that MCP clients see. It includes `nuke_execute_code` only when code is on, and `nuke_vision` only when **Vision** is on. Skipped tools are greyed out at the end. Hover over a tool to see its description, or why it was skipped.
+The panel loads the tools each time it connects. The panel's **MCP tools** list shows each tool with a checkbox. MCP clients see the selected tools. Skipped tools are greyed out at the end. Hover over a tool to see its description, or why it was skipped.
 
 - After you change the JSON file, disconnect and connect the panel.
 - After you change the adapter module, restart Nuke. Python keeps the module that it imported first.

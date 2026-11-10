@@ -11,7 +11,7 @@ from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
 
-from nukeserversocket._qt import (Signal, QObject, QWidget, QTextEdit,
+from nukeserversocket._qt import (Qt, Signal, QObject, QWidget, QTextEdit,
                                   QPlainTextEdit)
 
 Controller = MainController
@@ -51,10 +51,10 @@ class MockServer(QObject):
         self.toolset = ToolSet()
 
     def try_connect(self, port: int, allow_lan: bool = False, tools_file=None,
-                    vision: bool = True) -> bool:
+                    disabled_tools=()) -> bool:
         self.allow_lan = allow_lan
         self.tools_file = tools_file
-        self.vision = vision
+        self.toolset.disabled = set(disabled_tools)
         return True
 
     def isListening(self) -> bool:
@@ -113,12 +113,12 @@ def _tool(name: str) -> Tool:
     ('', ToolSet(), ['nuke_execute_code'], ['Listening on 127.0.0.1:54321']),
     ('/studio/nss_tools.json', ToolSet(tools={'a': _tool('a')}), ['nuke_execute_code', 'a'],
      ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 1 tool, code on']),
-    ('/studio/nss_tools.json', ToolSet(allow_arbitrary_code=False), [],
+    ('/studio/nss_tools.json', ToolSet(allow_arbitrary_code=False), ['nuke_execute_code'],
      ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 0 tools, code off']),
     ('/studio/nss_tools.json',
      ToolSet(allow_arbitrary_code=False, tools={'a': _tool('a'), 'b': _tool('b')},
              skipped={'c': 'x'}),
-     ['a', 'b', 'c'],
+     ['nuke_execute_code', 'a', 'b', 'c'],
      ['Listening on 127.0.0.1:54321',
       'Tools file /studio/nss_tools.json: 2 tools, 1 skipped, code off']),
 ])
@@ -214,14 +214,50 @@ def test_main_controller_allow_lan(controller: Controller, model: Model, view: V
     assert view.ip_label.text() == model.get_ip()
 
 
-@pytest.mark.parametrize('vision', [True, False])
-def test_main_controller_passes_vision(controller: Controller, model: Model, server: MockServer,
-                                       vision):
-    model._settings.set('vision', vision)
+def _items(view: View) -> dict:
+    return {view.tools_list.item(i).text(): view.tools_list.item(i)
+            for i in range(view.tools_list.count())}
+
+
+def test_main_controller_passes_and_shows_disabled_tools(
+        controller: Controller, model: Model, view: View, server: MockServer):
+    model._settings.set('disabled_tools', ['a'])
+    server.toolset = ToolSet(tools={'a': _tool('a'), 'b': _tool('b')})
 
     controller._on_connect(True)
 
-    assert server.vision is vision
+    assert server.toolset.disabled == {'a'}
+    states = {name: item.checkState() for name, item in _items(view).items()}
+    assert states == {'nuke_execute_code': Qt.Checked, 'a': Qt.Unchecked, 'b': Qt.Checked}
+
+
+def test_main_controller_toggles_a_tool_live(
+        controller: Controller, model: Model, view: View, server: MockServer):
+    server.toolset = ToolSet(tools={'a': _tool('a')})
+    controller._on_connect(True)
+
+    _items(view)['a'].setCheckState(Qt.Unchecked)
+    _items(view)['nuke_execute_code'].setCheckState(Qt.Unchecked)
+    assert server.toolset.disabled == {'a', 'nuke_execute_code'}
+    assert model.get_disabled_tools() == ['a', 'nuke_execute_code']
+
+    _items(view)['a'].setCheckState(Qt.Checked)
+    assert server.toolset.disabled == {'nuke_execute_code'}
+    assert model.get_disabled_tools() == ['nuke_execute_code']
+
+
+def test_main_controller_code_off_in_file_cannot_be_turned_on(
+        controller: Controller, model: Model, view: View, server: MockServer):
+    server.toolset = ToolSet(allow_arbitrary_code=False, skipped={'c': 'x'},
+                             code_off_reason='allow_arbitrary_code is false in t.json')
+    controller._on_connect(True)
+
+    code = _items(view)['nuke_execute_code']
+    assert code.checkState() == Qt.Unchecked
+    assert not code.flags() & Qt.ItemIsEnabled
+    assert code.toolTip() == 'Code is off: allow_arbitrary_code is false in t.json.'
+    # neither the greyed code item nor the skipped one is saved as turned off
+    assert server.toolset.disabled == set() and model.get_disabled_tools() == []
 
 
 def test_main_controller_auto_start(qtbot: QtBot, model: Model, view: View, server: MockServer):

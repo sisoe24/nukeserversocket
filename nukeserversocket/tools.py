@@ -49,6 +49,8 @@ from .logger import get_logger
 LOGGER = get_logger()
 
 CODE_TOOL = 'nuke_execute_code'
+# the "file" the MCP bridge sends with each request
+MCP_CLIENT = 'MCP'
 
 _NAME = re.compile(r'^[A-Za-z0-9_.-]{1,128}$')
 
@@ -88,11 +90,24 @@ class ToolSet:
     skipped: dict[str, str] = field(default_factory=dict)
     # why code is off, naming the file, for logs and client errors
     code_off_reason: str = field(default='', compare=False)
+    # names turned off in the panel; CODE_TOOL turns off code from MCP clients only
+    disabled: set[str] = field(default_factory=set, compare=False)
 
     @property
     def available(self) -> dict[str, Tool]:
-        """The tools clients can call: the built-ins, then the file's."""
+        """The loaded tools: the built-ins, then the file's."""
         return {**self.builtins, **self.tools}
+
+    @property
+    def enabled(self) -> dict[str, Tool]:
+        """The tools clients can call: the loaded tools not turned off in the panel."""
+        return {n: t for n, t in self.available.items() if n not in self.disabled}
+
+    def code_allowed(self, client: str) -> bool:
+        """Whether `client`, the "file" of a request, may run code."""
+        if client == MCP_CLIENT and CODE_TOOL in self.disabled:
+            return False
+        return self.allow_arbitrary_code
 
 
 # repo root, next to the package: copy installs and the release zip ship it, pip does not
@@ -373,7 +388,10 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> dict[str, A
         if reason:
             return {'ok': False, 'output': f'Tool {name!r} was not loaded: {reason}'}
         return {'ok': False,
-                'output': f'Unknown tool {name!r}. Available: {sorted(toolset.available)}.'}
+                'output': f'Unknown tool {name!r}. Available: {sorted(toolset.enabled)}.'}
+    if name in toolset.disabled:
+        return {'ok': False,
+                'output': f'Tool {name!r} is turned off in the NukeServerSocket panel.'}
 
     arguments = {} if arguments is None else arguments
     if not isinstance(arguments, dict):
@@ -401,14 +419,14 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> dict[str, A
     return {'ok': True, 'output': printed.getvalue() + _format_result(result)}
 
 
-def list_tools(toolset: ToolSet) -> dict[str, Any]:
+def list_tools(toolset: ToolSet, client: str = '') -> dict[str, Any]:
     return {
-        'allow_arbitrary_code': toolset.allow_arbitrary_code,
+        'allow_arbitrary_code': toolset.code_allowed(client),
         'tools': [
             {'name': t.name, 'description': t.description,
              'inputSchema': t.input_schema, 'timeout': t.timeout,
              'annotations': t.annotations}
-            for t in toolset.available.values()
+            for t in toolset.enabled.values()
         ],
         'skipped': toolset.skipped,
     }
@@ -433,7 +451,7 @@ def _last_line(output: str) -> str:
 def handle_tool_request(toolset: ToolSet, request: dict[str, Any]) -> tuple[str, bool, str]:
     """Return the JSON reply, whether the request succeeded, and what to log about it."""
     if 'call_tool' not in request:
-        reply = list_tools(toolset)
+        reply = list_tools(toolset, str(request.get('file') or ''))
         return json.dumps(reply, default=str), True, f'list tools: {len(reply["tools"])}'
 
     name = request['call_tool']
