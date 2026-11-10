@@ -259,6 +259,25 @@ Not done: "what did you change" with a real edit.
 
 New session, the same request. Calls: `nuke_graph`, `script_info`, `nuke_stats` three times, `nuke_vision` twice. No Bash, no ffmpeg, no `nuke_execute_code`. It measured all 162 frames in Nuke: about 43 red and 28 blue pixels per frame at 1.0, worst frame 139 (106 red pixels), no NaN or inf on any frame. Same conclusion as with ffmpeg. It also noted the 8-bit source and blacks at 0.
 
+### Agent trial 3, "what did I change" (2026-11-09)
+
+In the trial 2 session, after its earlier `nuke_graph` call, two edits were made through code (ColorCorrect1 `mix` 1 to 0.8, Roto_woman label "trial"), then the request "I changed a couple of things in the comp since you last looked. What did I change?". The edits were undone after.
+
+- The agent called `nuke_graph` with `since`. The panel no longer had that snapshot, so it got the warning and the full graph. It listed both edits among the current state but could not say which were new, and said so.
+- Its earlier call had `classes` set, so its own memory of the other nodes was empty. The snapshot covers every node whatever the filter, so a live snapshot would have given the diff.
+- Why the snapshot was gone: there was one `nuke_graph` call before it, so not eviction. Most likely Nuke restarted; snapshots live in memory only.
+- Second try, with its new snapshot: Crop1 label set to "trial" and `mix` 0.8 to 0.7. The agent called `nuke_graph` with `since` and named both changes and no others; the old `mix` came from its earlier full listing, since the diff gives only current values. Pass.
+
+### Agent trial 4, "why is my viewer black" (2026-11-09)
+
+New session. Read1 pointed to a missing `267241_medium_v2.mp4`, restored after.
+
+- Calls: `nuke_graph`, `script_info`, then `nuke_execute_code` twice: to check the file and to list the folder.
+- Right: Read1 is the only node with an error, its file is missing, `267241_medium.mp4` without `_v2` is there, and the whole chain comes from Read1.
+- `nuke_graph` showed where (`error: true` and the path). Code was needed for why. With code off, the agent could only guess that the file is missing.
+
+Decision: no `nuke_check`. Missing files were the one cause that can be checked; the other rules were guesses. `nuke_graph` now adds `missing_files` to a node with an error: its own files at the current frame (clamped to its range) that do not exist, from `fileDependencies` and `os.path.exists`. Writes are skipped, because their output does not exist before a render. Only nodes with an error are checked, so a network disk is asked about a few files. Not done: other frames of a sequence.
+
 ### Method compared (2026-11-09)
 
 Headless, a black 2K frame (2048 x 1556) with one red pixel of 50 at (1500, 900).

@@ -51,6 +51,10 @@ assert set(nodes) == {'Checker', 'Blur1', 'Merge1', 'Missing', 'Off', 'Long', 'G
 assert nodes['Blur1']['inputs'] == ['Checker'] and nodes['Blur1']['knobs'] == {'size': '4'}
 assert nodes['Merge1']['inputs'] == ['Blur1', None, 'Checker'], nodes['Merge1']['inputs']
 assert nodes['Missing'].get('error') is True
+# frame 0 is outside 1-10, so the first frame's file is checked
+assert nodes['Missing']['missing_files'] == ['/nonexistent/plate.0001.exr'], nodes['Missing']
+# no error, no check
+assert 'missing_files' not in nodes['Blur1'] and 'missing_files' not in nodes['Off']
 assert nodes['Off']['knobs']['disable'] == 'true', nodes['Off']['knobs']
 assert nodes['Off']['knobs']['label'] == 'artist note', nodes['Off']['knobs']
 assert 'error' not in nodes['Blur1']

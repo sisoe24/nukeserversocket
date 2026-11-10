@@ -7,6 +7,7 @@ Built-in MCP tool nuke_graph. Code running in Nuke can call it too:
 """
 from __future__ import annotations
 
+import os
 import uuid
 from typing import Any, Dict, List, Tuple, Optional
 from collections import Counter, OrderedDict
@@ -60,6 +61,18 @@ def _shown(node: nuke.Node, name: str) -> bool:
                 or knob.getFlag(nuke.INVISIBLE) or not knob.visible())
 
 
+def _missing_files(node: nuke.Node) -> List[str]:
+    """Files that the node reads at the current frame and that do not exist."""
+    # a Write lists its output, which does not exist before a render
+    if 'Write' in node.Class():
+        return []
+    frame = min(max(nuke.frame(), node.firstFrame()), node.lastFrame())
+    # the list also has the files of upstream nodes; keep this node's own
+    return [path for owner, paths in node.fileDependencies(frame, frame)
+            if owner.fullName() == node.fullName() for path in paths
+            if not os.path.exists(path)]
+
+
 def _describe(node: nuke.Node, error: bool) -> Dict[str, Any]:
     # the reply's viewer field already has what matters of a Viewer
     values = {} if node.Class() == 'Viewer' else _knob_values(node)
@@ -69,6 +82,10 @@ def _describe(node: nuke.Node, error: bool) -> Dict[str, Any]:
              'knobs': knobs}
     if error:
         entry['error'] = True
+        # only for nodes with an error, so a network disk is asked about a few files
+        missing = _missing_files(node)
+        if missing:
+            entry['missing_files'] = missing
     if isinstance(node, nuke.Group):
         entry['children'] = len(node.nodes())
     return entry
@@ -157,7 +174,8 @@ GRAPH_TOOL = Tool(
         '- knobs: values in .nk syntax. Hidden knobs, toolbar settings and Viewer knobs are '
         'left out. A value over 1000 characters shows as "<cut: N characters>". Read '
         'anything left out with code if you need it.\n'
-        '- error appears only when the node has an error. children is the node count of a '
+        '- error appears only when the node has an error. Then missing_files lists the files '
+        'it reads at the current frame that do not exist, if any. children is the node count of a '
         'Group; call again with group set to its name to look inside.\n'
         '- since: pass the snapshot of an earlier reply to list only the nodes that changed, '
         'were added (nodes) or were deleted (removed) since then. A moved node counts as '

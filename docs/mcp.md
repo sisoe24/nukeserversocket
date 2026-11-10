@@ -114,6 +114,7 @@ with open('/tmp/grade1.jpg', 'wb') as f:
 - Arguments, all optional: `group` (the full name of a Group), `max_nodes` (default 200), `since` and `classes` (list only nodes of these classes, for example `["Read", "Write"]`).
 - When there are more nodes than `max_nodes`, the reply says how many nodes of each class there are, so that the agent can ask again with `classes`.
 - Each reply has a `snapshot` id. With `since` set to an earlier id, the reply lists only the nodes that changed or were added since then, and the names of deleted nodes. The panel keeps the last 4 snapshots, in memory only.
+- A node with an error has `error: true`. If it reads files that do not exist at the current frame, `missing_files` lists them.
 - A knob value over 1000 characters, for example the curves of a Roto node, is cut. The agent reads it with code if it needs it.
 
 `nuke_graph` creates no nodes and does not change the script. It sends node names, knob values and file paths to the AI provider, as `nuke_execute_code` can. To stop that, disconnect the panel.
