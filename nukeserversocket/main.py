@@ -153,7 +153,7 @@ class MainView(QWidget):
         self.tools_list.clear()
         if toolset.allow_arbitrary_code:
             self.tools_list.addItem(BUILTIN_TOOL)
-        for tool in [*toolset.builtins.values(), *toolset.tools.values()]:
+        for tool in toolset.available.values():
             item = QListWidgetItem(tool.name)
             # the full description is a prompt for agents: show the first sentence
             summary = tool.description.split('. ')[0].split('\n')[0]

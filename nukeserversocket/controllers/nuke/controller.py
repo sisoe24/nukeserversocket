@@ -75,10 +75,10 @@ class NukeController(EditorController):
             self._editor = None
         return super().execute(data)
 
-    def builtin_tools(self) -> Dict[str, Tool]:
+    def builtin_tools(self, vision: bool) -> Dict[str, Tool]:
         # imports nuke, which exists only inside Nuke
         from .builtin import builtin_tools
-        return builtin_tools()
+        return builtin_tools(vision)
 
     def execute_code(self):
         self._previous_output = self.editor.output_editor.toPlainText()

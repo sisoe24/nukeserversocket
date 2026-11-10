@@ -15,8 +15,7 @@ from typing import Any, Dict, List, Optional
 
 import nuke
 
-from .vision import _find_source, _source_warnings
-from ._temp import RGB, temp_nodes, copy_to_rgb
+from ._shared import RGB, temp_nodes, copy_to_rgb, find_source, pick_channels, source_warnings
 from ....tools import Tool, ToolError
 
 MAX_CHANNELS = 8
@@ -25,27 +24,6 @@ NOT_FINITE = 'isnan(r)||isinf(r)'
 TIME_LIMIT = 40.0
 TIMEOUT = 60.0
 MAX_BAD_FRAMES = 10
-
-
-def _pick_channels(source: nuke.Node, channels: str) -> List[str]:
-    available = source.channels()
-    if not available:
-        raise ToolError(f'{source.fullName()} has no image. Is its input connected?')
-    picked = {'rgb': RGB, 'rgba': RGB + ['rgba.alpha'], 'alpha': ['rgba.alpha']}.get(channels)
-    if picked is None:
-        picked = [channels] if channels in available else [
-            c for c in available if c.split('.')[0] == channels]
-    missing = [c for c in picked if c not in available]
-    if missing:
-        raise ToolError(f'{source.fullName()} has no {", ".join(missing)}. '
-                        f'Channels: {sorted(available)}.')
-    if not picked:
-        layers = sorted({c.split('.')[0] for c in available})
-        raise ToolError(f'{source.fullName()} has no channel or layer {channels!r}. '
-                        f'Layers: {layers}.')
-    if len(picked) > MAX_CHANNELS:
-        raise ToolError(f'{channels!r} has {len(picked)} channels; at most {MAX_CHANNELS}.')
-    return picked
 
 
 def _channel_curves(image: nuke.Node, channel: str, region: List[int], over: Optional[float],
@@ -152,7 +130,7 @@ def stats(node: str = '', frame: Optional[int] = None, view: str = '', channels:
           over: Optional[float] = None) -> Dict[str, Any]:
     """Return exact statistics of `node` from `frame` to `last`, per channel."""
     viewer = nuke.activeViewer()
-    source = _find_source(node, viewer)
+    source = find_source(node, viewer)
     frame = nuke.frame() if frame is None else frame
     last = frame if last is None else last
     if last < frame:
@@ -162,7 +140,9 @@ def stats(node: str = '', frame: Optional[int] = None, view: str = '', channels:
     view = view or (viewer.view() if viewer else nuke.views()[0])
     if view not in nuke.views():
         raise ToolError(f'No view {view!r}. Views: {nuke.views()}.')
-    picked = _pick_channels(source, channels)
+    picked = pick_channels(source, channels)
+    if len(picked) > MAX_CHANNELS:
+        raise ToolError(f'{channels!r} has {len(picked)} channels; at most {MAX_CHANNELS}.')
 
     fmt = source.format()
     if crop is not None:
@@ -175,9 +155,9 @@ def stats(node: str = '', frame: Optional[int] = None, view: str = '', channels:
         region = [0, 0, fmt.width(), fmt.height()]
     pixels = (region[2] - region[0]) * (region[3] - region[1])
 
-    warnings = _source_warnings(source, frame)
+    warnings = source_warnings(source, frame)
     if last != frame:
-        warnings += [w for w in _source_warnings(source, last) if w not in warnings]
+        warnings += [w for w in source_warnings(source, last) if w not in warnings]
 
     start = time.monotonic()
     per_frame: Dict[str, Dict[int, Dict[str, Any]]] = {channel: {} for channel in picked}

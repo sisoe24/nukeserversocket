@@ -4,6 +4,7 @@ Built-in MCP tool nuke_vision. Code running in Nuke can call it too:
 
     from nukeserversocket.controllers.nuke.builtin.vision import vision
     image = vision('Grade1', frame=1001)
+    print(image.text)
     with open('/tmp/grade1.jpg', 'wb') as f:
         f.write(image.data)
 """
@@ -17,69 +18,11 @@ from typing import Any
 
 import nuke
 
-from ._temp import RGB, temp_nodes, copy_to_rgb
+from ._shared import (RGB, temp_nodes, viewer_info, copy_to_rgb, find_source,
+                      pick_channels, source_warnings)
 from ....tools import Tool, Image, ToolError
 
 DEFAULT_SIZE = 768
-
-
-def _viewer_info(viewer: nuke.ViewerWindow | None) -> dict[str, Any] | None:
-    if viewer is None:
-        return None
-    node = viewer.node()
-    index = viewer.activeInput()
-    source = node.input(index) if index is not None else None
-    info = {
-        'name': node.name(),
-        'input': source.fullName() if source else None,
-        'frame': nuke.frame(),
-        'view': viewer.view(),
-        'gain': node['gain'].value(),
-        'gamma': node['gamma'].value(),
-        'viewer_process': node['viewerProcess'].value(),
-    }
-    # Nuke 17 and newer
-    if hasattr(node, 'getZoomLevel'):
-        info['zoom_percent'] = node.getZoomLevel()
-    return info
-
-
-def _find_source(node: str, viewer: nuke.ViewerWindow | None) -> nuke.Node:
-    if node:
-        found = nuke.toNode(node)
-        if found is None:
-            raise ToolError(f'No node named {node!r}.')
-        return found
-
-    if viewer is None:
-        raise ToolError('No active Viewer. Pass node, or open a Viewer.')
-    index = viewer.activeInput()
-    found = viewer.node().input(index) if index is not None else None
-    if found is None:
-        raise ToolError(f'Nothing is connected to the active input of {viewer.node().name()}. '
-                        'Pass node.')
-    return found
-
-
-def _pick_channels(source: nuke.Node, channels: str) -> list[str]:
-    """Return the channels to show as red, green and blue."""
-    available = source.channels()
-    if not available:
-        raise ToolError(f'{source.fullName()} has no image. Is its input connected?')
-    if channels in ('rgb', 'rgba'):
-        return list(RGB)
-    if channels == 'alpha':
-        channels = 'rgba.alpha'
-    if channels in available:
-        return [channels] * 3
-
-    layer = [c for c in available if c.split('.')[0] == channels][:3]
-    if not layer:
-        layers = sorted({c.split('.')[0] for c in available})
-        raise ToolError(f'{source.fullName()} has no channel or layer {channels!r}. '
-                        f'Layers: {layers}.')
-    # a two-channel layer, e.g. motion vectors, shows its second channel twice
-    return (layer + layer[-1:] * 2)[:3]
 
 
 def _set_display(write: nuke.Node, viewer_process: str | None) -> str:
@@ -102,21 +45,9 @@ def _set_display(write: nuke.Node, viewer_process: str | None) -> str:
     return f'colorspace {write["colorspace"].value()} (Write default, no Viewer transform found)'
 
 
-def _source_warnings(source: nuke.Node, frame: int) -> list[str]:
-    warnings = []
-    if not source.firstFrame() <= frame <= source.lastFrame():
-        warnings.append(f'Frame {frame} is outside the frame range of {source.fullName()} '
-                        f'({source.firstFrame()}-{source.lastFrame()}).')
-    if source.hasError():
-        warnings.append(f'{source.fullName()} reports an error.')
-    if nuke.root()['proxy'].value():
-        warnings.append('Proxy mode is on: the image is rendered at proxy resolution.')
-    return warnings
-
-
 def _warnings(source: nuke.Node, shown: nuke.Node, frame: int, view: str,
               region: list[float]) -> list[str]:
-    warnings = _source_warnings(source, frame)
+    warnings = source_warnings(source, frame)
 
     # the render warmed the cache, so these samples are free
     x, y, r, t = region
@@ -132,17 +63,20 @@ def _warnings(source: nuke.Node, shown: nuke.Node, frame: int, view: str,
 
 def vision(node: str = '', frame: int | None = None, view: str = '', channels: str = 'rgb',
            crop: list[float] | None = None, size: int = DEFAULT_SIZE) -> Image:
-    """Render one frame of `node` to a JPEG; print its metadata as JSON."""
+    """Render one frame of `node` to a JPEG, with its metadata as JSON text."""
     if not 64 <= size <= 4096:
         raise ToolError(f'size must be 64 to 4096 pixels, got {size}.')
 
     viewer = nuke.activeViewer()
-    source = _find_source(node, viewer)
+    source = find_source(node, viewer)
     frame = nuke.frame() if frame is None else frame
     view = view or (viewer.view() if viewer else nuke.views()[0])
     if view not in nuke.views():
         raise ToolError(f'No view {view!r}. Views: {nuke.views()}.')
-    shown_channels = _pick_channels(source, channels)
+    # three channels to show as red, green and blue: a two-channel layer, e.g. motion
+    # vectors, shows its second channel twice
+    picked = pick_channels(source, channels)[:3]
+    shown_channels = (picked + picked[-1:] * 2)[:3]
 
     fmt = source.format()
     if crop is not None:
@@ -199,7 +133,7 @@ def vision(node: str = '', frame: int | None = None, view: str = '', channels: s
     bbox = source.bbox()
     image_width, image_height = round(width * scale), round(height * scale)
     sx, sy = scale * aspect, scale
-    print(json.dumps({
+    metadata = json.dumps({
         'node': source.fullName(),
         'class': source.Class(),
         'frame': frame,
@@ -215,9 +149,9 @@ def vision(node: str = '', frame: int | None = None, view: str = '', channels: s
         'to_nuke': f'nuke_x = {region[0]:g} + image_x / {sx:g}; '
                    f'nuke_y = {region[3]:g} - image_y / {sy:g}',
         'warnings': warnings,
-        'viewer': _viewer_info(viewer),
-    }))
-    return Image(data)
+        'viewer': viewer_info(viewer),
+    })
+    return Image(data, text=metadata)
 
 
 VISION_TOOL = Tool(

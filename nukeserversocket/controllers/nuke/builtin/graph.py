@@ -14,7 +14,7 @@ from collections import Counter, OrderedDict
 
 import nuke
 
-from .vision import _viewer_info
+from ._shared import viewer_info
 from ....tools import Tool, ToolError
 
 MAX_NODES = 200
@@ -128,7 +128,7 @@ def graph(group: str = '', max_nodes: int = MAX_NODES, since: str = '',
 
     reply: Dict[str, Any] = {
         'script': _script_info(),
-        'viewer': _viewer_info(nuke.activeViewer()),
+        'viewer': viewer_info(nuke.activeViewer()),
         'selected': [n.fullName() for n in nuke.selectedNodes()],
         'group': parent.fullName() if group else 'root',
     }

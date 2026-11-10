@@ -26,7 +26,7 @@ Clients use the tools with two requests; the reply is JSON:
     {"call_tool": "publish_shot", "arguments": {"comment": "v2"}}
         -> {"ok": bool, "output": str, "images": [{"mimeType": str, "data": base64 str}]}
 
-"images" is there only when the tool returns an Image.
+"images" is there only when the tool returns an Image; its text goes to "output".
 """
 from __future__ import annotations
 
@@ -68,9 +68,10 @@ class Tool:
 
 @dataclass
 class Image:
-    """Return this from a tool to send an image to the client."""
+    """Return this from a tool to send an image to the client, with text about it."""
     data: bytes
     mime_type: str = 'image/jpeg'
+    text: str = ''
 
 
 class ToolError(Exception):
@@ -87,6 +88,11 @@ class ToolSet:
     skipped: Dict[str, str] = field(default_factory=dict)
     # why code is off, naming the file, for logs and client errors
     code_off_reason: str = field(default='', compare=False)
+
+    @property
+    def available(self) -> Dict[str, Tool]:
+        """The tools clients can call: the built-ins, then the file's."""
+        return {**self.builtins, **self.tools}
 
 
 # repo root, next to the package: copy installs and the release zip ship it, pip does not
@@ -265,7 +271,7 @@ def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] =
         label = entry.get('name') if isinstance(entry, dict) else None
         label = label if isinstance(label, str) and label else f'tools[{index}]'
         try:
-            tool = _load_tool(entry, {**toolset.builtins, **toolset.tools})
+            tool = _load_tool(entry, toolset.available)
         except ValueError as e:
             LOGGER.warning('Skipped tool %s: %s', label, e)
             toolset.skipped[label] = str(e)
@@ -329,17 +335,17 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, A
     """Call a loaded tool and return {"ok": bool, "output": str}.
 
     The output is what the tool printed, followed by its return value. An Image
-    return value goes to "images" instead. A failure returns ok False with the
+    return value goes to "images" instead, and its text to the output. A failure returns ok False with the
     reason, so the caller never has to read the text: a ToolError gives its
     message, any other exception its traceback.
     """
-    tool = toolset.builtins.get(name) or toolset.tools.get(name)
+    tool = toolset.available.get(name)
     if tool is None:
         reason = toolset.skipped.get(name)
         if reason:
             return {'ok': False, 'output': f'Tool {name!r} was not loaded: {reason}'}
-        available = sorted({**toolset.builtins, **toolset.tools})
-        return {'ok': False, 'output': f'Unknown tool {name!r}. Available: {available}.'}
+        return {'ok': False,
+                'output': f'Unknown tool {name!r}. Available: {sorted(toolset.available)}.'}
 
     arguments = {} if arguments is None else arguments
     if not isinstance(arguments, dict):
@@ -360,7 +366,7 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, A
 
     if isinstance(result, Image):
         image = {'mimeType': result.mime_type, 'data': base64.b64encode(result.data).decode('ascii')}
-        return {'ok': True, 'output': printed.getvalue(), 'images': [image]}
+        return {'ok': True, 'output': printed.getvalue() + result.text, 'images': [image]}
     return {'ok': True, 'output': printed.getvalue() + _format_result(result)}
 
 
@@ -371,7 +377,7 @@ def list_tools(toolset: ToolSet) -> Dict[str, Any]:
             {'name': t.name, 'description': t.description,
              'inputSchema': t.input_schema, 'timeout': t.timeout,
              'annotations': t.annotations}
-            for t in [*toolset.builtins.values(), *toolset.tools.values()]
+            for t in toolset.available.values()
         ],
         'skipped': toolset.skipped,
     }

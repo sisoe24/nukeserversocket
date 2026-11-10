@@ -221,7 +221,7 @@ Write adapters for remote callers, not for artists:
 - Do not open a dialog. Nuke waits for a click, and the client waits until its timeout ends.
 - Raise an exception for each failure. The client gets the traceback as an error. To send only a message, without the traceback, raise `nukeserversocket.tools.ToolError`.
 - Return JSON values (`dict`, `list`, `str`, numbers). The panel sends any other value as its `str()`.
-- To return an image, return `nukeserversocket.tools.Image(data)`, where `data` is the JPEG bytes. MCP clients get the image after the printed text.
+- To return an image, return `nukeserversocket.tools.Image(data)`, where `data` is the JPEG bytes. MCP clients get the image after the printed text. To add text about the image, pass `text`: it follows the printed text.
 - Make tools safe to run two times. If a tool is not safe to run two times, say so in its description. After a timeout, the client cannot know if the tool ran.
 
 Tools run on Nuke's main thread. The Nuke interface is busy until the tool returns.

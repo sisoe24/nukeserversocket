@@ -153,11 +153,7 @@ class NssServer(QTcpServer):
         """Load `tools_file` (NSS_TOOLS when None) and listen on `port`."""
         LOGGER.debug('Trying to connect to port %s...', port)
         # reload on each connect, so a changed tool file applies without restarting Nuke
-        builtins = self._editor.builtin_tools()
-        # Vision is about images leaving the machine; the other built-ins do not send pixels
-        if not vision:
-            builtins.pop('nuke_vision', None)
-        self.toolset = load_tools(tools_file, builtins)
+        self.toolset = load_tools(tools_file, self._editor.builtin_tools(vision))
         # no authentication
         address = QHostAddress.Any if allow_lan else QHostAddress.LocalHost
         return self.listen(address, port)

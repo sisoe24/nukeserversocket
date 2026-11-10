@@ -31,6 +31,7 @@ def case(label, **kwargs):
     with open(path, 'wb') as f:
         f.write(image.data)
     print(f'  IMAGE {len(image.data)} bytes -> {path}')
+    print(f'  META {image.text}')
 
 
 nodes_before = len(nuke.allNodes(recurseGroups=True))
@@ -48,6 +49,7 @@ anam = nuke.nodes.CheckerBoard2(name='Anamorphic', format='nss_anamorphic')
 read = nuke.nodes.Read(name='Plate', file='/nonexistent/plate.%04d.exr', first=1, last=10,
                        on_error='black')
 grade = nuke.nodes.Grade(name='Lonely')
+nuke.nodes.Remove(name='DepthOnly', inputs=[depth], operation='keep', channels='depth')
 nodes_fixture = len(nuke.allNodes(recurseGroups=True))
 
 case('no_viewer')
@@ -56,6 +58,7 @@ case('rgb', node='Label', frame=1)
 case('alpha', node='Label', channels='alpha')
 case('depth_layer', node='WithDepth', channels='depth')
 case('bad_layer', node='WithDepth', channels='nope')
+case('no_rgb', node='DepthOnly')
 case('crop', node='Label', crop=[100, 100, 400, 200])
 case('bad_crop', node='Label', crop=[0, 0, 10])
 case('anamorphic', node='Anamorphic')

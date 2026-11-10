@@ -399,6 +399,16 @@ def test_image_result_goes_to_images_as_base64():
         'images': [{'mimeType': 'image/jpeg', 'data': '/9j/'}]}
 
 
+def test_image_text_follows_the_printed_output():
+    """The text of an Image goes to the output, after what the tool printed."""
+    def described():
+        print('rendered')
+        return Image(b'\xff\xd8\xff', text='{"frame": 1}')
+
+    toolset = ToolSet(builtins={'see': Tool('see', 'See.', {'type': 'object'}, described)})
+    assert call_tool(toolset, 'see')['output'] == 'rendered\n{"frame": 1}'
+
+
 def test_builtins_are_listed_and_called_while_code_is_on(tool_file):
     """Built-in tools come before the tools file's and can be called."""
     toolset = load_tools(tool_file({'tools': [_tool()]}), {SNAPSHOT.name: SNAPSHOT})
