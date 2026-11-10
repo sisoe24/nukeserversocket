@@ -22,9 +22,10 @@ MCP_CLIENT = 'MCP'
 
 def _source(address: QHostAddress, file: str) -> str:
     """Name the client the way the Logs show it, e.g. "(MCP)" or "(127.0.0.1 main.py)"."""
+    host = address.toString()
     if file == MCP_CLIENT:
-        return f'({MCP_CLIENT})' if address.isLoopback() else f'({MCP_CLIENT} at {address.toString()})'
-    return f'({address.toString()} {file})' if file else f'({address.toString()})'
+        return f'({MCP_CLIENT})' if address.isLoopback() else f'({MCP_CLIENT} at {host})'
+    return f'({host} {file})' if file else f'({host})'
 
 
 class NssServer(QTcpServer):
@@ -148,11 +149,17 @@ class NssServer(QTcpServer):
                     socket, idle_timer)
             )
 
-    def try_connect(self, port: int, allow_lan: bool = False,
-                    tools_file: Optional[str] = None, vision: bool = True) -> bool:
+    def try_connect(
+        self,
+        port: int,
+        allow_lan: bool = False,
+        tools_file: Optional[str] = None,
+        vision: bool = True,
+    ) -> bool:
         """Load `tools_file` (NSS_TOOLS when None) and listen on `port`."""
         LOGGER.debug('Trying to connect to port %s...', port)
-        # reload on each connect, so a changed tool file applies without restarting Nuke
+        # reload on each connect, so a changed tools file applies without restarting Nuke;
+        # Python keeps the adapter module it imported first
         self.toolset = load_tools(tools_file, self._editor.builtin_tools(vision))
         # no authentication
         address = QHostAddress.Any if allow_lan else QHostAddress.LocalHost

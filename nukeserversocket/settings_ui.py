@@ -6,7 +6,7 @@ This module is a wrapper around the settings module, and provides a UI for it.
 
 from __future__ import annotations
 
-import os
+import pathlib
 from typing import TYPE_CHECKING, Any, Optional
 from textwrap import dedent
 
@@ -149,7 +149,8 @@ class NssSettingsController:
     def _on_open_tools_folder(self):
         path = self._view.tools_file.text().strip()
         if path:
-            QDesktopServices.openUrl(QUrl.fromLocalFile(os.path.dirname(path)))
+            folder = pathlib.Path(path).parent
+            QDesktopServices.openUrl(QUrl.fromLocalFile(str(folder)))
 
     @Slot()
     def _on_create_sample(self):
@@ -163,7 +164,8 @@ class NssSettingsController:
             return
         self._view.tools_file.setText(path)
         self._on_tools_file_changed()
-        LOGGER.info('Created sample tools file %s. Edit it, then reconnect.', path)
+        LOGGER.info('Created sample tools file %s. Edit it, then reconnect. After a change to '
+                    'its Python module, restart Nuke.', path)
 
     @Slot()
     def _on_tools_file_changed(self):

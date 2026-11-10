@@ -25,6 +25,18 @@ if TYPE_CHECKING:
 LOGGER = get_logger()
 
 
+def _tools_summary(toolset: ToolSet, tools_file: str, from_env: bool) -> str:
+    """Describe the loaded tools file for the Logs, e.g. "Tools file x.json: 2 tools, code on"."""
+    count = len(toolset.tools)
+    parts = [f'{count} tool' if count == 1 else f'{count} tools']
+    if toolset.skipped:
+        parts.append(f'{len(toolset.skipped)} skipped')
+    parts.append('code on' if toolset.allow_arbitrary_code else 'code off')
+
+    source = ' (NSS_TOOLS)' if from_env else ''
+    return f'Tools file {tools_file}{source}: {", ".join(parts)}'
+
+
 class MainModel:
     def __init__(self, settings: _NssSettings):
         self._settings = settings
@@ -214,33 +226,34 @@ class MainController:
 
     @Slot(bool)
     def _on_connect(self, should_connect: bool):
-        port = self._view.port_input.value()
-        if should_connect and not self._server.isListening():
-            tools_file, from_env = self._model.get_tools_file()
-            if self._server.try_connect(port, self._model.get_allow_lan(), tools_file,
-                                        self._model.get_vision()):
-                toolset = self._server.toolset
-                ip = self._model.get_ip()
-                LOGGER.info('Listening on %s:%s', ip, port)
-                if tools_file:
-                    count = len(toolset.tools)
-                    skipped = f', {len(toolset.skipped)} skipped' if toolset.skipped else ''
-                    LOGGER.info('Tools file %s%s: %s tool%s%s, code %s', tools_file,
-                                ' (NSS_TOOLS)' if from_env else '', count,
-                                '' if count == 1 else 's', skipped,
-                                'on' if toolset.allow_arbitrary_code else 'off')
-
-                self._view.ip_label.setText(ip)
-                self._view.set_tools(toolset, tools_file)
-                self._start_timer()
-                self._view.port_input.setEnabled(False)
-                self._view.set_connected()
-
-            else:
-                LOGGER.error('Failed to establish connection. %s.', self._server.errorString())
-                self._close_connection()
-        else:
+        if not should_connect or self._server.isListening():
             self._close_connection()
+            return
+
+        port = self._view.port_input.value()
+        tools_file, from_env = self._model.get_tools_file()
+        listening = self._server.try_connect(
+            port,
+            allow_lan=self._model.get_allow_lan(),
+            tools_file=tools_file,
+            vision=self._model.get_vision(),
+        )
+        if not listening:
+            LOGGER.error('Failed to establish connection. %s.', self._server.errorString())
+            self._close_connection()
+            return
+
+        toolset = self._server.toolset
+        ip = self._model.get_ip()
+        LOGGER.info('Listening on %s:%s', ip, port)
+        if tools_file:
+            LOGGER.info('%s', _tools_summary(toolset, tools_file, from_env))
+
+        self._view.ip_label.setText(ip)
+        self._view.set_tools(toolset, tools_file)
+        self._start_timer()
+        self._view.port_input.setEnabled(False)
+        self._view.set_connected()
 
     def _close_connection(self, reason: str = ''):
         was_listening = self._server.isListening()

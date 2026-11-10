@@ -40,7 +40,7 @@ import inspect
 import pathlib
 import importlib
 import traceback
-from typing import Any, Dict, Tuple, Callable, Optional
+from typing import Any, Callable
 from dataclasses import field, dataclass
 
 from .utils import stdoutIO
@@ -60,10 +60,10 @@ _HINTS = ('readOnlyHint', 'destructiveHint', 'idempotentHint', 'openWorldHint')
 class Tool:
     name: str
     description: str
-    input_schema: Dict[str, Any]
+    input_schema: dict[str, Any]
     function: Callable[..., Any]
-    timeout: Optional[float] = None
-    annotations: Optional[Dict[str, Any]] = None
+    timeout: float | None = None
+    annotations: dict[str, Any] | None = None
 
 
 @dataclass
@@ -81,16 +81,16 @@ class ToolError(Exception):
 @dataclass
 class ToolSet:
     allow_arbitrary_code: bool = True
-    tools: Dict[str, Tool] = field(default_factory=dict)
+    tools: dict[str, Tool] = field(default_factory=dict)
     # the panel's own tools, e.g. nuke_vision; independent of allow_arbitrary_code
-    builtins: Dict[str, Tool] = field(default_factory=dict)
+    builtins: dict[str, Tool] = field(default_factory=dict)
     # tool name (or entry position) -> why it was not loaded
-    skipped: Dict[str, str] = field(default_factory=dict)
+    skipped: dict[str, str] = field(default_factory=dict)
     # why code is off, naming the file, for logs and client errors
     code_off_reason: str = field(default='', compare=False)
 
     @property
-    def available(self) -> Dict[str, Tool]:
+    def available(self) -> dict[str, Tool]:
         """The tools clients can call: the built-ins, then the file's."""
         return {**self.builtins, **self.tools}
 
@@ -125,6 +125,17 @@ def _import_function(reference: str) -> Callable[..., Any]:
     return obj
 
 
+def _is_number(value: Any) -> bool:
+    # bool is an int in Python, not a number in JSON
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _label(entry: Any, index: int) -> str:
+    """Name a tools file entry for logs: its name, or its position."""
+    name = entry.get('name') if isinstance(entry, dict) else None
+    return name if isinstance(name, str) and name else f'tools[{index}]'
+
+
 def _check_annotations(annotations: Any) -> None:
     if not isinstance(annotations, dict):
         raise ValueError('"annotations" must be an object.')
@@ -157,7 +168,7 @@ def _check_schema(schema: Any) -> None:
         raise ValueError(f'"required" names properties that do not exist: {unknown}.')
 
 
-def _check_signature(function: Callable[..., Any], schema: Dict[str, Any]) -> None:
+def _check_signature(function: Callable[..., Any], schema: dict[str, Any]) -> None:
     """Fail at load time on what would otherwise be a TypeError at call time."""
     try:
         params = inspect.signature(function).parameters.values()
@@ -181,7 +192,7 @@ def _check_signature(function: Callable[..., Any], schema: Dict[str, Any]) -> No
         raise ValueError(f'function parameters without a default must be "required": {missing}.')
 
 
-def _load_tool(entry: Any, loaded: Dict[str, Tool]) -> Tool:
+def _load_tool(entry: Any, loaded: dict[str, Tool]) -> Tool:
     if not isinstance(entry, dict):
         raise ValueError('entry must be an object.')
 
@@ -198,8 +209,7 @@ def _load_tool(entry: Any, loaded: Dict[str, Tool]) -> Tool:
         raise ValueError('"description" must be a non-empty string.')
 
     timeout = entry.get('timeout')
-    if timeout is not None and (isinstance(timeout, bool) or
-                                not isinstance(timeout, (int, float)) or timeout <= 0):
+    if timeout is not None and not (_is_number(timeout) and timeout > 0):
         raise ValueError('"timeout" must be a positive number of seconds.')
 
     schema = entry.get('inputSchema', {'type': 'object', 'properties': {}})
@@ -223,7 +233,10 @@ def _load_tool(entry: Any, loaded: Dict[str, Tool]) -> Tool:
     return Tool(name, description, schema, function, timeout, annotations)
 
 
-def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] = None) -> ToolSet:
+def load_tools(
+    path: str | None = None,
+    builtins: dict[str, Tool] | None = None,
+) -> ToolSet:
     """Load the tool file at `path`, or at NSS_TOOLS when `path` is None.
 
     `builtins` are listed whatever the file says. A tool file that is set but
@@ -253,7 +266,8 @@ def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] =
     if not isinstance(allow_arbitrary_code, bool):
         LOGGER.error('"allow_arbitrary_code" in %s must be true or false. '
                      'Code execution is off.', path)
-        allow_arbitrary_code, reason = False, f'allow_arbitrary_code is not true or false in {name}'
+        allow_arbitrary_code = False
+        reason = f'allow_arbitrary_code is not true or false in {name}'
 
     entries = config.get('tools', [])
     if not isinstance(entries, list):
@@ -265,11 +279,13 @@ def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] =
     if folder not in sys.path:
         sys.path.append(folder)
 
-    toolset = ToolSet(allow_arbitrary_code=allow_arbitrary_code, builtins=builtins,
-                      code_off_reason='' if allow_arbitrary_code else reason)
+    toolset = ToolSet(
+        allow_arbitrary_code=allow_arbitrary_code,
+        builtins=builtins,
+        code_off_reason='' if allow_arbitrary_code else reason,
+    )
     for index, entry in enumerate(entries):
-        label = entry.get('name') if isinstance(entry, dict) else None
-        label = label if isinstance(label, str) and label else f'tools[{index}]'
+        label = _label(entry, index)
         try:
             tool = _load_tool(entry, toolset.available)
         except ValueError as e:
@@ -281,15 +297,18 @@ def load_tools(path: Optional[str] = None, builtins: Optional[Dict[str, Tool]] =
     # the panel logs the summary when it starts listening
     LOGGER.debug(
         'Loaded %s tool(s) from %s, %s skipped. Code execution is %s.',
-        len(toolset.tools), path, len(toolset.skipped), 'on' if allow_arbitrary_code else 'off',
+        len(toolset.tools),
+        path,
+        len(toolset.skipped),
+        'on' if allow_arbitrary_code else 'off',
     )
     return toolset
 
 
-_JSON_TYPES: Dict[str, Callable[[Any], bool]] = {
+_JSON_TYPES: dict[str, Callable[[Any], bool]] = {
     'string': lambda v: isinstance(v, str),
     'integer': lambda v: isinstance(v, int) and not isinstance(v, bool),
-    'number': lambda v: isinstance(v, (int, float)) and not isinstance(v, bool),
+    'number': _is_number,
     'boolean': lambda v: isinstance(v, bool),
     'array': lambda v: isinstance(v, list),
     'object': lambda v: isinstance(v, dict),
@@ -297,7 +316,13 @@ _JSON_TYPES: Dict[str, Callable[[Any], bool]] = {
 }
 
 
-def _check_arguments(tool: Tool, arguments: Dict[str, Any]) -> None:
+def _matches(value: Any, json_type: str) -> bool:
+    # a type this check does not know passes: the tool sees the value as it is
+    check = _JSON_TYPES.get(json_type)
+    return check is None or check(value)
+
+
+def _check_arguments(tool: Tool, arguments: dict[str, Any]) -> None:
     """Check names, `type` and `enum` only: stdlib has no JSON Schema validator."""
     properties = tool.input_schema.get('properties', {})
 
@@ -305,9 +330,9 @@ def _check_arguments(tool: Tool, arguments: Dict[str, Any]) -> None:
     if missing:
         raise ValueError(f'missing required argument(s): {missing}.')
 
-    takes_kwargs = any(
-        p.kind is p.VAR_KEYWORD for p in inspect.signature(tool.function).parameters.values()
-    )
+    params = inspect.signature(tool.function).parameters.values()
+    takes_kwargs = any(p.kind is p.VAR_KEYWORD for p in params)
+
     for key, value in arguments.items():
         if key not in properties:
             if takes_kwargs:
@@ -315,9 +340,11 @@ def _check_arguments(tool: Tool, arguments: Dict[str, Any]) -> None:
             raise ValueError(f'unknown argument {key!r}. Expected: {sorted(properties)}.')
 
         spec = properties[key]
-        types = spec.get('type')
-        types = [types] if isinstance(types, str) else types or []
-        if types and not any(_JSON_TYPES.get(t, lambda v: True)(value) for t in types):
+        # "type" is one name or a list of names
+        types = spec.get('type') or []
+        if isinstance(types, str):
+            types = [types]
+        if types and not any(_matches(value, t) for t in types):
             raise ValueError(f'{key!r} must be {" or ".join(types)}, got {value!r}.')
         if 'enum' in spec and value not in spec['enum']:
             raise ValueError(f'{key!r} must be one of {spec["enum"]}, got {value!r}.')
@@ -331,13 +358,14 @@ def _format_result(result: Any) -> str:
     return json.dumps(result, default=str)
 
 
-def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, Any]:
+def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> dict[str, Any]:
     """Call a loaded tool and return {"ok": bool, "output": str}.
 
-    The output is what the tool printed, followed by its return value. An Image
-    return value goes to "images" instead, and its text to the output. A failure returns ok False with the
-    reason, so the caller never has to read the text: a ToolError gives its
-    message, any other exception its traceback.
+    The output is what the tool printed, followed by its return value. An Image return
+    value goes to "images" instead, and its text to the output.
+
+    A failure returns ok False with the reason, so the caller never has to read the text:
+    a ToolError gives its message, any other exception its traceback.
     """
     tool = toolset.available.get(name)
     if tool is None:
@@ -365,12 +393,15 @@ def call_tool(toolset: ToolSet, name: str, arguments: Any = None) -> Dict[str, A
             return {'ok': False, 'output': printed.getvalue() + traceback.format_exc()}
 
     if isinstance(result, Image):
-        image = {'mimeType': result.mime_type, 'data': base64.b64encode(result.data).decode('ascii')}
+        image = {
+            'mimeType': result.mime_type,
+            'data': base64.b64encode(result.data).decode('ascii'),
+        }
         return {'ok': True, 'output': printed.getvalue() + result.text, 'images': [image]}
     return {'ok': True, 'output': printed.getvalue() + _format_result(result)}
 
 
-def list_tools(toolset: ToolSet) -> Dict[str, Any]:
+def list_tools(toolset: ToolSet) -> dict[str, Any]:
     return {
         'allow_arbitrary_code': toolset.allow_arbitrary_code,
         'tools': [
@@ -383,7 +414,7 @@ def list_tools(toolset: ToolSet) -> Dict[str, Any]:
     }
 
 
-def parse_tool_request(raw: bytes) -> Optional[Dict[str, Any]]:
+def parse_tool_request(raw: bytes) -> dict[str, Any] | None:
     """Return the request when it is a tool request, else None for the code path."""
     try:
         request = json.loads(raw)
@@ -399,7 +430,7 @@ def _last_line(output: str) -> str:
     return lines[-1][:200] if lines else 'no output'
 
 
-def handle_tool_request(toolset: ToolSet, request: Dict[str, Any]) -> Tuple[str, bool, str]:
+def handle_tool_request(toolset: ToolSet, request: dict[str, Any]) -> tuple[str, bool, str]:
     """Return the JSON reply, whether the request succeeded, and what to log about it."""
     if 'call_tool' not in request:
         reply = list_tools(toolset)
