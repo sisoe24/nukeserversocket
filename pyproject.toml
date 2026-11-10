@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "nukeserversocket"
-version = "1.5.0b3"
+version = "1.5.0b4"
 description = "Run Python and BlinkScript in Nuke from a code editor, your own script or an MCP client. Also works in Houdini."
 authors = ["virgilsisoe <virgilsisoe@gmail.com>"]
 packages = [{ include = "nukeserversocket" }, { include = "nss_mcp" }]
