@@ -84,3 +84,7 @@ env.bak/
 venv.bak/
 
 # End of https://www.toptal.com/developers/gitignore/api/python
+
+# Working notes: plans and engram memory, kept out of the public repo
+docs/plans/
+.agents/

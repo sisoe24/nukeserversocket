@@ -1,4 +1,4 @@
-"""Phase 0 benchmarks for agent vision (docs/plans/agent-vision.md).
+"""Benchmarks for agent vision.
 
 Run headless:  Nuke17.1 -ti bench.py <out_dir> [render|measure|edge|all]
 Writes <out_dir>/<nuke version>_<suite>.json and the rendered images.
