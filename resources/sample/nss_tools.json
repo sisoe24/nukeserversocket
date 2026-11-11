@@ -1,0 +1,32 @@
+{
+    "allow_arbitrary_code": true,
+    "tools": [
+        {
+            "name": "script_info",
+            "description": "Describe the open Nuke script: its path, frame range, fps and whether it has unsaved changes.",
+            "function": "nss_tools_example:script_info",
+            "annotations": {"readOnlyHint": true}
+        },
+        {
+            "name": "list_writes",
+            "description": "List the Write nodes in the open script, with the file each one renders to.",
+            "function": "nss_tools_example:list_writes",
+            "annotations": {"readOnlyHint": true}
+        },
+        {
+            "name": "render_write",
+            "description": "Render one Write node by name. Renders the script's frame range unless first and last are given.",
+            "function": "nss_tools_example:render_write",
+            "timeout": 3600,
+            "inputSchema": {
+                "type": "object",
+                "properties": {
+                    "node": {"type": "string", "description": "Name of the Write node, as list_writes gives it."},
+                    "first": {"type": "integer", "description": "First frame to render."},
+                    "last": {"type": "integer", "description": "Last frame to render."}
+                },
+                "required": ["node"]
+            }
+        }
+    ]
+}

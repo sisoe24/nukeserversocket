@@ -1,4 +1,4 @@
-# 1. nukeserversocket README
+# nukeserversocket
 
 [![Main Build](https://img.shields.io/github/v/release/sisoe24/nukeserversocket?label=stable)](https://github.com/sisoe24/nukeserversocket/releases)
 [![Pre Release](https://img.shields.io/github/v/release/sisoe24/nukeserversocket?label=pre-release&include_prereleases)](https://github.com/sisoe24/nukeserversocket/releases)
@@ -11,174 +11,91 @@
 
 ![x](https://img.shields.io/badge/Nuke-✅-success)
 ![x](https://img.shields.io/badge/Houdini-✅-success)
+[![MCP](https://img.shields.io/badge/MCP-experimental-orange)](docs/mcp.md)
 ![x](https://img.shields.io/badge/Python-3.*-success)
 
 [![NukeTools](https://img.shields.io/github/v/release/sisoe24/Nuke-Tools?label=NukeTools)](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools)
 
-- [1. nukeserversocket README](#1-nukeserversocket-readme)
-  - [1.1. Client applications](#11-client-applications)
-    - [1.1.1. Create a custom client](#111-create-a-custom-client)
-  - [1.2. Installation](#12-installation)
-    - [1.2.1. Nuke](#121-nuke)
-      - [1.2.1.1. Using NukeTools (Recommended)](#1211-using-nuketools-recommended)
-      - [1.2.1.2. Manual Installation](#1212-manual-installation)
-    - [1.2.2. Houdini Installation](#122-houdini-installation)
-      - [1.2.2.1. HOUDINI\_PACKAGE\_DIR](#1221-houdini_package_dir)
-      - [1.2.2.2. Using Houdini Preferences](#1222-using-houdini-preferences)
-    - [1.2.3. Houdini Notes](#123-houdini-notes)
-  - [1.3. Usage](#13-usage)
-  - [1.4. Settings](#14-settings)
-  - [1.5. Known Issues](#15-known-issues)
-  - [1.6. Compatibility](#16-compatibility)
-  - [1.7. Python2.7](#17-python27)
-  - [1.8. Contributing](#18-contributing)
+A PySide plugin that runs Python and BlinkScript in Nuke, sent from your code editor, your own script or an MCP client. It also works in Houdini.
 
->[!IMPORTANT]
-> You can now execute code for Houdini! See installation notes
+**New, experimental:** an MCP server lets agents such as Claude Code, Codex and Gemini CLI run Python in Nuke. To set it up, see [MCP server](#mcp-server).
 
-A PySide plugin for executing Python/BlinkScript remotely in Nuke from any network client, supporting multiple connections. Compatible with both Nuke and Houdini.
+## Installation
 
-## 1.1. Client applications
+**With [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools):** run the command `Nuke: Add Packages`.
 
-Client applications that use nukeserversocket:
+**Manually:**
 
-- [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) - Visual Studio Code extension.
-- [nuketools.nvim](https://github.com/sisoe24/nuketools.nvim) - Neovim plugin.
-- [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST) - Sublime Text package.
-- [DCC WebSocket](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.dcc-websocket) - Visual Studio Code Web extension (deprecated at the moment).
+1. Download from the [releases page](https://github.com/sisoe24/nukeserversocket/releases), or clone the repository.
+2. Put it in `~/.nuke` or another folder on your Nuke path.
+3. Add to your `menu.py`:
 
-### 1.1.1. Create a custom client
-
-You can create a custom client in any programming language that supports socket communication. The client sends the code to the server, which then executes it in Nuke and sends back the result. For more information, see the [wiki page](https://github.com/sisoe24/nukeserversocket/wiki/Client-Applications-for-NukeServerSocket)
-
-```py
-# ... your socket code
-data = {
-    "text": "print([n.name() for n in nuke.allNodes()])",
-    "file" : "path/to/file.py",
-    "formatText": "0"
-}
-s.sendall(bytearray(json.dumps(data), 'utf-8'))
-data = s.recv(1024)
-s.close()
-
-nodes = json.loads(data.decode('utf-8').replace("'", '"'))
-for node in nodes:
-    print(node)
-```
-
-## 1.2. Installation
-
-### 1.2.1. Nuke
-
-#### 1.2.1.1. Using NukeTools (Recommended)
-
-If you use [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools), simply run the command `Nuke: Add Packages` to install.
-
-#### 1.2.1.2. Manual Installation
-
-1. Download from [releases page](https://github.com/sisoe24/nukeserversocket/releases) or clone from GitHub
-2. Place in *~/.nuke* or your preferred directory
-3. Add to your *menu.py*:
 ```python
 from nukeserversocket import nukeserversocket
 nukeserversocket.install_nuke()
 ```
 
-### 1.2.2. Houdini Installation
+**Houdini:** see [docs/houdini.md](docs/houdini.md).
 
-> **Note:** These instructions assume NukeServerSocket was installed via NukeTools in `$HOME/.nuke/NukeTools`. If installed manually, adjust paths accordingly. Also, you dont need to have Nuke installed to make this work.
+## Usage
 
-#### 1.2.2.1. HOUDINI_PACKAGE_DIR
+![Execute Code](resources/images/run_code.gif)
 
-Add to your shell configuration:
+1. In Nuke, open the nukeserversocket panel and click **Connect**.
+2. Send code from a client:
+   - [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools): Visual Studio Code extension.
+   - [nuketools.nvim](https://github.com/sisoe24/nuketools.nvim): Neovim plugin.
+   - [Nuke Tools ST](https://packagecontrol.io/packages/NukeToolsST): Sublime Text package.
+   - Your own client: see [docs/clients.md](docs/clients.md) for the request format.
 
-**Mac/Linux** (.bashrc or .zshrc):
-```bash
-export HOUDINI_PACKAGE_DIR=$HOME/.nuke/NukeTools/nukeserversocket
+The server accepts code only from your own machine by default.
+
+>[!NOTE]
+> If you get "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a number between `49152` and `65535` and try again.
+
+## MCP server
+
+> **Experimental.** The MCP server and the tools file may change in a future release.
+
+`nss_mcp/server.py` lets MCP clients, such as Claude Code, Codex and Gemini CLI, run Python in Nuke while the panel is connected.
+
+To let your agent set it up, paste this into Claude Code, Codex, Gemini CLI or another agent:
+
+```text
+Set up the nukeserversocket MCP server by following https://github.com/sisoe24/nukeserversocket/blob/main/docs/mcp-agent-setup.md
 ```
 
-**Windows:**
-- Add `HOUDINI_PACKAGE_DIR` to Environment Variables (start menu)
-- Set value to `%USERPROFILE%\.nuke\NukeTools\nukeserversocket`
+Or set it up yourself. Claude Code:
 
->[!NOTE]
->For CMD/PowerShell users, refer to Microsoft's documentation on environment variables for alternative setup methods.
-
-#### 1.2.2.2. Using Houdini Preferences
-
-1. Navigate to your Houdini packages directory:
-   - Windows: `C:/Users/YourName/Documents/houdiniXX.X/packages`
-   - Mac: `~/Library/Preferences/houdini/XX.X/packages`
-   - Linux: `~/houdiniXX.X/packages`
-
-2. Create `nukeserversocket.json`:
-```json
-{
-    "hpath": [
-        "$HOME/.nuke/NukeTools/nukeserversocket/nukeserversocket/controllers/houdini"
-    ],
-    "env": [
-        {
-            "PYTHONPATH": "$HOME/.nuke/NukeTools/nukeserversocket"
-        }
-    ]
-}
+```sh
+claude mcp add -s user nuke -- python /path/to/nukeserversocket/nss_mcp/server.py
 ```
 
-### 1.2.3. Houdini Notes
+For Claude Desktop, Codex, Gemini CLI and other clients, see [docs/mcp.md](docs/mcp.md#install-in-a-client).
 
-The Houdini execution method differs from Nuke's. Nuke relies on its internal script editor, while Houdini uses Python's `exec`. The Nuke controller also used to rely on `exec`, but I removed that functionality because it didn't work in all scenarios. If you have better suggestions, let me know!
+To give clients a fixed set of tools instead of arbitrary code, open **Settings** in the panel and click **Create sample...** next to **Tools file**. See [docs/mcp.md](docs/mcp.md) for the options, the tools file, and what it protects against.
 
-## 1.3. Usage
+## Settings
 
-![Execute Code](images/run_code.gif)
+Open the settings from the panel toolbar. Hover over a setting to see what it does.
 
-1. Open the nukeserversocket panel inside Nuke, and start the server by clicking **Connect**.
-   To start the server when the panel opens, turn on **Auto Start** in the settings (off by default). To start it when Nuke opens, save a workspace that has the NukeServerSocket panel (*Workspace > Save Workspace*), then set it as your **startup workspace** in the preferences (*Behaviors > Startup*). Otherwise, the server starts only when you open the panel.
-   The server accepts code only from your own machine by default. To send code from another machine, turn on **Allow LAN Connections** in the settings. The server then runs code from any machine on your network with no authentication, so only do this on a network you trust.
-2. You can now send code from Visual Studio Code with [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools) or any other method you prefer.
+- **Server Timeout**: closes the server after this many minutes without a request. Default 60. 0 never closes it.
+- **Auto Start**: starts the server when the panel opens. To start it when Nuke opens, also save a workspace with the panel and set it as your startup workspace (*Preferences > Behaviors > Startup*).
+- **Allow LAN Connections**: accepts code from other machines on your network, with no authentication. Only turn it on for a network you trust.
+- **Mirror Script Editor**: shows the code and its output in Nuke's Script Editor.
+- **Format Output**: the format of the output in the Script Editor.
+- **Clear Output**: clears the Script Editor output before each run.
+- **Tools file**: limits clients to the tools in a JSON file. See [docs/mcp.md](docs/mcp.md#tools-file).
 
->[!NOTE]
-> If you receive a message: "_Server did not initiate. Error: The bound address is already in use_", change the **port** to a random number between `49152` and `65535` and try again.
+## Compatibility
 
-## 1.4. Settings
+Works with PySide6 (Nuke 16 and newer) and PySide2 (Nuke 15 and older), on Python 3. For Python 2.7, use version [0.6.2](https://github.com/sisoe24/nukeserversocket/releases/tag/v0.6.2) or older.
 
->[!NOTE]
-> Only the Server Timeout, Auto Start and Allow LAN Connections settings apply to Houdini.
+## Known Issues
 
-You can access the settings from the plugin toolbar.
+- Changing the workspace while the server is listening makes Nuke load a new panel with the default state. The panel looks disconnected, but the old server is still listening. To close it, restart Nuke or wait for the Server Timeout.
 
-- **Server Timeout**: Closes the server after this many minutes without receiving code. Default 60. Set it to 0 to never close.
-- **Auto Start**: Starts the server as soon as the panel opens. Off by default.
-- **Allow LAN Connections**: Accepts code from other machines on your network, with no authentication. Off by default. Applies the next time the server connects.
-- **Mirror To Script Editor**: Allows mirroring the input/output code to the internal script editor.
-- **Format Text**: The script editor output window will receive a formatted version of the code result. The available placeholders are:
+## Contributing
 
-  - `%d`: Time
-  - `%t`: The code result
-  - `%f`: The full file path
-  - `%F`: The file name
-  - `%n`: A new line
-
-   **Format Text Example**: `%d - %t%n` will output `12:00:00 - Hello World!` in the script editor output window.
-
-- **Clear Output**: The script editor output window will clear the code after each execution.
-
-## 1.5. Known Issues
-
-- Changing workspace with an active open connection makes Nuke load a new plugin instance with the default UI state. So it would look as if the previous connection has been closed, whereas in reality is still open and listening. To force close all of the listening connections, you can:
-  - Restart the Nuke instance.
-  - Wait for the connection timeout.
-
-## 1.6. Compatibility
-
-Works with PySide6 (Nuke 16 and newer) and PySide2 (Nuke 15 and older), on Python 3.
-
-## 1.7. Python2.7
-
-If you are using Python 2.7, you can still use the previous version of the plugin `<=0.6.2` from the [releases page](https://github.com/sisoe24/nukeserversocket/releases/tag/v0.6.2)
-
-## 1.8. Contributing
-
-If you have any suggestions, bug reports, or questions, feel free to open an issue or a pull request. I am always open to new ideas and improvements. Occasionally, I pick something from the [Projects](https://github.com/users/sisoe24/projects/4) tab, so feel free to check it out.
+For suggestions, bug reports or questions, open an issue or a pull request. Planned work is in the [Projects](https://github.com/users/sisoe24/projects/4) tab.
+****

@@ -4,15 +4,16 @@ from __future__ import annotations
 import os
 import json
 import logging
-from typing import Optional
+from typing import Dict, Optional
 from textwrap import dedent
 
-from .._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
+from ..._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
                    QPlainTextEdit)
 
-from .base import EditorController
-from ..main import NukeServerSocket
-from ..received_data import ReceivedData
+from ..base import EditorController
+from ...tools import Tool
+from ...main import NukeServerSocket
+from ...received_data import ReceivedData
 
 LOGGER = logging.getLogger('nukeserversocket')
 
@@ -45,9 +46,7 @@ class NukeScriptEditor:
         )
         if not btn:
             # likely will never going to happen
-            raise RuntimeError(
-                'NukeServerSocket error: Could not find Nuke Script Editor execute button'
-            )
+            raise RuntimeError('Could not find Nuke Script Editor execute button')
 
         return btn
 
@@ -55,6 +54,7 @@ class NukeScriptEditor:
 class NukeController(EditorController):
     def __init__(self, editor: Optional[NukeScriptEditor] = None):
         self._editor = editor
+        self._previous_output = ''
 
     @property
     def editor(self) -> NukeScriptEditor:
@@ -65,14 +65,23 @@ class NukeController(EditorController):
 
     def execute(self, data: ReceivedData) -> str:
         try:
-            return super().execute(data)
+            for widget in (self.editor.input_editor, self.editor.output_editor,
+                           self.editor.run_button):
+                widget.objectName()
         except RuntimeError:
-            # Nuke can rebuild the Script Editor (e.g. on a workspace switch),
-            # which deletes the widgets we hold: look them up again once.
+            # Nuke can rebuild the Script Editor (e.g. on a workspace switch), which deletes
+            # the widgets we hold. Look them up before the code runs: a retry after would run
+            # it twice.
             self._editor = None
-            return super().execute(data)
+        return super().execute(data)
+
+    def builtin_tools(self) -> Dict[str, Tool]:
+        # imports nuke, which exists only inside Nuke
+        from .builtin.registry import builtin_tools
+        return builtin_tools()
 
     def execute_code(self):
+        self._previous_output = self.editor.output_editor.toPlainText()
         self.editor.run_button.click()
 
     @property
@@ -86,6 +95,9 @@ class NukeController(EditorController):
     def get_output(self) -> str:
         """Override the base method to remove the '# Result:' prefix."""
         output = self.editor.output_editor.toPlainText()
+        # The pane keeps earlier runs: reply with this run's output only.
+        if output.startswith(self._previous_output):
+            output = output[len(self._previous_output):]
         index = output.find('# Result:')
         return output[index + 10:] if index != -1 else output
 

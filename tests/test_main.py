@@ -6,11 +6,12 @@ import pytest
 from pytestqt.qtbot import QtBot
 
 from nukeserversocket.main import MainView, MainModel, MainController
+from nukeserversocket.tools import Tool, ToolSet
 from nukeserversocket.server import NssServer
 from nukeserversocket.settings import _NssSettings
 from nukeserversocket.controllers.base import EditorController
 
-from nukeserversocket._qt import (Signal, QObject, QWidget, QTextEdit,
+from nukeserversocket._qt import (Qt, Signal, QObject, QWidget, QTextEdit,
                                   QPlainTextEdit)
 
 Controller = MainController
@@ -45,15 +46,22 @@ class MockServer(QObject):
     def __init__(self, editor: MockEditorController, parent: Optional[QWidget] = None):
         super().__init__(parent)
         self.allow_lan = None
+        self.tools_file = None
+        self.listening = False
+        self.toolset = ToolSet()
 
-    def try_connect(self, port: int, allow_lan: bool = False) -> bool:
+    def try_connect(self, port: int, allow_lan: bool = False, tools_file=None,
+                    disabled_tools=()) -> bool:
         self.allow_lan = allow_lan
+        self.tools_file = tools_file
+        self.toolset.disabled = set(disabled_tools)
         return True
 
     def isListening(self) -> bool:
-        return False
+        return self.listening
 
-    def close(self): ...
+    def close(self):
+        self.listening = False
 
     def errorString(self) -> str:
         return 'error'
@@ -97,15 +105,78 @@ def test_main_controller_on_connect(controller: Controller, view: View):
     assert controller._timer.isActive() is True
 
 
+def _tool(name: str) -> Tool:
+    return Tool(name, 'A tool.', {'type': 'object', 'properties': {}}, lambda: None)
+
+
+@pytest.mark.parametrize('tools_file, toolset, tools, logs', [
+    ('', ToolSet(), ['nuke_execute_code'], ['Listening on 127.0.0.1:54321']),
+    ('/studio/nss_tools.json', ToolSet(tools={'a': _tool('a')}), ['nuke_execute_code', 'a'],
+     ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 1 tool, code on']),
+    ('/studio/nss_tools.json', ToolSet(allow_arbitrary_code=False), ['nuke_execute_code'],
+     ['Listening on 127.0.0.1:54321', 'Tools file /studio/nss_tools.json: 0 tools, code off']),
+    ('/studio/nss_tools.json',
+     ToolSet(allow_arbitrary_code=False, tools={'a': _tool('a'), 'b': _tool('b')},
+             skipped={'c': 'x'}),
+     ['nuke_execute_code', 'a', 'b', 'c'],
+     ['Listening on 127.0.0.1:54321',
+      'Tools file /studio/nss_tools.json: 2 tools, 1 skipped, code off']),
+])
+def test_main_controller_shows_mcp_tools_on_connect(
+        controller: Controller, model: Model, view: View, server: MockServer, monkeypatch,
+        tools_file, toolset, tools, logs):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    model._settings.set('tools_file', tools_file)
+    server.toolset = toolset
+    logged = []
+    monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
+    assert view.tools_list.count() == 0
+
+    controller._on_connect(True)
+
+    assert server.tools_file == tools_file
+    items = [view.tools_list.item(i) for i in range(view.tools_list.count())]
+    assert [item.text() for item in items] == tools
+    assert [item.toolTip() for item in items if not item.flags()] == [
+        f'Skipped: {r}' for r in toolset.skipped.values()]
+    assert logged == logs
+
+
+def test_main_controller_prefers_nss_tools_over_settings(
+        controller: Controller, model: Model, server: MockServer, monkeypatch):
+    monkeypatch.setenv('NSS_TOOLS', '/studio/env_tools.json')
+    model._settings.set('tools_file', '/home/me/my_tools.json')
+    logged = []
+    monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
+
+    controller._on_connect(True)
+
+    assert server.tools_file == '/studio/env_tools.json'
+    assert logged[1] == 'Tools file /studio/env_tools.json (NSS_TOOLS): 0 tools, code on'
+
+
+def test_main_controller_logs_why_it_stopped(
+        controller: Controller, server: MockServer, monkeypatch):
+    logged = []
+    monkeypatch.setattr('nukeserversocket.main.LOGGER.info', lambda msg, *a: logged.append(msg % a))
+    server.listening = True
+
+    controller._on_timeout()
+
+    assert logged == ['Stopped listening: no request for 60 min (Server Timeout)']
+
+
 def test_main_controller_on_disconnect(controller: Controller, view: View):
 
     view.connect_btn.click()
     assert view.connect_btn.text() == 'Disconnect'
+    assert view.tools_list.count() == 1
 
     controller._on_connect(False)
 
     assert view.connect_btn.isChecked() is False
     assert view.connect_btn.text() == 'Connect'
+    assert view.tools_list.count() == 0
     assert view.port_input.isEnabled() is True
     assert controller._timer.isActive() is False
 
@@ -143,9 +214,73 @@ def test_main_controller_allow_lan(controller: Controller, model: Model, view: V
     assert view.ip_label.text() == model.get_ip()
 
 
+def _items(view: View) -> dict:
+    return {view.tools_list.item(i).text(): view.tools_list.item(i)
+            for i in range(view.tools_list.count())}
+
+
+def test_main_controller_passes_and_shows_disabled_tools(
+        controller: Controller, model: Model, view: View, server: MockServer):
+    model._settings.set('disabled_tools', ['a'])
+    server.toolset = ToolSet(tools={'a': _tool('a'), 'b': _tool('b')})
+
+    controller._on_connect(True)
+
+    assert server.toolset.disabled == {'a'}
+    states = {name: item.checkState() for name, item in _items(view).items()}
+    assert states == {'nuke_execute_code': Qt.Checked, 'a': Qt.Unchecked, 'b': Qt.Checked}
+
+
+def test_main_controller_toggles_a_tool_live(
+        controller: Controller, model: Model, view: View, server: MockServer):
+    server.toolset = ToolSet(tools={'a': _tool('a')})
+    controller._on_connect(True)
+
+    _items(view)['a'].setCheckState(Qt.Unchecked)
+    _items(view)['nuke_execute_code'].setCheckState(Qt.Unchecked)
+    assert server.toolset.disabled == {'a', 'nuke_execute_code'}
+    assert model.get_disabled_tools() == ['a', 'nuke_execute_code']
+
+    _items(view)['a'].setCheckState(Qt.Checked)
+    assert server.toolset.disabled == {'nuke_execute_code'}
+    assert model.get_disabled_tools() == ['nuke_execute_code']
+
+
+def test_main_controller_code_off_in_file_cannot_be_turned_on(
+        controller: Controller, model: Model, view: View, server: MockServer):
+    server.toolset = ToolSet(allow_arbitrary_code=False, skipped={'c': 'x'},
+                             code_off_reason='allow_arbitrary_code is false in t.json')
+    controller._on_connect(True)
+
+    code = _items(view)['nuke_execute_code']
+    assert code.checkState() == Qt.Unchecked
+    assert not code.flags() & Qt.ItemIsEnabled
+    assert code.toolTip() == 'Code is off: allow_arbitrary_code is false in t.json.'
+    # neither the greyed code item nor the skipped one is saved as turned off
+    assert server.toolset.disabled == set() and model.get_disabled_tools() == []
+
+
 def test_main_controller_auto_start(qtbot: QtBot, model: Model, view: View, server: MockServer):
     model._settings.set('auto_start', True)
 
     controller = Controller(view, model, server)  # keep a reference so its slots stay connected
 
     qtbot.waitUntil(lambda: controller._timer.isActive())
+
+
+def test_main_controller_saves_console_options(controller: Controller, model: Model, view: View):
+    view.console.enable_debug.setChecked(True)
+    view.console.wrap_lines.setChecked(True)
+
+    assert model.get_enable_debug() is True
+    assert model.get_wrap_lines() is True
+
+
+def test_main_controller_restores_console_options(model: Model, view: View, server: MockServer):
+    model.set_enable_debug(True)
+    model.set_wrap_lines(True)
+
+    Controller(view, model, server)
+
+    assert view.console.enable_debug.isChecked()
+    assert view.console.wrap_lines.isChecked()
