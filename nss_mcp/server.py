@@ -67,6 +67,9 @@ EXECUTE_DESCRIPTION = inspect.cleandoc("""
     - When unsure of a Nuke API name, knob name or signature, look it up before running: use a
       docs tool such as context7 if available, otherwise inspect the live session with dir(),
       node.knobs() or help().
+    - In Nuke Studio and Hiero, the hiero module drives the project and timeline. Its edits
+      go on the project's own undo stack, one step per operation, unless you wrap them in
+      project.beginUndo('name') and project.endUndo().
 """)
 
 EXECUTE_TOOL = {

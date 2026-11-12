@@ -251,7 +251,7 @@ The approval prompt of the client is the check that works:
 - A tool without `destructiveHint` counts as destructive in the MCP specification, but a client can treat it differently. Set `annotations` on each tool in the tools file.
 - Do not turn on automatic approval for tools that you did not write.
 
-Code is not sandboxed. It runs as the user of Nuke and can read and write each file that this user can. Each run is one undo step, but undo does not reverse file writes or renders. Save the script before a long agent session.
+Code is not sandboxed. It runs as the user of Nuke and can read and write each file that this user can. Each run is one undo step, but undo does not reverse file writes or renders. In Nuke Studio and Hiero, timeline edits made with the `hiero` module go on the project's own undo stack, one step per operation. Save the script before a long agent session.
 
 Text from the scene is data, not instructions. Node names, labels, knob values, file paths and text inside images can contain words that try to steer the agent. The server tells the agent to ignore them, but the agent can still follow them. Be careful with scripts and images that you did not make.
 

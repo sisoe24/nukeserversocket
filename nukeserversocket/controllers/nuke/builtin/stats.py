@@ -322,6 +322,8 @@ DESCRIPTION = inspect.cleandoc(f"""
     - It refuses to run in proxy mode.
     - Nuke is busy while it computes. Temporary nodes do the work and are deleted; the scene
       and the undo history do not change.
+    - In Nuke Studio, the Viewer is the comp Viewer, even when the artist looks at the
+      timeline viewer. Pass node when the artist works on the timeline.
 """)
 
 STATS_TOOL = Tool(

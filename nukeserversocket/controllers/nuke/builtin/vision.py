@@ -238,6 +238,8 @@ DESCRIPTION = inspect.cleandoc(f"""
       instant.
     - Nuke is busy until the render finishes. Temporary nodes render the frame and are
       deleted; the scene, the Viewer and the undo history do not change.
+    - In Nuke Studio, the Viewer is the comp Viewer, even when the artist looks at the
+      timeline viewer. Pass node when the artist works on the timeline.
 """)
 
 VISION_TOOL = Tool(

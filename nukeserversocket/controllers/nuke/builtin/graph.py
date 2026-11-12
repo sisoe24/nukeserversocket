@@ -231,6 +231,8 @@ DESCRIPTION = inspect.cleandoc(f"""
       big script instead of raising max_nodes.
     - selected: the selected nodes of the listed group. The selection tells you what the
       artist means by "this". Do not change it.
+    - In Nuke Studio, viewer is the comp Viewer, even when the artist looks at the timeline
+      viewer.
 """)
 
 GRAPH_TOOL = Tool(
