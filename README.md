@@ -22,7 +22,7 @@ A PySide plugin that runs Python and BlinkScript in Nuke, sent from your code ed
 
 ## Installation
 
-**With [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools):** run the command `Nuke: Add Packages`.
+**With [Nuke Tools](https://marketplace.visualstudio.com/items?itemName=virgilsisoe.nuke-tools):** run the command `Nuke: Add NukeServerSocket`.
 
 **Manually:**
 
