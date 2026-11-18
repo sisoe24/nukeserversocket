@@ -7,7 +7,7 @@ import pytest
 from pytestqt.qtbot import QtBot
 
 from nukeserversocket.settings import _NssSettings
-from nukeserversocket.controllers import nuke as nuke_controller
+from nukeserversocket.controllers.nuke import controller as nuke_controller
 from nukeserversocket.received_data import ReceivedData
 from nukeserversocket.controllers.nuke import NukeController, NukeScriptEditor
 
@@ -74,6 +74,19 @@ def test_nuke_get_output(qtbot: QtBot, output: str, expected: str):
     assert editor.get_output() == expected
 
 
+def test_nuke_get_output_skips_earlier_output(qtbot: QtBot):
+    editor = NukeController(MockNukeEditor())
+    editor.output_editor.setPlainText('# Result: old\nTraceback (most recent call last):')
+    editor.editor.run_button.clicked.disconnect()
+    editor.editor.run_button.clicked.connect(
+        lambda: editor.output_editor.append('code\n# Result: 42')
+    )
+
+    editor.execute_code()
+
+    assert editor.get_output() == '42'
+
+
 class StaleNukeEditor:
     """Stands in for a Script Editor whose widgets Nuke has deleted."""
 
@@ -95,3 +108,22 @@ def test_nuke_execute_looks_up_rebuilt_script_editor(
 
     assert isinstance(editor.editor, MockNukeEditor)
     assert 'hello' in out
+
+
+def test_nuke_execute_never_runs_the_code_twice(
+    qtbot: QtBot, mock_settings: _NssSettings, monkeypatch: pytest.MonkeyPatch
+):
+    """A widget deleted while the code runs fails the request instead of running it again."""
+    mock = MockNukeEditor()
+    clicks = []
+    mock.run_button.clicked.connect(lambda: clicks.append(1))
+    editor = NukeController(mock)
+    editor.settings = mock_settings
+
+    def deleted():
+        raise RuntimeError('Internal C++ object already deleted.')
+
+    monkeypatch.setattr(editor, 'get_output', deleted)
+    with pytest.raises(RuntimeError):
+        editor.execute(ReceivedData(json.dumps({'text': 'print("hello")'})))
+    assert clicks == [1]

@@ -55,3 +55,53 @@ def test_settings(controller: Controller, model: Model, view: View):
     assert model.settings.data['mirror_script_editor'] is True
     assert model.settings.data['clear_output'] is False
     assert model.settings.data['format_output'] == 'nuketools'
+
+
+def test_tools_file_is_saved(controller: Controller, model: Model, view: View, monkeypatch):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    controller.init()
+    assert view.tools_file.text() == ''
+    assert view.tools_file.isEnabled() is True
+
+    view.tools_file.setText(' /home/me/nss_tools.json ')
+    view.tools_file.editingFinished.emit()
+
+    assert model.settings.data['tools_file'] == '/home/me/nss_tools.json'
+    assert model.settings.tools_file() == ('/home/me/nss_tools.json', False)
+
+
+def test_tools_file_from_nss_tools_is_read_only(controller: Controller, model: Model,
+                                                view: View, monkeypatch):
+    model.settings.set('tools_file', '/home/me/nss_tools.json')
+    monkeypatch.setenv('NSS_TOOLS', '/studio/nss_tools.json')
+
+    controller.init()
+
+    assert view.tools_file.text() == '/studio/nss_tools.json'
+    assert view.tools_file.isEnabled() is False
+    assert view.tools_file_browse.isEnabled() is False
+    assert view.tools_file_sample.isEnabled() is False
+    assert view.tools_file_note.isVisibleTo(view) is True
+    assert model.settings.tools_file() == ('/studio/nss_tools.json', True)
+
+
+def test_create_sample_uses_the_new_file(controller: Controller, model: Model, view: View,
+                                         monkeypatch, tmp_path):
+    monkeypatch.delenv('NSS_TOOLS', raising=False)
+    monkeypatch.setattr(view, 'choose_sample_folder', lambda: str(tmp_path))
+
+    view.tools_file_sample.click()
+
+    path = str(tmp_path / 'nss_tools.json')
+    assert view.tools_file.text() == path
+    assert model.settings.tools_file() == (path, False)
+
+
+def test_open_folder_opens_the_tools_file_folder(controller: Controller, view: View, monkeypatch):
+    opened = []
+    monkeypatch.setattr('nukeserversocket.settings_ui.QDesktopServices.openUrl', opened.append)
+    view.tools_file.setText('/studio/tools/nss_tools.json')
+
+    view.tools_file_open.click()
+
+    assert [url.toLocalFile() for url in opened] == ['/studio/tools']
