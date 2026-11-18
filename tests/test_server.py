@@ -5,6 +5,7 @@ import re
 import sys
 import json
 import socket
+import select
 import logging
 
 import pytest
@@ -21,6 +22,12 @@ from nukeserversocket._qt import (QTextEdit, QTcpSocket, QHostAddress,
                                   QPlainTextEdit)
 
 PORT = 55559
+
+
+def _recv(qtbot: QtBot, client: socket.socket, size: int = 1024) -> str:
+    """Read the reply. A blocking recv would freeze the Qt loop that sends it."""
+    qtbot.waitUntil(lambda: bool(select.select([client], [], [], 0)[0]), timeout=5000)
+    return client.recv(size).decode('utf-8')
 
 
 class MockEditorController(EditorController):
@@ -121,8 +128,8 @@ def test_server_replies_to_each_client(qtbot: QtBot, server: NssServer):
     first.sendall(json.dumps({'text': "print('first')"}).encode('utf-8'))
     qtbot.wait(100)
 
-    assert first.recv(1024).decode('utf-8').strip() == 'first'
-    assert second.recv(1024).decode('utf-8').strip() == 'second'
+    assert _recv(qtbot, first).strip() == 'first'
+    assert _recv(qtbot, second).strip() == 'second'
 
     first.close()
     second.close()
@@ -150,7 +157,7 @@ def test_server_accepts_chunked_payload(qtbot: QtBot, server: NssServer):
         client.sendall(payload[i:i + 8])
         qtbot.wait(20)
 
-    assert client.recv(1024).decode('utf-8').strip() == 'HELLO CHUNKED'
+    assert _recv(qtbot, client).strip() == 'HELLO CHUNKED'
     client.close()
 
 
@@ -170,13 +177,13 @@ def test_server_replies_to_malformed_object(qtbot: QtBot, server: NssServer, pay
     client.sendall(payload)
     qtbot.wait(200)
 
-    assert 'no code received' in client.recv(1024).decode('utf-8')
+    assert 'no code received' in _recv(qtbot, client)
     assert not server._buffers
     client.close()
 
 
 def test_server_drops_buffer_when_client_disconnects(qtbot: QtBot, server: NssServer):
-    server.REQUEST_IDLE_MS = 50
+    # the default idle time keeps the buffer until the disconnect
     server.try_connect(PORT)
 
     client = socket.create_connection(('127.0.0.1', PORT))
@@ -257,7 +264,7 @@ def test_server_prefixes_execution_errors(qtbot: QtBot, server: NssServer, monke
     client.sendall(json.dumps({'text': 'x = 1'}).encode('utf-8'))
     qtbot.wait(100)
 
-    assert client.recv(1024).decode('utf-8') == (
+    assert _recv(qtbot, client) == (
         'NukeServerSocket error: Could not find script editor'
     )
     client.close()
@@ -305,7 +312,7 @@ def request(qtbot: QtBot, payload: dict) -> str:
     client.settimeout(1)
     client.sendall(json.dumps(payload).encode('utf-8'))
     qtbot.wait(100)
-    reply = client.recv(65536).decode('utf-8')
+    reply = _recv(qtbot, client, 65536)
     client.close()
     return reply
 
@@ -362,7 +369,7 @@ def test_server_buffers_chunked_tool_request(qtbot: QtBot, tool_server: NssServe
         client.sendall(payload[i:i + 8])
         qtbot.wait(20)
 
-    assert json.loads(client.recv(65536).decode('utf-8'))['ok'] is True
+    assert json.loads(_recv(qtbot, client, 65536))['ok'] is True
     client.close()
 
 
@@ -402,7 +409,7 @@ def test_server_rejects_missing_code(qtbot: QtBot, server: NssServer, payload: b
     client.sendall(payload)
     qtbot.wait(100)
 
-    assert 'no code received' in client.recv(1024).decode('utf-8')
+    assert 'no code received' in _recv(qtbot, client)
     assert server._editor.input_editor.toPlainText() == 'initial input'
     assert server._editor.output_editor.toPlainText() == 'initial output'
 
