@@ -16,8 +16,9 @@ from typing import Any
 
 import nuke
 
-from ._shared import (bbox, pick_view, temp_nodes, copy_to_rgb, find_source, pick_channels,
-                      source_warnings)
+from .focus import focus_crop
+from ._shared import (bbox, pick_view, temp_nodes, copy_to_rgb, find_source,
+                      pick_channels, source_warnings)
 from ....tools import Tool, ToolError
 
 MAX_CHANNELS = 8
@@ -217,6 +218,7 @@ def stats(
     crop: list[float] | None = None,
     last: int | None = None,
     over: float | None = None,
+    focus: str = '',
 ) -> dict[str, Any]:
     """Return exact statistics of `node` from `frame` to `last`, per channel."""
     viewer = nuke.activeViewer()
@@ -233,6 +235,11 @@ def stats(
     if nuke.root()['proxy'].value():
         raise ToolError('Proxy mode is on: turn it off to measure the full-resolution image.')
 
+    if focus:
+        if crop is not None:
+            raise ToolError('Pass crop or focus, not both.')
+        crop = focus_crop(focus, frame)
+
     view = pick_view(view, viewer)
 
     picked = pick_channels(source, channels)
@@ -245,6 +252,11 @@ def stats(
     warnings = source_warnings(source, frame)
     if last != frame:
         warnings += [w for w in source_warnings(source, last) if w not in warnings]
+        with nuke.root():
+            moving = bool(focus) and nuke.toNode(focus)['area'].isAnimated()
+        if moving:
+            warnings.append(f'{focus} moves: every frame is measured inside its area at frame '
+                            f'{frame}. Call once per frame to follow it.')
 
     start = time.monotonic()
     with temp_nodes('stats', source) as (name, image):
@@ -313,6 +325,9 @@ DESCRIPTION = inspect.cleandoc(f"""
     - min, max and mean count only finite pixels. They are null when no pixel is finite.
     - Positions are [x, y] in Nuke pixels, y = 0 at the bottom.
     - crop: [x, y, width, height] in Nuke pixels.
+    - focus: the name of a focus box, a node the artist placed over the region to
+      measure. It crops to the box at frame. nuke_vision and nuke_graph list the focus boxes
+      under viewer.
     - last: measure every frame from frame to last. bad_frames lists the first
       {MAX_BAD_FRAMES} frames with NaN or infinite pixels. After {TIME_LIMIT:g} s it stops,
       sets last to the last frame measured and warns; call again from the next frame.
@@ -354,6 +369,10 @@ STATS_TOOL = Tool(
                 'type': 'array',
                 'items': {'type': 'number'},
                 'description': '[x, y, width, height] in Nuke pixels, y up.',
+            },
+            'focus': {
+                'type': 'string',
+                'description': 'Focus box to crop to, instead of crop.',
             },
             'last': {
                 'type': 'integer',

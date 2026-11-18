@@ -95,7 +95,7 @@ The server gets the tool list from Nuke each time the client asks for it. If the
 `nuke_vision` lets the agent see an image in Nuke, for example to check the result of a change. It renders one frame of a node to a JPEG and returns the image with JSON metadata. By default it renders the node that feeds the active Viewer input, at the current frame, with the long edge at most 768 pixels (about 440 tokens).
 
 - The image has the Viewer's display transform (OCIO display and view). It does not have the Viewer's gain, gamma, wipe or overlays.
-- Arguments, all optional: `node`, `frame`, `view`, `channels` (for example `alpha`, `depth`, `depth.Z`), `crop` (`[x, y, width, height]` in Nuke pixels, enlarged to show detail) and `size`.
+- Arguments, all optional: `node`, `frame`, `view`, `channels` (for example `alpha`, `depth`, `depth.Z`), `crop` (`[x, y, width, height]` in Nuke pixels, enlarged to show detail), `focus` (a [focus box](#focus-box)) and `size`.
 - The metadata has the format, the bounding box, a formula from image pixels to Nuke coordinates, and warnings, for example when the frame is outside the node's range or the image is one color.
 
 A temporary Write node, inside a temporary Group, renders the frame. The tool deletes the node and the file after the render, and turns undo off during the render, so the script and the undo history do not change. Nuke runs `onCreate`, `beforeRender` and `afterRender` callbacks for the temporary nodes too. If your pipeline adds callbacks to Write nodes, make sure that they ignore nodes whose names start with `_nss_`. Other built-in tools use the same prefix for their temporary nodes.
@@ -136,7 +136,7 @@ print(graph(group='Group1'))
 
 `nuke_stats` lets the agent measure an image in Nuke, for example to check clipping or NaN pixels. For each channel of one frame of a node, it gives the minimum and maximum with their pixel positions, the mean, and the number of NaN and infinite pixels. It reads every pixel, so it finds a single bad pixel.
 
-- Arguments, all optional: `node`, `frame`, `view`, `channels` (`rgb` by default, or `rgba`, `alpha`, a layer, or one channel) and `crop` (`[x, y, width, height]` in Nuke pixels). By default it measures the node that feeds the active Viewer input, at the current frame, over the whole format.
+- Arguments, all optional: `node`, `frame`, `view`, `channels` (`rgb` by default, or `rgba`, `alpha`, a layer, or one channel) `crop` (`[x, y, width, height]` in Nuke pixels) and `focus` (a [focus box](#focus-box)). By default it measures the node that feeds the active Viewer input, at the current frame, over the whole format.
 - `last` measures every frame from `frame` to `last`. The reply gives the minimum and maximum of the range with their frames, and the first 10 frames with NaN or infinite pixels. After 40 seconds the tool stops and returns the frames it measured, so that the MCP client does not time out.
 - `over` also counts the pixels at or above a value, for example `1`, to tell a few hot pixels from real clipping.
 - Values are as stored in Nuke, before the display transform. The minimum, maximum and mean count only finite pixels.
@@ -152,6 +152,17 @@ from nukeserversocket.controllers.nuke.builtin.stats import stats
 
 print(stats('Grade1', frame=1001, channels='rgba'))
 ```
+
+## Focus box
+
+A focus box marks the part of the image that the agent should look at, so that you do not have to describe it. Right-click in the Viewer and choose **Mark Region for Agent**. A node named `nssFocus1` appears over the middle of the image, with its panel open. Its knobs are `area`, the box, and `disable`. Drag its handles over the region, for example a hand. Animate `area` or link it to a Tracker if the region moves.
+
+Then tell the agent to use it, for example "the hand in nssFocus1 is out of the blur". `nuke_vision` and `nuke_stats` crop to the box at the frame they read when the agent passes its name as `focus`.
+
+- The box is a NoOp that is not connected to anything, so it does not change the comp or the render. Its handles show in the Viewer while its panel is open.
+- Turn on `disable` to make the tools ignore the box. The Viewer information in the replies of `nuke_vision` and `nuke_graph` lists the boxes that are not disabled.
+- `nuke_stats` over a frame range measures inside the box at the first frame, and warns when the box moves.
+- The box starts over the image in the Viewer. Its area is in that image's pixels, so use it on images of the same format.
 
 ## Tools file
 

@@ -19,8 +19,9 @@ from typing import Any
 
 import nuke
 
-from ._shared import (RGB, bbox, pick_view, temp_nodes, viewer_info, copy_to_rgb,
-                      find_source, pick_channels, source_warnings)
+from .focus import focus_crop
+from ._shared import (RGB, bbox, pick_view, temp_nodes, copy_to_rgb,
+                      find_source, viewer_info, pick_channels, source_warnings)
 from ....tools import Tool, Image, ToolError
 
 DEFAULT_SIZE = 768
@@ -111,6 +112,7 @@ def vision(
     channels: str = 'rgb',
     crop: list[float] | None = None,
     size: int = DEFAULT_SIZE,
+    focus: str = '',
 ) -> Image:
     """Render one frame of `node` to a JPEG, with its metadata as JSON text."""
     if not 64 <= size <= 4096:
@@ -119,6 +121,10 @@ def vision(
     viewer = nuke.activeViewer()
     source = find_source(node, viewer)
     frame = nuke.frame() if frame is None else frame
+    if focus:
+        if crop is not None:
+            raise ToolError('Pass crop or focus, not both.')
+        crop = focus_crop(focus, frame)
 
     view = pick_view(view, viewer)
 
@@ -230,6 +236,9 @@ DESCRIPTION = inspect.cleandoc(f"""
     Viewer shows.
 
     - crop: [x, y, width, height] in Nuke pixels, enlarged to size, to see a detail.
+    - focus: the name of a focus box, a node the artist placed over the region to look
+      at. It crops to the box at that frame. The metadata lists the focus boxes under
+      viewer. Use one when the artist asks you to look at their box.
     - channels: "alpha", a layer such as "depth" or "diffuse", or one channel such as
       "depth.Z", shown as rgb or greyscale.
     - The image has the Viewer's display transform, not its gain, gamma, wipe or overlays.
@@ -270,10 +279,14 @@ VISION_TOOL = Tool(
                 'items': {'type': 'number'},
                 'description': '[x, y, width, height] in Nuke pixels, y up.',
             },
+            'focus': {
+                'type': 'string',
+                'description': 'Focus box to crop to, instead of crop.',
+            },
             'size': {
                 'type': 'integer',
                 'description': f'Long edge in pixels, 64 to 4096. Default {DEFAULT_SIZE}. '
-                               'Most clients scale images over 1568 down.',
+                'Most clients scale images over 1568 down.',
             },
         },
     },

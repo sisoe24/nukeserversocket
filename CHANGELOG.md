@@ -12,6 +12,7 @@
 - `nuke_graph` MCP tool: the agent reads one group of the node graph, with inputs and non-default knobs, or only what changed since an earlier call.
 - `nuke_stats` MCP tool: exact min, max (with positions), mean, NaN and infinity counts per channel of a node, over one frame or a frame range, and an optional count of pixels over a value.
 - Tools can return images, and can raise `ToolError` to fail without a traceback.
+- **Mark Region for Agent** in the Viewer menu: a focus box node that marks the region for the agent. `nuke_vision` and `nuke_stats` crop to it with `focus`.
 
 ### Changed
 

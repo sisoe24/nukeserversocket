@@ -8,11 +8,10 @@ from typing import Dict, Optional
 from textwrap import dedent
 
 from ..._qt import (QWidget, QSplitter, QTextEdit, QPushButton, QApplication,
-                   QPlainTextEdit)
-
+                    QPlainTextEdit)
 from ..base import EditorController
-from ...tools import Tool
 from ...main import NukeServerSocket
+from ...tools import Tool
 from ...received_data import ReceivedData
 
 LOGGER = logging.getLogger('nukeserversocket')
@@ -129,9 +128,13 @@ class NukeEditor(NukeServerSocket):
 
 
 def install_nuke():
+    import nuke
     import nukescripts
+
+    from .builtin.focus import create_focus_box
 
     nukescripts.panels.registerWidgetAsPanel(
         'nukeserversocket.controllers.nuke.NukeEditor', 'NukeServerSocket',
         'uk.co.thefoundry.NukeServerSocket'
     )
+    nuke.menu('Viewer').addCommand('Mark Region for Agent', create_focus_box)

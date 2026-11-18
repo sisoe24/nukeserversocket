@@ -10,6 +10,7 @@ from contextlib import contextmanager
 
 import nuke
 
+from .focus import focus_boxes
 from ....tools import ToolError
 
 RGB = ['rgba.red', 'rgba.green', 'rgba.blue']
@@ -64,6 +65,7 @@ def viewer_info(viewer: nuke.ViewerWindow | None) -> dict[str, Any] | None:
         'gain': node['gain'].value(),
         'gamma': node['gamma'].value(),
         'viewer_process': node['viewerProcess'].value(),
+        'focus_boxes': focus_boxes(),
     }
     # Nuke 17 and newer
     if hasattr(node, 'getZoomLevel'):
